@@ -26,7 +26,7 @@ IntersectionData initialize_intersection_data(Parameters P)
   IntersectionData intersectionData;
 
   size_t sz = P.n_rays * P.max_intersections_per_ray * sizeof(int);
-  intersectionData.n_intersections    = (int *) malloc(sz);
+  intersectionData.n_intersections     = (int *) malloc(sz);
   intersectionData.cell_ids            = (int *) malloc(sz);
   intersectionData.did_vacuum_reflects = (int *) malloc(sz);
 
@@ -55,6 +55,7 @@ CellData initialize_cell_data(Parameters P)
 SimulationData initialize_simulation(Parameters P)
 {
   ReadOnlyData ROD = load_2D_C5G7_XS(P);
+  //TODO: Copy this to "device"
   
   ReadWriteData RWD;
   RWD.intersectionData = initialize_intersection_data(P);
