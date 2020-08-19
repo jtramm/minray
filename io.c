@@ -14,6 +14,7 @@ Parameters read_CLI(int argc, char * argv[])
   P.seed = 1337;
   P.n_materials = 8;
   P.n_energy_groups = 7;
+  P.max_intersections_per_ray = 100;
 
   // Derived Values
   P.cell_width = P.length_per_dimension / P.n_cells_per_dimension;
@@ -185,13 +186,13 @@ ReadOnlyData load_2D_C5G7_XS(Parameters P)
 
   fclose(material_file);
 
-  ReadOnlyData D;
-  D.Sigma_f = Sigma_f;
-  D.Sigma_t = Sigma_t;
-  D.Sigma_s = Sigma_s;
-  D.nu_Sigma_f = nu_Sigma_f;
-  D.Chi = Chi;
-  D.material_id = material_id;
+  ReadOnlyData ROD;
+  ROD.Sigma_f = Sigma_f;
+  ROD.Sigma_t = Sigma_t;
+  ROD.Sigma_s = Sigma_s;
+  ROD.nu_Sigma_f = nu_Sigma_f;
+  ROD.Chi = Chi;
+  ROD.material_id = material_id;
 
   if( ret == 0 )
   {
@@ -199,5 +200,5 @@ ReadOnlyData load_2D_C5G7_XS(Parameters P)
     exit(1);
   }
 
-  return D;
+  return ROD;
 }

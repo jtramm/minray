@@ -15,6 +15,7 @@ program = minray
 
 source = \
 main.c \
+init.c \
 io.c \
 clutils.c
 
