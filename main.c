@@ -2,6 +2,7 @@
 
 typedef struct{
   int * material_id;
+  float * nu_Sigma_f;
   float * Sigma_f;
   float * Sigma_t;
   float * Sigma_s;
@@ -47,7 +48,7 @@ Parameters read_CLI(int argc, char * argv[])
   P.n_inactive_iterations = 10;
   P.n_active_iterations = 10;
   P.seed = 1337;
-  P.n_materials = 5;
+  P.n_materials = 8;
   P.n_energy_groups = 7;
 
   // Derived Values
