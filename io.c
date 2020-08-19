@@ -1,3 +1,28 @@
+#include "minray.h"
+
+Parameters read_CLI(int argc, char * argv[])
+{
+  Parameters P;
+  // User Inputs
+  P.n_cells_per_dimension = 100;
+  P.length_per_dimension = 20.0;
+  P.height = 100.0;
+  P.n_rays = 5;
+  P.distance_per_ray = 10.0;
+  P.n_inactive_iterations = 10;
+  P.n_active_iterations = 10;
+  P.seed = 1337;
+  P.n_materials = 8;
+  P.n_energy_groups = 7;
+
+  // Derived Values
+  P.cell_width = P.length_per_dimension / P.n_cells_per_dimension;
+  P.cell_volume = P.cell_width * P.cell_width * P.height;
+  P.n_cells = P.n_cells_per_dimension * P.n_cells_per_dimension;
+  P.cell_expected_track_length = (P.distance_per_ray * P.n_rays) / P.n_cells;
+  
+  return P;
+}
 
 // KEY
 // 0 - UO2
@@ -8,9 +33,9 @@
 // 5 - Guide Tube
 // 6 - Moderator 
 // 7 - Control Rod
-void load_2D_C5G7_XS(Parameters P)
+ReadOnlyData load_2D_C5G7_XS(Parameters P)
 {
-  size_t sz = nmaterials * negroups * sizeof(float);
+  size_t sz = P.n_materials * P.n_energy_groups * sizeof(float);
 
   // Allocate Data on Host
   float * nu_Sigma_f  = (float *) malloc(sz);
@@ -106,14 +131,14 @@ void load_2D_C5G7_XS(Parameters P)
     for( int j = 0; j < P.n_energy_groups; j++ )
     {
       // Scatter XS
-      ret = fscanf(UO2_scatter,    "%f", Sigma_s + 0 * P.n_energy_groups * P_n_energy_groups + i * P_n_energy_groups + j);
-      ret = fscanf(MOX_43_scatter, "%f", Sigma_s + 1 * P.n_energy_groups * P_n_energy_groups + i * P_n_energy_groups + j);
-      ret = fscanf(MOX_70_scatter, "%f", Sigma_s + 2 * P.n_energy_groups * P_n_energy_groups + i * P_n_energy_groups + j);
-      ret = fscanf(MOX_87_scatter, "%f", Sigma_s + 3 * P.n_energy_groups * P_n_energy_groups + i * P_n_energy_groups + j);
-      ret = fscanf(FC_scatter,     "%f", Sigma_s + 4 * P.n_energy_groups * P_n_energy_groups + i * P_n_energy_groups + j);
-      ret = fscanf(GT_scatter,     "%f", Sigma_s + 5 * P.n_energy_groups * P_n_energy_groups + i * P_n_energy_groups + j);
-      ret = fscanf(Mod_scatter,    "%f", Sigma_s + 6 * P.n_energy_groups * P_n_energy_groups + i * P_n_energy_groups + j);
-      ret = fscanf(CR_scatter,     "%f", Sigma_s + 7 * P.n_energy_groups * P_n_energy_groups + i * P_n_energy_groups + j);
+      ret = fscanf(UO2_scatter,    "%f", Sigma_s + 0 * P.n_energy_groups * P.n_energy_groups + i * P.n_energy_groups + j);
+      ret = fscanf(MOX_43_scatter, "%f", Sigma_s + 1 * P.n_energy_groups * P.n_energy_groups + i * P.n_energy_groups + j);
+      ret = fscanf(MOX_70_scatter, "%f", Sigma_s + 2 * P.n_energy_groups * P.n_energy_groups + i * P.n_energy_groups + j);
+      ret = fscanf(MOX_87_scatter, "%f", Sigma_s + 3 * P.n_energy_groups * P.n_energy_groups + i * P.n_energy_groups + j);
+      ret = fscanf(FC_scatter,     "%f", Sigma_s + 4 * P.n_energy_groups * P.n_energy_groups + i * P.n_energy_groups + j);
+      ret = fscanf(GT_scatter,     "%f", Sigma_s + 5 * P.n_energy_groups * P.n_energy_groups + i * P.n_energy_groups + j);
+      ret = fscanf(Mod_scatter,    "%f", Sigma_s + 6 * P.n_energy_groups * P.n_energy_groups + i * P.n_energy_groups + j);
+      ret = fscanf(CR_scatter,     "%f", Sigma_s + 7 * P.n_energy_groups * P.n_energy_groups + i * P.n_energy_groups + j);
     }
   }
   
@@ -150,8 +175,7 @@ void load_2D_C5G7_XS(Parameters P)
   fclose(CR_scatter      );
   fclose(CR_transport    );
   
-  // Now load in material ID data
-  FILE * material_file = fopen("material_ids.txt", "r");
+  FILE * material_file = fopen("data/C5G7_2D/material_ids.txt", "r");
   sz = P.n_cells * sizeof(int);
   int * material_id = (int *) malloc(sz);
   for( int c = 0; c < P.n_cells; c++ )
@@ -163,7 +187,7 @@ void load_2D_C5G7_XS(Parameters P)
 
   ReadOnlyData D;
   D.Sigma_f = Sigma_f;
-  D.Sigma_t = Sigmat_t;
+  D.Sigma_t = Sigma_t;
   D.Sigma_s = Sigma_s;
   D.nu_Sigma_f = nu_Sigma_f;
   D.Chi = Chi;
