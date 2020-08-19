@@ -50,12 +50,15 @@ typedef struct{
 } IntersectionData;
 
 typedef struct{
-  // Cellwise data
   float * delta_psi_tally;
   float * isotropic_source;
   float * scalar_flux;
   float * scalar_flux_accumulators;
   int   * hit_count;
+} CellData;
+
+typedef struct{
+  CellData cellData;
   RayData rayData;
   IntersectionData intersectionData;
 } ReadWriteData;
@@ -67,4 +70,4 @@ typedef struct{
 
 Parameters read_CLI(int argc, char * argv[]);
 ReadOnlyData load_2D_C5G7_XS(Parameters P);
-SimulationData initialize_simulation(Parameters P, ReadOnlyData ROD);
+SimulationData initialize_simulation(Parameters P);

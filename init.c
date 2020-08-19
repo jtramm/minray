@@ -30,31 +30,39 @@ IntersectionData initialize_intersection_data(Parameters P)
   intersectionData.cell_ids            = (int *) malloc(sz);
   intersectionData.did_vacuum_reflects = (int *) malloc(sz);
 
-  sz = P.n_rays * P.max_intersections_per_ray * sizeof(double);
+  sz        = P.n_rays * P.max_intersections_per_ray * sizeof(double);
   intersectionData.distances = (double *) malloc(sz);
 
   return intersectionData;
 }
 
-SimulationData initialize_simulation(Parameters P, ReadOnlyData ROD)
+CellData initialize_cell_data(Parameters P)
 {
-  SimulationData SD;
-  SD.readOnlyData = ROD;
-  
-  ReadWriteData RWD;
+  CellData CD;
 
   size_t sz = P.n_cells * sizeof(float);
-  RWD.delta_psi_tally          = (float *) malloc(sz);
-  RWD.isotropic_source         = (float *) malloc(sz);
-  RWD.scalar_flux              = (float *) malloc(sz);
-  RWD.scalar_flux_accumulators = (float *) malloc(sz);
+  CD.delta_psi_tally          = (float *) malloc(sz);
+  CD.isotropic_source         = (float *) malloc(sz);
+  CD.scalar_flux              = (float *) malloc(sz);
+  CD.scalar_flux_accumulators = (float *) malloc(sz);
 
   sz = P.n_cells * sizeof(int);
-  RWD.hit_count = (int *) malloc(sz);
+  CD.hit_count = (int *) malloc(sz);
 
+  return CD;
+}
+
+SimulationData initialize_simulation(Parameters P)
+{
+  ReadOnlyData ROD = load_2D_C5G7_XS(P);
+  
+  ReadWriteData RWD;
   RWD.intersectionData = initialize_intersection_data(P);
-  RWD.rayData = initialize_ray_data(P);
+  RWD.rayData          = initialize_ray_data(P);
+  RWD.cellData         = initialize_cell_data(P);
 
+  SimulationData SD;
+  SD.readOnlyData  = ROD;
   SD.readWriteData = RWD;
 
   return SD;
