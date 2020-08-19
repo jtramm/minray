@@ -15,6 +15,7 @@ program = minray
 
 source = \
 main.c \
+io.c \
 clutils.c
 
 obj = $(source:.c=.o)
