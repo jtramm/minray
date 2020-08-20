@@ -10,10 +10,10 @@ RayData initialize_ray_data(Parameters P)
   sz = P.n_rays * sizeof(double);
   rayData.location_x  = (double *) malloc(sz);
   rayData.location_y  = (double *) malloc(sz);
-  rayData.location_z  = (double *) malloc(sz);
+  //rayData.location_z  = (double *) malloc(sz);
   rayData.direction_x = (double *) malloc(sz);
   rayData.direction_y = (double *) malloc(sz);
-  rayData.direction_z = (double *) malloc(sz);
+ // rayData.direction_z = (double *) malloc(sz);
   
   sz = P.n_rays * sizeof(int);
   rayData.cell_id  = (int *) malloc(sz);
@@ -76,7 +76,7 @@ void initialize_ray_kernel(uint64_t base_seed, int ray_id, double length_per_dim
     uint64_t seed = fast_forward_LCG(base_seed, offset);
     RD.location_x[ray_id] = LCG_random_double(&seed) * length_per_dimension;
     RD.location_y[ray_id] = LCG_random_double(&seed) * length_per_dimension;
-    RD.location_z[ray_id] = 0.0;
+    //RD.location_z[ray_id] = 0.0;
 
     // Sample Angle
     double theta = LCG_random_double(&seed) * 2.0 * M_PI;
@@ -86,13 +86,13 @@ void initialize_ray_kernel(uint64_t base_seed, int ray_id, double length_per_dim
     // Spherical conversion
     RD.direction_x[ray_id] = zo * cosf(theta);
     RD.direction_y[ray_id] = zo * sinf(theta);
-    RD.direction_z[ray_id] = z;
+    //RD.direction_z[ray_id] = z;
 
-    // TODO: Normalize Direction
+    // TODO?: Normalize Direction
     
     // Compute Cell ID
-    int x_idx = RD.direction_x[ray_id] * inverse_cell_width;
-    int y_idx = RD.direction_y[ray_id] * inverse_cell_width;
+    int x_idx = RD.location_x[ray_id] * inverse_cell_width;
+    int y_idx = RD.location_y[ray_id] * inverse_cell_width;
     RD.cell_id[ray_id] = y_idx * n_cells_per_dimension + x_idx; 
 }  
 

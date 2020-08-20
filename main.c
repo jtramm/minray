@@ -22,12 +22,15 @@ void run_simulation(Parameters P, SimulationData SD)
     // Set flux tally to zero
 
     // Transport Sweep
+    transport_sweep(P, SD);
 
     // Normalize Scalar Flux
 
     // Add Source to Flux
 
     // Compute K-eff
+    
+    break;
   }
 }
 
@@ -38,6 +41,7 @@ int main(int argc, char * argv[])
   initialize_rays(P, SD);
   initialize_fluxes(P, SD);
 
+  run_simulation(P, SD);
 
 
   return 0;
