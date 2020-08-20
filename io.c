@@ -7,7 +7,7 @@ Parameters read_CLI(int argc, char * argv[])
   P.n_cells_per_dimension = 102;
   P.length_per_dimension = 64.26;
   //P.height = 100.0;
-  P.n_rays = 1;
+  P.n_rays = 5;
   P.distance_per_ray = 10.0;
   P.n_inactive_iterations = 10;
   P.n_active_iterations = 10;
