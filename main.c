@@ -3,11 +3,13 @@
 void transport_sweep(Parameters P, SimulationData SD)
 {
   // Ray Trace Kernel
-  for( int r = 0; r < P.n_rays; r++ )
-    ray_trace_kernel(P, SD, SD.readWriteData.rayData, r);
+  for( int ray = 0; ray < P.n_rays; ray++ )
+    ray_trace_kernel(P, SD, SD.readWriteData.rayData, ray);
 
   // Flux Attenuate Kernel
-   for( int r = 0; r < P.n_rays; r++ )
+  for( int ray = 0; ray < P.n_rays; ray++ )
+    for( int energy_group; energy_group < P.n_energy_groups; energy_group++ )
+      ray_trace_kernel(P, SD, ray, energy_group);
 }
 
 void print_ray_tracing_buffer(Parameters P, SimulationData SD)
