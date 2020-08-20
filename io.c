@@ -5,7 +5,7 @@ Parameters read_CLI(int argc, char * argv[])
   Parameters P;
   // User Inputs
   P.n_cells_per_dimension = 100;
-  P.length_per_dimension = 20.0;
+  P.length_per_dimension = 64.26;
   P.height = 100.0;
   P.n_rays = 5;
   P.distance_per_ray = 10.0;

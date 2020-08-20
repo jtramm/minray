@@ -29,6 +29,7 @@ typedef struct{
   double cell_expected_track_length;
   double cell_width;
   int n_cells;
+  int n_iterations;
 } Parameters;
 
 typedef struct{
@@ -52,7 +53,8 @@ typedef struct{
 typedef struct{
   float * delta_psi_tally;
   float * isotropic_source;
-  float * scalar_flux;
+  float * new_scalar_flux;
+  float * old_scalar_flux;
   float * scalar_flux_accumulators;
   int   * hit_count;
 } CellData;
@@ -68,6 +70,14 @@ typedef struct{
   ReadWriteData readWriteData;
 } SimulationData;
 
+// io.c
 Parameters read_CLI(int argc, char * argv[]);
 ReadOnlyData load_2D_C5G7_XS(Parameters P);
+
+// rand.c
+double LCG_random_double(uint64_t * seed);
+uint64_t fast_forward_LCG(uint64_t seed, uint64_t n);
+
+// init.c
 SimulationData initialize_simulation(Parameters P);
+void initialize_rays(Parameters P, SimulationData SD);
