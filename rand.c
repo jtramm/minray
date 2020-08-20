@@ -1,7 +1,5 @@
 #include "minray.h"
 
-#define PRNG_SAMPLES_PER_RAY 4
-
 double LCG_random_double(uint64_t * seed)
 {
   // LCG parameters

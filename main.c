@@ -19,9 +19,9 @@ void transport_sweep(Parameters P, SimulationData SD)
 
 void run_simulation(Parameters P, SimulationData SD)
 {
-  double k-eff = 1.0;
-
-  initialize_rays(P, SD);
+  // k is the multiplication factor (or eigenvalue) we are trying to solve for.
+  // The eigenvector is the scalar flux vector
+  double k = 1.0;
 
   for( int iter = 0; iter < P.n_iterations; iter++ )
   {
@@ -43,6 +43,8 @@ int main(int argc, char * argv[])
 {
   Parameters P = read_CLI(argc, argv);
   SimulationData SD = initialize_simulation(P);
+  initialize_rays(P, SD);
+  initialize_fluxes(P, SD);
 
   return 0;
 }

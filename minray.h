@@ -1,6 +1,8 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<stdint.h>
+#include<math.h>
+#include<string.h>
 
 typedef struct{
   int * material_id;
@@ -51,7 +53,6 @@ typedef struct{
 } IntersectionData;
 
 typedef struct{
-  float * delta_psi_tally;
   float * isotropic_source;
   float * new_scalar_flux;
   float * old_scalar_flux;
@@ -81,3 +82,4 @@ uint64_t fast_forward_LCG(uint64_t seed, uint64_t n);
 // init.c
 SimulationData initialize_simulation(Parameters P);
 void initialize_rays(Parameters P, SimulationData SD);
+void initialize_fluxes(Parameters P, SimulationData SD);
