@@ -15,12 +15,16 @@ Parameters read_CLI(int argc, char * argv[])
   P.n_materials = 8;
   P.n_energy_groups = 7;
   P.max_intersections_per_ray = 100;
+  P.boundary_condition_positive = VACUUM;
+  P.boundary_condition_negative = REFLECTIVE;
 
   // Derived Values
   P.cell_width = P.length_per_dimension / P.n_cells_per_dimension;
+  P.inverse_cell_width = 1.0 / P.cell_width;
   P.cell_volume = P.cell_width * P.cell_width * P.height;
   P.n_cells = P.n_cells_per_dimension * P.n_cells_per_dimension;
   P.cell_expected_track_length = (P.distance_per_ray * P.n_rays) / P.n_cells;
+  P.inverse_length_per_dimension = 1.0 / P.length_per_dimension;
   
   return P;
 }

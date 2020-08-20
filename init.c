@@ -70,7 +70,7 @@ SimulationData initialize_simulation(Parameters P)
 }
 
 #define PRNG_SAMPLES_PER_RAY 4
-void initialize_ray_kernel(uint64_t base_seed, int ray_id, double length_per_dimension, RayData RD)
+void initialize_ray_kernel(uint64_t base_seed, int ray_id, double length_per_dimension, int n_cells_per_dimension, double inverse_cell_width, RayData RD)
 {
     uint64_t offset = ray_id * PRNG_SAMPLES_PER_RAY;
     uint64_t seed = fast_forward_LCG(base_seed, offset);
@@ -88,7 +88,12 @@ void initialize_ray_kernel(uint64_t base_seed, int ray_id, double length_per_dim
     RD.direction_y[ray_id] = zo * sinf(theta);
     RD.direction_z[ray_id] = z;
 
-    // TODO: Normalize
+    // TODO: Normalize Direction
+    
+    // Compute Cell ID
+    int x_idx = RD.direction_x[ray_id] * inverse_cell_width;
+    int y_idx = RD.direction_y[ray_id] * inverse_cell_width;
+    RD.cell_id[ray_id] = y_idx * n_cells_per_dimension + x_idx; 
 }  
 
 void initialize_rays(Parameters P, SimulationData SD)
@@ -96,22 +101,24 @@ void initialize_rays(Parameters P, SimulationData SD)
   // Sample all rays in space and angle
   for( int r = 0; r < P.n_rays; r++ )
   {
-    initialize_ray_kernel(P.seed, r, P.length_per_dimension, SD.readWriteData.rayData);
+    initialize_ray_kernel(P.seed, r, P.length_per_dimension, P.n_cells_per_dimension, P.inverse_cell_width, SD.readWriteData.rayData);
   }
 }
 
 void initialize_fluxes(Parameters P, SimulationData SD)
 {
-  // Old scalar flux set to 1.0
+  // Old scalar fluxes set to 1.0
   for( int cell = 0; cell < P.n_cells; cell++ )
   {
     for( int g = 0; g < P.n_energy_groups; g++ ) 
     {
-      SD.readWriteData.cellData.old_scalar_flux[         cell * P.n_energy_groups + g] = 1.0;
-      SD.readWriteData.cellData.scalar_flux_accumulators[cell * P.n_energy_groups + g] = 1.0;
+      SD.readWriteData.cellData.old_scalar_flux[cell * P.n_energy_groups + g] = 1.0;
     }
   }
-  
+
+  // Set scalar flux accumulators to 0.0
+  memset(SD.readWriteData.cellData.scalar_flux_accumulators, 0, P.n_cells * P.n_energy_groups * sizeof(float));
+
   // Set all starting angular fluxes to 0.0
   memset(SD.readWriteData.rayData.angular_flux, 0, P.n_rays * P.n_energy_groups * sizeof(float));
 }

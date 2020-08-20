@@ -4,6 +4,9 @@
 #include<math.h>
 #include<string.h>
 
+#define VACUUM 0
+#define REFLECTIVE 1
+
 typedef struct{
   int * material_id;
   float * nu_Sigma_f;
@@ -26,10 +29,14 @@ typedef struct{
   int n_materials;
   int n_energy_groups;
   int max_intersections_per_ray;
+  int boundary_condition_positive;
+  int boundary_condition_negative;
   // Derived
   double cell_volume;
   double cell_expected_track_length;
   double cell_width;
+  double inverse_length_per_dimension;
+  double inverse_cell_width;
   int n_cells;
   int n_iterations;
 } Parameters;
@@ -83,3 +90,7 @@ uint64_t fast_forward_LCG(uint64_t seed, uint64_t n);
 SimulationData initialize_simulation(Parameters P);
 void initialize_rays(Parameters P, SimulationData SD);
 void initialize_fluxes(Parameters P, SimulationData SD);
+
+// ray_trace_kernel.c
+void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, int ray_id);
+double cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir, double z_dir);

@@ -15,6 +15,7 @@ program = minray
 
 source = \
 main.c \
+ray_trace_kernel.c \
 rand.c \
 init.c \
 io.c \
