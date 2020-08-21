@@ -249,7 +249,7 @@ void plot_3D_vtk(Parameters P, float * scalar_flux_accumulator, int * material_i
 {
   int N = P.n_cells_per_dimension;
   int z_N = 1;
-  char * fname = "results.dat";
+  char * fname = "minray_plots.vtk";
   FILE * fp = fopen(fname, "w");
 
   int plot_thermal_flux = 1;
@@ -300,7 +300,7 @@ void plot_3D_vtk(Parameters P, float * scalar_flux_accumulator, int * material_i
   
   if( plot_fast_flux )
   {
-    fprintf(fp, "SCALARS fp_flux float\n");
+    fprintf(fp, "SCALARS fast_flux float\n");
     fprintf(fp, "LOOKUP_TABLE default\n");
 
     int cell_id = 0;
