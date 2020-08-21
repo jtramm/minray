@@ -149,6 +149,8 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, int ray_
       x_idx = x_idx_across_surface;
       y_idx = y_idx_across_surface;
     }
+    
+    assert(cell_id >= 0 && cell_id < P.n_cells);
 
     // Move ray off the surface
     x += x_dir * BUMP;

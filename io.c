@@ -114,7 +114,6 @@ Parameters read_CLI(int argc, char * argv[])
   P.seed = 1337;
   P.n_materials = 8;
   P.n_energy_groups = 7;
-  P.max_intersections_per_ray = 100;
   P.plotting_enabled = 0;
 
 // negative_x = 1;
@@ -196,6 +195,7 @@ Parameters read_CLI(int argc, char * argv[])
 
   // Derived Values
   P.n_cells_per_dimension = 102 * problem_size_multiplier;
+  P.max_intersections_per_ray = 100 * problem_size_multiplier;
   if( !has_user_set_rays)
     P.n_rays *= problem_size_multiplier;
   P.cell_width = P.length_per_dimension / P.n_cells_per_dimension;
@@ -473,7 +473,7 @@ void plot_3D_vtk(Parameters P, float * scalar_flux_accumulator, int * material_i
     {
       for( int x = 0; x < P.n_cells_per_dimension; x++)
       {
-        float thermal_flux = scalar_flux_accumulator[cell_id * P.n_energy_groups] / P.n_active_iterations;
+        float thermal_flux = scalar_flux_accumulator[cell_id * P.n_energy_groups +P.n_energy_groups - 1] / P.n_active_iterations;
         thermal_flux = eswap_float(thermal_flux);
         fwrite(&thermal_flux, sizeof(float), 1, fp);
         cell_id++;
@@ -491,7 +491,7 @@ void plot_3D_vtk(Parameters P, float * scalar_flux_accumulator, int * material_i
     {
       for( int x = 0; x < P.n_cells_per_dimension; x++)
       {
-        float fast_flux = scalar_flux_accumulator[cell_id * P.n_energy_groups + P.n_energy_groups - 1] / P.n_active_iterations;
+        float fast_flux = scalar_flux_accumulator[cell_id * P.n_energy_groups] / P.n_active_iterations;
         fast_flux = eswap_float(fast_flux);
         fwrite(&fast_flux, sizeof(float), 1, fp);
         cell_id++;
