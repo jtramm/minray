@@ -86,6 +86,7 @@ typedef struct{
 // io.c
 Parameters read_CLI(int argc, char * argv[]);
 ReadOnlyData load_2D_C5G7_XS(Parameters P);
+void plot_3D_vtk(Parameters P, float * scalar_flux_accumulator, int * material_id);
 
 // rand.c
 double LCG_random_double(uint64_t * seed);

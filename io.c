@@ -29,7 +29,7 @@ Parameters read_CLI(int argc, char * argv[])
   P.inverse_total_track_length = 1.0 / (P.distance_per_ray * P.n_rays);
   P.inverse_length_per_dimension = 1.0 / P.length_per_dimension;
   P.n_iterations = P.n_inactive_iterations + P.n_active_iterations;
-  
+
   return P;
 }
 
@@ -150,7 +150,7 @@ ReadOnlyData load_2D_C5G7_XS(Parameters P)
       ret = fscanf(CR_scatter,     "%f", Sigma_s + 7 * P.n_energy_groups * P.n_energy_groups + i * P.n_energy_groups + j);
     }
   }
-  
+
   // Close all Files
   fclose(UO2_scatter      );
   fclose(UO2_transport    );
@@ -183,7 +183,7 @@ ReadOnlyData load_2D_C5G7_XS(Parameters P)
   fclose(Mod_transport    );
   fclose(CR_scatter      );
   fclose(CR_transport    );
-  
+
   FILE * material_file = fopen("data/C5G7_2D/material_ids.txt", "r");
   sz = P.n_cells * sizeof(int);
   int * material_id = (int *) malloc(sz);
@@ -210,3 +210,129 @@ ReadOnlyData load_2D_C5G7_XS(Parameters P)
 
   return ROD;
 }
+
+float eswap_float( float f )
+{    
+  char * ptr = (char *) &f;
+  char orig[4];
+  orig[0] = ptr[0];
+  orig[1] = ptr[1];
+  orig[2] = ptr[2];
+  orig[3] = ptr[3];
+  char new[4];
+  new[0] = orig[3];
+  new[1] = orig[2];
+  new[2] = orig[1];
+  new[3] = orig[0];
+  float f2 = *((float *)new);
+  return f2;
+}
+
+int eswap_int( int f )
+{    
+  char * ptr = (char *) &f;
+  char orig[4];
+  orig[0] = ptr[0];
+  orig[1] = ptr[1];
+  orig[2] = ptr[2];
+  orig[3] = ptr[3];
+  char new[4];
+  new[0] = orig[3];
+  new[1] = orig[2];
+  new[2] = orig[1];
+  new[3] = orig[0];
+  int f2 = *((int *)new);
+  return f2;
+}
+
+void plot_3D_vtk(Parameters P, float * scalar_flux_accumulator, int * material_id)
+{
+  int N = P.n_cells_per_dimension;
+  int z_N = 1;
+  char * fname = "results.dat";
+  FILE * fp = fopen(fname, "w");
+
+  int plot_thermal_flux = 1;
+  int plot_fast_flux = 1;
+  int plot_materials = 1;
+
+  /*
+  // For Corner Zoom
+  G.box.min.x = 0.0 + 17*1.26 / 2.0 - 2*1.26;
+  G.box.max.x = G.box.min.x + 4 * 1.26;
+  G.box.min.y = 0.0 - 17*1.26 / 2.0 - 2*1.26;
+  G.box.max.y = G.box.min.y + 4 * 1.26;
+  */
+
+  double x_delta = P.cell_width;
+  double y_delta = P.cell_width;
+  double z_delta = P.cell_width;
+
+  printf("plotting 3D Data X x Y x Z = %d x %d x %d\n", N, N, z_N);
+
+  fprintf(fp,"# vtk DataFile Version 2.0\n");
+  fprintf(fp, "Dataset File\n");
+  //fprintf(fp, "ASCII\n");
+  fprintf(fp, "BINARY\n");
+  fprintf(fp, "DATASET STRUCTURED_POINTS\n");
+  fprintf(fp, "DIMENSIONS %d %d %d\n", N, N, z_N);
+  fprintf(fp, "ORIGIN 0 0 0\n");
+  fprintf(fp, "SPACING %lf %lf %lf\n", x_delta, y_delta, z_delta);
+  fprintf(fp, "POINT_DATA %d\n", N*N*z_N);
+
+  if( plot_thermal_flux )
+  {
+    fprintf(fp, "SCALARS thermal_flux float\n");
+    fprintf(fp, "LOOKUP_TABLE default\n");
+
+    int cell_id = 0;
+    for( int y = 0; y < P.n_cells_per_dimension; y++)
+    {
+      for( int x = 0; x < P.n_cells_per_dimension; x++)
+      {
+        float thermal_flux = scalar_flux_accumulator[cell_id * P.n_energy_groups] / P.n_active_iterations;
+        thermal_flux = eswap_float(thermal_flux);
+        fwrite(&thermal_flux, sizeof(float), 1, fp);
+        cell_id++;
+      }
+    }
+  }
+  
+  if( plot_fast_flux )
+  {
+    fprintf(fp, "SCALARS fp_flux float\n");
+    fprintf(fp, "LOOKUP_TABLE default\n");
+
+    int cell_id = 0;
+    for( int y = 0; y < P.n_cells_per_dimension; y++)
+    {
+      for( int x = 0; x < P.n_cells_per_dimension; x++)
+      {
+        float fast_flux = scalar_flux_accumulator[cell_id * P.n_energy_groups + P.n_energy_groups - 1] / P.n_active_iterations;
+        fast_flux = eswap_float(fast_flux);
+        fwrite(&fast_flux, sizeof(float), 1, fp);
+        cell_id++;
+      }
+    }
+  }
+
+  if( plot_materials )
+  {
+    fprintf(fp, "SCALARS material_type int\n");
+    fprintf(fp, "LOOKUP_TABLE default\n");
+    int cell_id = 0;
+    for( int y = 0; y < P.n_cells_per_dimension; y++)
+    {
+      for( int x = 0; x < P.n_cells_per_dimension; x++)
+      {
+        int material = material_id[cell_id++];
+        material = eswap_int(material);
+        fwrite(&material, sizeof(int), 1, fp);
+      }
+    }
+  }
+
+  fclose(fp);
+  printf("Finished plotting!\n");
+}
+

@@ -107,11 +107,41 @@ double compute_k_eff(Parameters P, SimulationData SD, double old_k_eff)
   return new_k_eff;
 }
 
+double check_hit_rate(int * hit_count, int n_cells)
+{
+  // Determine how many FSRs were hit
+  int n_cells_hit = reduce_sum_int(hit_count, n_cells);
+
+  // Reset cell hit counters
+  memset(hit_count, 0, n_cells * sizeof(int));
+
+  // Compute percentage of cells missed
+  double percent_missed = (1.0 - (double) n_cells_hit/n_cells) * 100.0;
+
+  return percent_missed;
+}
+
 void ptr_swap(float ** a, float ** b)
 {
   float * tmp = *a;
   *a = *b;
   *b = tmp;
+}
+
+void output_thermal_fluxes(Parameters P, SimulationData SD)
+{
+  char * fname = "thermal_fluxes.dat";
+  printf("Writing thermal flux data to file: \"%s\"...\n", fname);
+  FILE * fp = fopen(fname, "w");
+  int cell_id = 0;
+  for( int y = 0; y < P.n_cells_per_dimension; y++)
+  {
+    for( int x = 0; x < P.n_cells_per_dimension; x++)
+    {
+      fprintf(fp, "%.3le ", SD.readWriteData.cellData.scalar_flux_accumulator[cell_id++] / P.n_active_iterations);
+    }
+    fprintf(fp, "\n");
+  }
 }
 
 void run_simulation(Parameters P, SimulationData SD)
@@ -133,11 +163,8 @@ void run_simulation(Parameters P, SimulationData SD)
     // Transport Sweep
     transport_sweep(P, SD);
 
-    // Determine how many FSRs were hit
-    int n_cells_hit = reduce_sum_int(SD.readWriteData.cellData.hit_count, P.n_cells);
-
-    // Reset cell hit counters
-    memset(SD.readWriteData.cellData.hit_count, 0, P.n_cells * sizeof(int));
+    // Check hit rate
+    double percent_missed = check_hit_rate(SD.readWriteData.cellData.hit_count, P.n_cells);
 
     //print_ray_tracing_buffer(P, SD);
 
@@ -149,7 +176,7 @@ void run_simulation(Parameters P, SimulationData SD)
 
     // Compute K-eff
     k_eff = compute_k_eff(P, SD, k_eff);
-    
+
     // Reset scalar flux accumulators if we have finished our inactive iterations
     if( iter >= P.n_inactive_iterations && !active_region )
     {
@@ -161,7 +188,7 @@ void run_simulation(Parameters P, SimulationData SD)
     ptr_swap(&SD.readWriteData.cellData.new_scalar_flux, &SD.readWriteData.cellData.old_scalar_flux);
 
     // Print status data
-    printf("Iter %4d:   k-eff = %.5lf   Percent Cells Missed = %.4lf%%\n", iter, k_eff, (1.0 - (double) n_cells_hit/P.n_cells) * 100.0);
+    printf("Iter %4d:   k-eff = %.5lf   Miss Rate = %.4lf%%\n", iter, k_eff, percent_missed);
   }
 }
 
@@ -174,6 +201,8 @@ int main(int argc, char * argv[])
 
   run_simulation(P, SD);
 
+  //output_thermal_fluxes(P, SD);
+  plot_3D_vtk(P, SD.readWriteData.cellData.scalar_flux_accumulator, SD.readOnlyData.material_id);
 
   return 0;
 }
