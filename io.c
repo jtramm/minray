@@ -184,7 +184,9 @@ ReadOnlyData load_2D_C5G7_XS(Parameters P)
   fclose(CR_scatter      );
   fclose(CR_transport    );
 
-  FILE * material_file = fopen("data/C5G7_2D/material_ids.txt", "r");
+  char fname[512];
+  sprintf(fname, "data/C5G7_2D/material_ids_%d.txt", P.n_cells_per_dimension);
+  FILE * material_file = fopen(fname, "r");
   sz = P.n_cells * sizeof(int);
   int * material_id = (int *) malloc(sz);
   for( int c = 0; c < P.n_cells; c++ )
