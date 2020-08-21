@@ -9,7 +9,7 @@
 #include<omp.h>
 #endif
 
-#define VERSION 0
+#define VERSION "0"
 
 #define NONE 0
 #define VACUUM 1
@@ -97,6 +97,9 @@ typedef struct{
 Parameters read_CLI(int argc, char * argv[]);
 ReadOnlyData load_2D_C5G7_XS(Parameters P);
 void plot_3D_vtk(Parameters P, float * scalar_flux_accumulator, int * material_id);
+void print_user_inputs(Parameters P);
+void center_print(const char *s, int width);
+void border_print(void);
 
 // rand.c
 double LCG_random_double(uint64_t * seed);

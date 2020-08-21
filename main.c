@@ -164,6 +164,8 @@ void output_thermal_fluxes(Parameters P, SimulationData SD)
 
 void run_simulation(Parameters P, SimulationData SD)
 {
+  center_print("SIMULATION", 79);
+  border_print();
   // k is the multiplication factor (or eigenvalue) we are trying to solve for.
   // The eigenvector is the scalar flux vector
   double k_eff = 1.0;
@@ -225,12 +227,17 @@ void run_simulation(Parameters P, SimulationData SD)
   uint64_t n_total_integrations = n_total_geometric_intersections * P.n_energy_groups;
   double time_per_integration = runtime * 1.0e9 / n_total_integrations;
 
+  border_print();
+  center_print("RESULTS", 79);
+  border_print();
+
   printf("Time per Integration (TPI) = %.3lf [ns]\n", time_per_integration);
 }
 
 int main(int argc, char * argv[])
 {
   Parameters P = read_CLI(argc, argv);
+  print_user_inputs(P);
   SimulationData SD = initialize_simulation(P);
   initialize_rays(P, SD);
   initialize_fluxes(P, SD);

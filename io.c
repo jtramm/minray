@@ -46,7 +46,7 @@ void fancy_int( int a )
 void logo(void)
 {
   border_print();
-  printf("MINRAY\n");
+  center_print("MINRAY", 79);
   border_print();
   printf("\n");
   center_print("Developed at", 79);
@@ -60,7 +60,7 @@ void logo(void)
 
 void print_user_inputs(Parameters P)
 {
-  border_print();
+  logo();
   center_print("INPUT SUMMARY", 79);
   border_print();
   printf("Number of Cells per Dimension = %d\n",    P.n_cells_per_dimension);

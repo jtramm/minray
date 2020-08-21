@@ -55,9 +55,14 @@ CellData initialize_cell_data(Parameters P)
 
 SimulationData initialize_simulation(Parameters P)
 {
+  border_print();
+  center_print("INITIALIZATION", 79);
+  border_print();
+
+  printf("Initializing read only data...\n");
   ReadOnlyData ROD = load_2D_C5G7_XS(P);
-  //TODO: Copy this to "device"
   
+  printf("Initializing read/write data...\n");
   ReadWriteData RWD;
   RWD.intersectionData = initialize_intersection_data(P);
   RWD.rayData          = initialize_ray_data(P);
@@ -66,6 +71,8 @@ SimulationData initialize_simulation(Parameters P)
   SimulationData SD;
   SD.readOnlyData  = ROD;
   SD.readWriteData = RWD;
+  
+  border_print();
 
   return SD;
 }
