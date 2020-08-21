@@ -5,6 +5,7 @@
 COMPILER    = gnu
 OPTIMIZE    = yes
 DEBUG       = yes
+OPENMP      = yes
 PROFILE     = no
 
 #===============================================================================
@@ -41,12 +42,11 @@ LDFLAGS = -lm
 # Regular gcc Compiler
 ifeq ($(COMPILER),gnu)
   CC = gcc
-  CFLAGS += -fopenmp
 endif
 
 # Optimization Flags
 ifeq ($(OPTIMIZE),yes)
-  CFLAGS += -O3
+  CFLAGS += -O3 -flto
 endif
 
 # Debug Flags
@@ -59,6 +59,11 @@ endif
 ifeq ($(PROFILE),yes)
   CFLAGS += -pg
   LDFLAGS  += -pg
+endif
+
+# OpenMP Flags
+ifeq ($(OPENMP),yes)
+  CFLAGS += -fopenmp -DOPENMP
 endif
 
 #===============================================================================

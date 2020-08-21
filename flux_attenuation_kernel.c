@@ -83,6 +83,7 @@ void flux_attenuation_kernel(Parameters P, SimulationData SD, int ray_id, int en
     float delta_psi =  (angular_flux - isotropic_source[flux_idx]) * exponential;
 
     // TODO NOTE: This operation must be atomic if running in parallel
+    #pragma omp atomic
     new_scalar_flux[flux_idx] += FOUR_PI * delta_psi;
 
     angular_flux -= delta_psi;

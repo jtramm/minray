@@ -4,6 +4,10 @@
 #include<math.h>
 #include<string.h>
 #include<assert.h>
+#include<time.h>
+#ifdef OPENMP
+#include<omp.h>
+#endif
 
 #define NONE 0
 #define VACUUM 1

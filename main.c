@@ -1,12 +1,30 @@
 #include "minray.h"
+  
+double get_time(void)
+{
+  #ifdef _MPI
+  return MPI_Wtime();
+  #endif
+
+  #ifdef OPENMP
+  return omp_get_wtime();
+  #endif
+
+  time_t time;
+  time = clock();
+
+  return (double) time / (double) CLOCKS_PER_SEC;
+}
 
 void transport_sweep(Parameters P, SimulationData SD)
 {
   // Ray Trace Kernel
+  #pragma omp parallel for
   for( int ray = 0; ray < P.n_rays; ray++ )
     ray_trace_kernel(P, SD, SD.readWriteData.rayData, ray);
 
   // Flux Attenuate Kernel
+  #pragma omp parallel for
   for( int ray = 0; ray < P.n_rays; ray++ )
     for( int energy_group = 0; energy_group < P.n_energy_groups; energy_group++ )
       flux_attenuation_kernel(P, SD, ray, energy_group);
@@ -152,6 +170,10 @@ void run_simulation(Parameters P, SimulationData SD)
 
   int active_region = 0;
 
+  uint64_t n_total_geometric_intersections = 0;
+
+  double start_time = get_time();
+
   for( int iter = 0; iter < P.n_iterations; iter++ )
   {
     // Update Source
@@ -187,9 +209,20 @@ void run_simulation(Parameters P, SimulationData SD)
     // Swap old and new scalar flux pointers
     ptr_swap(&SD.readWriteData.cellData.new_scalar_flux, &SD.readWriteData.cellData.old_scalar_flux);
 
+    // Reduce number of intersections performed
+    n_total_geometric_intersections += reduce_sum_int(SD.readWriteData.intersectionData.n_intersections, P.n_rays);
+
     // Print status data
     printf("Iter %4d:   k-eff = %.5lf   Miss Rate = %.4lf%%\n", iter, k_eff, percent_missed);
   }
+  
+  double end_time = get_time();
+  double runtime = end_time - start_time;
+
+  uint64_t n_total_integrations = n_total_geometric_intersections * P.n_energy_groups;
+  double time_per_integration = runtime * 1.0e9 / n_total_integrations;
+
+  printf("Time per Integration (TPI) = %.3lf [ns]\n", time_per_integration);
 }
 
 int main(int argc, char * argv[])
