@@ -75,7 +75,7 @@ clean:
 	rm -rf $(program) $(obj)
 
 edit:
-	vim -p $(source) ray_trace_kernel.cl flux_kernel.cl minray.h
+	vim -p $(source) minray.h
 
 run:
 	./$(program)
