@@ -48,6 +48,55 @@ void normalize_scalar_flux(Parameters P, SimulationData SD)
   }
 }
 
+void add_source_to_scalar_flux(Parameters P, SimulationData SD)
+{
+  for( int cell = 0; cell < P.n_cells; cell++ )
+  {
+    for( int energy_group = 0; energy_group < P.n_energy_groups; energy_group++ )
+    {
+      add_source_to_scalar_flux_kernel(P, SD, cell, energy_group);
+    }
+  }
+}
+  
+void compute_cell_fission_rates(Parameters P, SimulationData SD, float * scalar_flux)
+{
+  for( int cell = 0; cell < P.n_cells; cell++ )
+  {
+    compute_cell_fission_rates_kernel(P, SD, scalar_flux, cell);
+  }
+}
+
+double reduce_sum_float(float * a, int size)
+{
+  double sum = 0.0;
+
+  for( int i = 0; i < size; i++ )
+    sum += a[i];
+
+  return sum;
+}
+
+double compute_k_eff(Parameters P, SimulationData SD, double old_k_eff)
+{
+  // Compute old fission rates
+  compute_cell_fission_rates(P, SD, SD.readWriteData.cellData.old_scalar_flux);
+
+  // Reduce old fission rates
+  double old_total_fission_rate = reduce_sum_float(SD.readWriteData.cellData.fission_rate, P.n_cells * P.n_energy_groups);
+  
+  // Compute new fission rates
+  compute_cell_fission_rates(P, SD, SD.readWriteData.cellData.new_scalar_flux);
+
+  // Reduce new fission rates
+  double new_total_fission_rate = reduce_sum_float(SD.readWriteData.cellData.fission_rate, P.n_cells * P.n_energy_groups);
+
+  // Update estimate of k-eff
+  double new_k_eff = old_k_eff * (new_total_fission_rate / old_total_fission_rate);
+
+  return new_k_eff;
+}
+
 void run_simulation(Parameters P, SimulationData SD)
 {
   // k is the multiplication factor (or eigenvalue) we are trying to solve for.
@@ -70,10 +119,13 @@ void run_simulation(Parameters P, SimulationData SD)
     normalize_scalar_flux(P, SD);
 
     // Add Source to Flux
+    add_source_to_scalar_flux(P, SD);
 
     // Compute K-eff
+    k_eff = compute_k_eff(P, SD, k_eff);
 
-    //break;
+    // Print status data
+    printf("Iter %4d:   k-eff = %.5lf\n", iter, k_eff);
   }
 }
 

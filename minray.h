@@ -67,8 +67,9 @@ typedef struct{
   float * isotropic_source;
   float * new_scalar_flux;
   float * old_scalar_flux;
-  float * scalar_flux_accumulators;
+  float * scalar_flux_accumulator;
   int   * hit_count;
+  float * fission_rate;
 } CellData;
 
 typedef struct{
@@ -101,3 +102,5 @@ void update_isotropic_sources_kernel(Parameters P, SimulationData SD, int cell, 
 double cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir);
 void flux_attenuation_kernel(Parameters P, SimulationData SD, int ray_id, int energy_group);
 void normalize_scalar_flux_kernel(Parameters P, float * new_scalar_flux, int cell, int energy_group);
+void add_source_to_scalar_flux_kernel(Parameters P, SimulationData SD, int cell, int energy_group);
+void compute_cell_fission_rates_kernel(Parameters P, SimulationData SD, float * scalar_flux, int cell);

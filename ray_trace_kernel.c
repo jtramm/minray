@@ -129,7 +129,7 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, int ray_
     // Reflect
     if( boundary_surface )
     {
-      printf("just hit a boundary\n");
+      //printf("just hit a boundary\n");
       if( boundary_surface % 2 == 1 )
         x_dir *= -1.0;
       else
@@ -143,7 +143,7 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, int ray_
     if( boundary_condition == VACUUM )
     {
       just_hit_vacuum = 1;
-      printf("Just hit vacuum boundary\n");
+      //printf("Just hit vacuum boundary\n");
     }
 
     // If we didn't hit a boundary, move into the next cell.
@@ -159,7 +159,7 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, int ray_
     y += y_dir * BUMP;
 
     distance_travelled += distance_to_surface;
-    printf("distance_travelled = %lf\n", distance_travelled);
+    //printf("distance_travelled = %lf\n", distance_travelled);
     //print_ray(x, y, x_dir, y_dir, cell_id);
   }
   

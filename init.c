@@ -44,7 +44,8 @@ CellData initialize_cell_data(Parameters P)
   CD.isotropic_source         = (float *) malloc(sz);
   CD.new_scalar_flux          = (float *) malloc(sz);
   CD.old_scalar_flux          = (float *) malloc(sz);
-  CD.scalar_flux_accumulators = (float *) malloc(sz);
+  CD.scalar_flux_accumulator  = (float *) malloc(sz);
+  CD.fission_rate             = (float *) malloc(sz);
 
   sz = P.n_cells * sizeof(int);
   CD.hit_count = (int *) malloc(sz);
@@ -117,7 +118,7 @@ void initialize_fluxes(Parameters P, SimulationData SD)
   }
 
   // Set scalar flux accumulators to 0.0
-  memset(SD.readWriteData.cellData.scalar_flux_accumulators, 0, P.n_cells * P.n_energy_groups * sizeof(float));
+  memset(SD.readWriteData.cellData.scalar_flux_accumulator, 0, P.n_cells * P.n_energy_groups * sizeof(float));
 
   // Set all starting angular fluxes to 0.0
   memset(SD.readWriteData.rayData.angular_flux, 0, P.n_rays * P.n_energy_groups * sizeof(float));
