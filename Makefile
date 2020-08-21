@@ -18,6 +18,7 @@ main.c \
 ray_trace_kernel.c \
 flux_attenuation_kernel.c \
 update_isotropic_sources_kernel.c \
+normalize_scalar_flux_kernel.c \
 rand.c \
 init.c \
 io.c \

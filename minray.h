@@ -36,7 +36,8 @@ typedef struct{
   int boundary_condition_y_positive;
   int boundary_condition_y_negative;
   // Derived
-  double cell_expected_track_length;
+  float cell_expected_track_length;
+  float inverse_total_track_length;
   double cell_width;
   double inverse_length_per_dimension;
   double inverse_cell_width;
@@ -99,3 +100,4 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, int ray_
 void update_isotropic_sources_kernel(Parameters P, SimulationData SD, int cell, int energy_group_in, double inverse_k_eff);
 double cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir);
 void flux_attenuation_kernel(Parameters P, SimulationData SD, int ray_id, int energy_group);
+void normalize_scalar_flux_kernel(Parameters P, float * new_scalar_flux, int cell, int energy_group);

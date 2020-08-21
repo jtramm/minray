@@ -37,6 +37,17 @@ void update_isotropic_sources(Parameters P, SimulationData SD, double k_eff)
   }
 }
 
+void normalize_scalar_flux(Parameters P, SimulationData SD)
+{
+  for( int cell = 0; cell < P.n_cells; cell++ )
+  {
+    for( int energy_group = 0; energy_group < P.n_energy_groups; energy_group++ )
+    {
+      normalize_scalar_flux_kernel(P, SD.readWriteData.cellData.new_scalar_flux, cell, energy_group);
+    }
+  }
+}
+
 void run_simulation(Parameters P, SimulationData SD)
 {
   // k is the multiplication factor (or eigenvalue) we are trying to solve for.
@@ -48,19 +59,21 @@ void run_simulation(Parameters P, SimulationData SD)
     // Update Source
     update_isotropic_sources(P, SD, k_eff);
 
-    // Set flux tally to zero
+    // Set new scalar fluxes to zero
+    memset(SD.readWriteData.cellData.new_scalar_flux, 0, P.n_cells * P.n_energy_groups * sizeof(float));
 
     // Transport Sweep
     transport_sweep(P, SD);
     //print_ray_tracing_buffer(P, SD);
 
     // Normalize Scalar Flux
+    normalize_scalar_flux(P, SD);
 
     // Add Source to Flux
 
     // Compute K-eff
 
-    break;
+    //break;
   }
 }
 

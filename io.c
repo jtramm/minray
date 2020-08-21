@@ -26,6 +26,7 @@ Parameters read_CLI(int argc, char * argv[])
   P.inverse_cell_width = 1.0 / P.cell_width;
   P.n_cells = P.n_cells_per_dimension * P.n_cells_per_dimension;
   P.cell_expected_track_length = (P.distance_per_ray * P.n_rays) / P.n_cells;
+  P.inverse_total_track_length = 1.0 / (P.distance_per_ray * P.n_rays);
   P.inverse_length_per_dimension = 1.0 / P.length_per_dimension;
   P.n_iterations = P.n_inactive_iterations + P.n_active_iterations;
   
