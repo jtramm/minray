@@ -213,7 +213,10 @@ void run_simulation(Parameters P, SimulationData SD)
     n_total_geometric_intersections += reduce_sum_int(SD.readWriteData.intersectionData.n_intersections, P.n_rays);
 
     // Print status data
-    printf("Iter %4d:   k-eff = %.5lf   Miss Rate = %.4lf%%\n", iter, k_eff, percent_missed);
+    if( active_region )
+      printf("Iter %5d (Active):     k-eff = %.5lf   Miss Rate = %.4lf%%\n", iter, k_eff, percent_missed);
+    else
+      printf("Iter %5d (Inactive):   k-eff = %.5lf   Miss Rate = %.4lf%%\n", iter, k_eff, percent_missed);
   }
   
   double end_time = get_time();
