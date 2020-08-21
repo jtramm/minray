@@ -96,4 +96,6 @@ void initialize_fluxes(Parameters P, SimulationData SD);
 
 // ray_trace_kernel.c
 void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, int ray_id);
+void update_isotropic_sources_kernel(Parameters P, SimulationData SD, int cell, int energy_group_in, double inverse_k_eff);
 double cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir);
+void flux_attenuation_kernel(Parameters P, SimulationData SD, int ray_id, int energy_group);

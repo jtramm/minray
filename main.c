@@ -26,16 +26,28 @@ void print_ray_tracing_buffer(Parameters P, SimulationData SD)
   }
 }
 
+void update_isotropic_sources(Parameters P, SimulationData SD, double k_eff)
+{
+  for( int cell = 0; cell < P.n_cells; cell++ )
+  {
+    for( int energy_group = 0; energy_group < P.n_energy_groups; energy_group++ )
+    {
+      update_isotropic_sources_kernel(P, SD, cell, energy_group, 1.0/k_eff);
+    }
+  }
+}
+
 void run_simulation(Parameters P, SimulationData SD)
 {
   // k is the multiplication factor (or eigenvalue) we are trying to solve for.
   // The eigenvector is the scalar flux vector
-  double k = 1.0;
+  double k_eff = 1.0;
 
   for( int iter = 0; iter < P.n_iterations; iter++ )
   {
     // Update Source
-    
+    update_isotropic_sources(P, SD, k_eff);
+
     // Set flux tally to zero
 
     // Transport Sweep
@@ -47,7 +59,7 @@ void run_simulation(Parameters P, SimulationData SD)
     // Add Source to Flux
 
     // Compute K-eff
-    
+
     break;
   }
 }
