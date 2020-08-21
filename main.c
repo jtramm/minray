@@ -8,8 +8,8 @@ void transport_sweep(Parameters P, SimulationData SD)
 
   // Flux Attenuate Kernel
   for( int ray = 0; ray < P.n_rays; ray++ )
-    for( int energy_group; energy_group < P.n_energy_groups; energy_group++ )
-      ray_trace_kernel(P, SD, ray, energy_group);
+    for( int energy_group = 0; energy_group < P.n_energy_groups; energy_group++ )
+      flux_attenuation_kernel(P, SD, ray, energy_group);
 }
 
 void print_ray_tracing_buffer(Parameters P, SimulationData SD)
