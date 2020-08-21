@@ -72,6 +72,9 @@ void print_user_inputs(Parameters P)
   printf("Number of Active Iterations   = %d\n",    P.n_active_iterations);
   printf("Pseudorandom Seed             = %lu\n",   P.seed);
   printf("Maximum Intersections per Ray = %d\n",    P.max_intersections_per_ray);
+  size_t bytes = estimate_memory_usage(P);
+  double MB = (double) bytes / 1024.0 /1024.0;
+  printf("Estimated Memory Usage        = %.2lf [MB]\n", MB);
 }
 
 // print error to screen, inform program options
@@ -107,7 +110,7 @@ Parameters read_CLI(int argc, char * argv[])
   P.seed = 1337;
   P.n_materials = 8;
   P.n_energy_groups = 7;
-  P.max_intersections_per_ray = 1000;
+  P.max_intersections_per_ray = 100;
   P.plotting_enabled = 0;
 
   P.boundary_conditions[0] = NONE;

@@ -1,5 +1,25 @@
 #include "minray.h"
 
+size_t estimate_memory_usage(Parameters P)
+{
+  size_t sz = 0;
+  // Ray Data
+  sz += P.n_rays * P.n_energy_groups * sizeof(float);
+  sz += (P.n_rays * sizeof(double)) * 4;
+  sz += P.n_rays * sizeof(int);
+  // Intersection Data
+  sz += (P.n_rays * P.max_intersections_per_ray * sizeof(int))*3;
+  sz += P.n_rays * P.max_intersections_per_ray * sizeof(double);
+  // Cell Data
+  sz += (P.n_cells * P.n_energy_groups * sizeof(float))*5;
+  sz += P.n_cells * sizeof(int);
+  // XS Data
+  sz += P.n_materials * P.n_energy_groups * sizeof(float)*4;
+  sz += P.n_materials * P.n_energy_groups * P.n_energy_groups * sizeof(float);
+  sz += P.n_cells * sizeof(int);
+  return sz;
+}
+
 RayData initialize_ray_data(Parameters P)
 {
   RayData rayData;

@@ -109,6 +109,7 @@ uint64_t fast_forward_LCG(uint64_t seed, uint64_t n);
 SimulationData initialize_simulation(Parameters P);
 void initialize_rays(Parameters P, SimulationData SD);
 void initialize_fluxes(Parameters P, SimulationData SD);
+size_t estimate_memory_usage(Parameters P);
 
 // ray_trace_kernel.c
 void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, int ray_id);
