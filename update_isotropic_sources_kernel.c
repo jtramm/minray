@@ -16,8 +16,8 @@ void update_isotropic_sources_kernel(Parameters P, SimulationData SD, int cell, 
   const long XS_base = material_id * P.n_energy_groups;
   //const long sig_s_base = XS_base * P.n_energy_groups + energy_group_in * P.n_energy_groups;
 
-  const float * sigma_s = SD.readOnlyData.Sigma_s + XS_base * P.n_energy_groups + energy_group_in * P.n_energy_groups;
-  const float * sigma_f = SD.readOnlyData.Sigma_f + XS_base;
+  const float * Sigma_s = SD.readOnlyData.Sigma_s + XS_base * P.n_energy_groups + energy_group_in * P.n_energy_groups;
+  const float * nu_Sigma_f = SD.readOnlyData.nu_Sigma_f + XS_base;
 
   const float * scalar_flux = SD.readWriteData.cellData.old_scalar_flux + scalar_flux_idx;
   
@@ -29,8 +29,8 @@ void update_isotropic_sources_kernel(Parameters P, SimulationData SD, int cell, 
 
   for( long energy_group_out = 0; energy_group_out < P.n_energy_groups; energy_group_out++ )
   {
-    scatter_source += sigma_s[energy_group_out] * scalar_flux[energy_group_out];
-    fission_source += sigma_f[energy_group_out] * scalar_flux[energy_group_out];
+    scatter_source += Sigma_s[   energy_group_out] * scalar_flux[energy_group_out];
+    fission_source += nu_Sigma_f[energy_group_out] * scalar_flux[energy_group_out];
   }
 
   fission_source *= Chi * inverse_k_eff; // Stride 1 access to Chi

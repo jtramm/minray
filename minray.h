@@ -3,6 +3,7 @@
 #include<stdint.h>
 #include<math.h>
 #include<string.h>
+#include<assert.h>
 
 #define NONE 0
 #define VACUUM 1

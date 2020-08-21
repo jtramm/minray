@@ -41,7 +41,7 @@ LDFLAGS = -lm
 # Regular gcc Compiler
 ifeq ($(COMPILER),gnu)
   CC = gcc
-  CFLAGS += -lOpenCL
+  CFLAGS += -fopenmp
 endif
 
 # Optimization Flags

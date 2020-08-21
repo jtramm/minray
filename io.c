@@ -44,16 +44,16 @@ Parameters read_CLI(int argc, char * argv[])
 // 7 - Control Rod
 ReadOnlyData load_2D_C5G7_XS(Parameters P)
 {
-  size_t sz = P.n_materials * P.n_energy_groups * sizeof(float);
+  size_t sz = P.n_materials * P.n_energy_groups;
 
   // Allocate Data on Host
-  float * nu_Sigma_f  = (float *) malloc(sz);
-  float * Sigma_f  = (float *) malloc(sz);
-  float * Sigma_t  = (float *) malloc(sz);
-  float * Chi  = (float *) malloc(sz);
+  float * nu_Sigma_f  = (float *) calloc(sz, sizeof(float));
+  float * Sigma_f     = (float *) calloc(sz, sizeof(float));
+  float * Sigma_t     = (float *) calloc(sz, sizeof(float));
+  float * Chi         = (float *) calloc(sz, sizeof(float));
 
   sz = sz * P.n_energy_groups;
-  float * Sigma_s = (float *) malloc(sz);
+  float * Sigma_s =     (float *) calloc(sz, sizeof(float));
 
   // UO2 fuel-clad mixture
   FILE * UO2_scatter   = fopen("data/C5G7_2D/UO2_scatter.txt",   "r");
@@ -251,7 +251,9 @@ void plot_3D_vtk(Parameters P, float * scalar_flux_accumulator, int * material_i
 {
   int N = P.n_cells_per_dimension;
   int z_N = 1;
-  char * fname = "minray_plots.vtk";
+
+  char fname[512];
+  sprintf(fname, "minray_plots_%d.vtk", N);
   FILE * fp = fopen(fname, "w");
 
   int plot_thermal_flux = 1;
