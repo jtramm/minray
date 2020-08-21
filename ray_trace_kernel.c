@@ -55,10 +55,6 @@ double cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int
   return min_dist;
 }
 
-void print_ray(double x, double y, double x_dir, double y_dir, int cell_id)
-{
-  printf("Location[%.3lf, %.3lf] Direction[%.3lf, %.3lf] Cell ID %d\n", x, y, x_dir, y_dir, cell_id);
-}
 
 #define BUMP 1.0e-10
 void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, int ray_id)

@@ -18,7 +18,8 @@ void add_source_to_scalar_flux_kernel(Parameters P, SimulationData SD, int cell,
 
   int idx = cell * P.n_energy_groups + energy_group;
 
-  new_scalar_flux[idx] /= Sigma_t * P.cell_expected_track_length;
+  //new_scalar_flux[idx] /= Sigma_t * P.cell_expected_track_length;
+  new_scalar_flux[idx] /= (Sigma_t * P.cell_volume);
 
   if( !isfinite( new_scalar_flux[idx] ) )
     new_scalar_flux[idx] = 0.0f;

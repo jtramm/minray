@@ -18,5 +18,5 @@ void compute_cell_fission_rates_kernel(Parameters P, SimulationData SD, float * 
     fission_rate += nu_Sigma_f[energy_group] * scalar_flux[energy_group];
   }
 
-  SD.readWriteData.cellData.fission_rate[cell] = fission_rate * P.cell_expected_track_length;
+  SD.readWriteData.cellData.fission_rate[cell] = fission_rate * P.cell_volume;
 }

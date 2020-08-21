@@ -75,6 +75,10 @@ void print_user_inputs(Parameters P)
   size_t bytes = estimate_memory_usage(P);
   double MB = (double) bytes / 1024.0 /1024.0;
   printf("Estimated Memory Usage        = %.2lf [MB]\n", MB);
+  if( P.plotting_enabled )
+    printf("Plotting                      = Enabled\n");
+  else
+    printf("Plotting                      = Disabled\n");
 }
 
 // print error to screen, inform program options
@@ -113,11 +117,15 @@ Parameters read_CLI(int argc, char * argv[])
   P.max_intersections_per_ray = 100;
   P.plotting_enabled = 0;
 
+// negative_x = 1;
+// positive_x = 3;
+// negative_y = 2;
+// positive_y = 4;
   P.boundary_conditions[0] = NONE;
   P.boundary_conditions[1] = REFLECTIVE;
   P.boundary_conditions[2] = VACUUM;
-  P.boundary_conditions[3] = REFLECTIVE;
-  P.boundary_conditions[4] = VACUUM;
+  P.boundary_conditions[3] = VACUUM;
+  P.boundary_conditions[4] = REFLECTIVE;
 
   int has_user_set_rays = 0;
 
@@ -197,6 +205,9 @@ Parameters read_CLI(int argc, char * argv[])
   P.inverse_total_track_length = 1.0 / (P.distance_per_ray * P.n_rays);
   P.inverse_length_per_dimension = 1.0 / P.length_per_dimension;
   P.n_iterations = P.n_inactive_iterations + P.n_active_iterations;
+  P.cell_volume = 1.0 / P.n_cells;
+  //P.cell_volume = P.inverse_total_track_length;
+  //P.cell_volume = P.cell_expected_track_length;
 
   return P;
 }
@@ -506,5 +517,40 @@ void plot_3D_vtk(Parameters P, float * scalar_flux_accumulator, int * material_i
 
   fclose(fp);
   printf("Finished plotting!\n");
+}
+
+void print_ray_tracing_buffer(Parameters P, SimulationData SD)
+{
+  IntersectionData ID = SD.readWriteData.intersectionData;
+  for( int r = 0; r < P.n_rays; r++ )
+  {
+    printf("Ray %d had %d intersections, and is now at location [%.2lf, %.2lf] with group 0 flux %.3le\n", r, ID.n_intersections[r], SD.readWriteData.rayData.location_x[r], SD.readWriteData.rayData.location_y[r], SD.readWriteData.rayData.angular_flux[r * P.n_energy_groups]);
+    for( int i = 0; i < ID.n_intersections[r]; i++ )
+    {
+      int idx = r * P.max_intersections_per_ray + i;
+      printf("\tIntersection %d:   cell_id: %d   distance: %.2le   vac reflect: %d\n", i, ID.cell_ids[idx], ID.distances[idx], ID.did_vacuum_reflects[idx]);
+    }
+  }
+}
+
+void output_thermal_fluxes(Parameters P, SimulationData SD)
+{
+  char * fname = "thermal_fluxes.dat";
+  printf("Writing thermal flux data to file: \"%s\"...\n", fname);
+  FILE * fp = fopen(fname, "w");
+  int cell_id = 0;
+  for( int y = 0; y < P.n_cells_per_dimension; y++)
+  {
+    for( int x = 0; x < P.n_cells_per_dimension; x++)
+    {
+      fprintf(fp, "%.3le ", SD.readWriteData.cellData.scalar_flux_accumulator[cell_id++] / P.n_active_iterations);
+    }
+    fprintf(fp, "\n");
+  }
+}
+
+void print_ray(double x, double y, double x_dir, double y_dir, int cell_id)
+{
+  printf("Location[%.3lf, %.3lf] Direction[%.3lf, %.3lf] Cell ID %d\n", x, y, x_dir, y_dir, cell_id);
 }
 

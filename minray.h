@@ -53,6 +53,7 @@ typedef struct{
   int n_cells;
   int n_iterations;
   int plotting_enabled;
+  float cell_volume;
 } Parameters;
 
 typedef struct{
@@ -100,6 +101,20 @@ void plot_3D_vtk(Parameters P, float * scalar_flux_accumulator, int * material_i
 void print_user_inputs(Parameters P);
 void center_print(const char *s, int width);
 void border_print(void);
+void print_ray_tracing_buffer(Parameters P, SimulationData SD);
+void print_ray(double x, double y, double x_dir, double y_dir, int cell_id);
+
+// simulation.c
+void run_simulation(Parameters P, SimulationData SD);
+void transport_sweep(Parameters P, SimulationData SD);
+void update_isotropic_sources(Parameters P, SimulationData SD, double k_eff);
+void normalize_scalar_flux(Parameters P, SimulationData SD);
+void add_source_to_scalar_flux(Parameters P, SimulationData SD);
+void compute_cell_fission_rates(Parameters P, SimulationData SD, float * scalar_flux);
+double reduce_sum_float(float * a, int size);
+int reduce_sum_int(int * a, int size);
+double compute_k_eff(Parameters P, SimulationData SD, double old_k_eff);
+double check_hit_rate(int * hit_count, int n_cells);
 
 // rand.c
 double LCG_random_double(uint64_t * seed);
@@ -110,6 +125,10 @@ SimulationData initialize_simulation(Parameters P);
 void initialize_rays(Parameters P, SimulationData SD);
 void initialize_fluxes(Parameters P, SimulationData SD);
 size_t estimate_memory_usage(Parameters P);
+
+// utils.c
+double get_time(void);
+void ptr_swap(float ** a, float ** b);
 
 // ray_trace_kernel.c
 void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, int ray_id);

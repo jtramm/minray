@@ -5,7 +5,7 @@
 COMPILER    = gnu
 OPTIMIZE    = yes
 DEBUG       = yes
-OPENMP      = no
+OPENMP      = yes
 PROFILE     = no
 
 #===============================================================================
@@ -16,6 +16,7 @@ program = minray
 
 source = \
 main.c \
+simulation.c \
 ray_trace_kernel.c \
 flux_attenuation_kernel.c \
 update_isotropic_sources_kernel.c \
@@ -25,7 +26,7 @@ compute_cell_fission_rates_kernel.c \
 rand.c \
 init.c \
 io.c \
-clutils.c
+utils.c
 
 obj = $(source:.c=.o)
 
