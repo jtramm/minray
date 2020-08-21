@@ -77,6 +77,16 @@ double reduce_sum_float(float * a, int size)
   return sum;
 }
 
+int reduce_sum_int(int * a, int size)
+{
+  int sum = 0.0;
+
+  for( int i = 0; i < size; i++ )
+    sum += a[i];
+
+  return sum;
+}
+
 double compute_k_eff(Parameters P, SimulationData SD, double old_k_eff)
 {
   // Compute old fission rates
@@ -97,11 +107,20 @@ double compute_k_eff(Parameters P, SimulationData SD, double old_k_eff)
   return new_k_eff;
 }
 
+void ptr_swap(float ** a, float ** b)
+{
+  float * tmp = *a;
+  *a = *b;
+  *b = tmp;
+}
+
 void run_simulation(Parameters P, SimulationData SD)
 {
   // k is the multiplication factor (or eigenvalue) we are trying to solve for.
   // The eigenvector is the scalar flux vector
   double k_eff = 1.0;
+
+  int active_region = 0;
 
   for( int iter = 0; iter < P.n_iterations; iter++ )
   {
@@ -113,6 +132,13 @@ void run_simulation(Parameters P, SimulationData SD)
 
     // Transport Sweep
     transport_sweep(P, SD);
+
+    // Determine how many FSRs were hit
+    int n_cells_hit = reduce_sum_int(SD.readWriteData.cellData.hit_count, P.n_cells);
+
+    // Reset cell hit counters
+    memset(SD.readWriteData.cellData.hit_count, 0, P.n_cells * sizeof(int));
+
     //print_ray_tracing_buffer(P, SD);
 
     // Normalize Scalar Flux
@@ -123,9 +149,19 @@ void run_simulation(Parameters P, SimulationData SD)
 
     // Compute K-eff
     k_eff = compute_k_eff(P, SD, k_eff);
+    
+    // Reset scalar flux accumulators if we have finished our inactive iterations
+    if( iter >= P.n_inactive_iterations && !active_region )
+    {
+      active_region = 1;
+      memset(SD.readWriteData.cellData.scalar_flux_accumulator, 0, P.n_cells * P.n_energy_groups * sizeof(float));
+    }
+
+    // Swap old and new scalar flux pointers
+    ptr_swap(&SD.readWriteData.cellData.new_scalar_flux, &SD.readWriteData.cellData.old_scalar_flux);
 
     // Print status data
-    printf("Iter %4d:   k-eff = %.5lf\n", iter, k_eff);
+    printf("Iter %4d:   k-eff = %.5lf   Percent Cells Missed = %.4lf%%\n", iter, k_eff, (1.0 - (double) n_cells_hit/P.n_cells) * 100.0);
   }
 }
 
