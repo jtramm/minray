@@ -35,7 +35,7 @@ void print_ray_tracing_buffer(Parameters P, SimulationData SD)
   IntersectionData ID = SD.readWriteData.intersectionData;
   for( int r = 0; r < P.n_rays; r++ )
   {
-    printf("Ray %d had %d intersections\n", r, ID.n_intersections[r]);
+    printf("Ray %d had %d intersections, and is now at location [%.2lf, %.2lf]\n", r, ID.n_intersections[r], SD.readWriteData.rayData.location_x[r], SD.readWriteData.rayData.location_y[r]);
     for( int i = 0; i < ID.n_intersections[r]; i++ )
     {
       int idx = r * P.max_intersections_per_ray + i;
@@ -237,8 +237,8 @@ int main(int argc, char * argv[])
 
   run_simulation(P, SD);
 
-  //output_thermal_fluxes(P, SD);
-  plot_3D_vtk(P, SD.readWriteData.cellData.scalar_flux_accumulator, SD.readOnlyData.material_id);
+  if(P.plotting_enabled)
+    plot_3D_vtk(P, SD.readWriteData.cellData.scalar_flux_accumulator, SD.readOnlyData.material_id);
 
   return 0;
 }

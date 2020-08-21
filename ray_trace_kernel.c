@@ -162,6 +162,7 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, int ray_
     //printf("distance_travelled = %lf\n", distance_travelled);
     //print_ray(x, y, x_dir, y_dir, cell_id);
   }
+  assert(intersection_id < P.max_intersections_per_ray);
   
   rayData.location_x[ray_id] = x;
   rayData.location_y[ray_id] = y;

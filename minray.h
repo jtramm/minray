@@ -9,9 +9,13 @@
 #include<omp.h>
 #endif
 
+#define VERSION 0
+
 #define NONE 0
 #define VACUUM 1
 #define REFLECTIVE 2
+
+
 
 typedef struct{
   int * material_id;
@@ -48,6 +52,7 @@ typedef struct{
   double inverse_cell_width;
   int n_cells;
   int n_iterations;
+  int plotting_enabled;
 } Parameters;
 
 typedef struct{

@@ -1,15 +1,106 @@
 #include "minray.h"
 
+// Prints Section titles in center of 80 char terminal
+void center_print(const char *s, int width)
+{
+  int length = strlen(s);
+  int i;
+  for (i=0; i<=(width-length)/2; i++) {
+    fputs(" ", stdout);
+  }
+  fputs(s, stdout);
+  fputs("\n", stdout);
+}
+
+// Prints a border
+void border_print(void)
+{
+  printf(
+      "==================================================================="
+      "=============\n");
+}
+
+// Prints comma separated integers - for ease of reading
+void fancy_int( int a )
+{
+  if( a < 1000 )
+    printf("%d\n",a);
+
+  else if( a >= 1000 && a < 1000000 )
+    printf("%d,%03d\n", a / 1000, a % 1000);
+
+  else if( a >= 1000000 && a < 1000000000 )
+    printf("%d,%03d,%03d\n", a / 1000000, (a % 1000000) / 1000, a % 1000 );
+
+  else if( a >= 1000000000 )
+    printf("%d,%03d,%03d,%03d\n",
+        a / 1000000000,
+        (a % 1000000000) / 1000000,
+        (a % 1000000) / 1000,
+        a % 1000 );
+  else
+    printf("%d\n",a);
+}
+  
+// Prints program logo
+void logo(void)
+{
+  border_print();
+  printf("MINRAY\n");
+  border_print();
+  printf("\n");
+  center_print("Developed at", 79);
+  center_print("Argonne National Laboratory", 79);
+  char v[100];
+  sprintf(v, "Version: %s", VERSION);
+  center_print(v, 79);
+  printf("\n");
+  border_print();
+}
+
+void print_user_inputs(Parameters P)
+{
+  border_print();
+  center_print("INPUT SUMMARY", 79);
+  border_print();
+  printf("Number of Cells per Dimension = %d\n",    P.n_cells_per_dimension);
+  printf("Total Number of Cells (FSRs)  = %d\n",    P.n_cells);
+  printf("Number of Rays per Iteration  = %d\n",    P.n_rays);
+  printf("Length of each ray [cm]       = %.2lf\n", P.distance_per_ray);
+  printf("Energy Groups                 = %d\n",    P.n_energy_groups);
+  printf("Number of Inactive Iterations = %d\n",    P.n_inactive_iterations);
+  printf("Number of Active Iterations   = %d\n",    P.n_active_iterations);
+  printf("Pseudorandom Seed             = %lu\n",   P.seed);
+  printf("Maximum Intersections per Ray = %d\n",    P.max_intersections_per_ray);
+}
+
+// print error to screen, inform program options
+void print_CLI_error(void)
+{
+  printf("Usage: ./minray <options>\n");
+  printf("Options:\n");
+  printf("    -r <rays>                    Number of discrete rays\n");
+  printf("    -d <distance per ray>        Travel distance per ray (cm)\n");
+  printf("    -i <inactive iterations>     Set fixed number of inactive power iterations\n");
+  printf("    -a <active iterations>       Set fixed number of active power iterations\n");
+  printf("    -s <seed>                    Random number generator seed (for reproducibility)\n");
+  printf("    -m <problem size multiplier> Multiplioer to increase problem size/resolution\n");
+
+  printf("See readme for full description of default run values\n");
+  exit(1);
+}
+
 Parameters read_CLI(int argc, char * argv[])
 {
-  int problem_size_multiplier = 4;
+  int problem_size_multiplier = 1;
 
   Parameters P;
+
+  // Set Defaults
+
   // User Inputs
-  P.n_cells_per_dimension = 102 * problem_size_multiplier;
   P.length_per_dimension = 64.26;
-  //P.height = 100.0;
-  P.n_rays = 7500 * problem_size_multiplier;
+  P.n_rays = 7500;
   P.distance_per_ray = 10.0;
   P.n_inactive_iterations = 1000;
   P.n_active_iterations = 1000;
@@ -17,13 +108,85 @@ Parameters read_CLI(int argc, char * argv[])
   P.n_materials = 8;
   P.n_energy_groups = 7;
   P.max_intersections_per_ray = 1000;
+  P.plotting_enabled = 0;
+
   P.boundary_conditions[0] = NONE;
   P.boundary_conditions[1] = REFLECTIVE;
   P.boundary_conditions[2] = VACUUM;
   P.boundary_conditions[3] = REFLECTIVE;
   P.boundary_conditions[4] = VACUUM;
 
+  int has_user_set_rays = 0;
+
+  // Collect Raw Input
+  for( int i = 1; i < argc; i++ )
+  {
+    char * arg = argv[i];
+
+    // rays (-r)
+    if( strcmp(arg, "-r") == 0 )
+    {
+      if( ++i < argc )
+      {
+        P.n_rays = atoi(argv[i]);
+        has_user_set_rays = 1;
+      }
+      else
+        print_CLI_error();
+    }
+    // seed (-s)
+    else if( strcmp(arg, "-s") == 0 )
+    {
+      if( ++i < argc )
+        P.seed = atoi(argv[i]);
+      else
+        print_CLI_error();
+    }
+    // problem size multiplier (-m)
+    else if( strcmp(arg, "-m") == 0 )
+    {
+      if( ++i < argc )
+        problem_size_multiplier = atoi(argv[i]);
+      else
+        print_CLI_error();
+    }
+    // plotting enabled
+    else if( strcmp(arg, "-p") == 0 )
+    {
+      P.plotting_enabled = 1;
+    }
+    // distance per ray (-d)
+    else if( strcmp(arg, "-d") == 0 )
+    {
+      if( ++i < argc )
+        P.distance_per_ray = atof(argv[i]);
+      else
+        print_CLI_error();
+    }
+    // inactive iterations (-i)
+    else if( strcmp(arg, "-i") == 0 )
+    {
+      if( ++i < argc )
+        P.n_inactive_iterations = atoi(argv[i]);
+      else
+        print_CLI_error();
+    }
+    // active iterations (-a)
+    else if( strcmp(arg, "-a") == 0 )
+    {
+      if( ++i < argc )
+        P.n_active_iterations = atoi(argv[i]);
+      else
+        print_CLI_error();
+    }
+    else
+      print_CLI_error();
+  }
+
   // Derived Values
+  P.n_cells_per_dimension = 102 * problem_size_multiplier;
+  if( !has_user_set_rays)
+    P.n_rays *= problem_size_multiplier;
   P.cell_width = P.length_per_dimension / P.n_cells_per_dimension;
   P.inverse_cell_width = 1.0 / P.cell_width;
   P.n_cells = P.n_cells_per_dimension * P.n_cells_per_dimension;
@@ -303,7 +466,7 @@ void plot_3D_vtk(Parameters P, float * scalar_flux_accumulator, int * material_i
       }
     }
   }
-  
+
   if( plot_fast_flux )
   {
     fprintf(fp, "SCALARS fast_flux float\n");
