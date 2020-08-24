@@ -35,6 +35,7 @@ void flux_attenuation_kernel(Parameters P, SimulationData SD, uint64_t ray_id, i
     float tau = Sigma_t[material_id[cell_id] * P.n_energy_groups + energy_group] * distances[i];
 
     // Exponential ( exponential = 1 - exp( -tau ) )
+    //float exponential = -expm1(-tau);
     float exponential;
     {
       const float c1n =-1.0000013559236386308f;

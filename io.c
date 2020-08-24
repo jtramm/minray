@@ -112,11 +112,27 @@ void print_results(Parameters P, SimulationResult SR)
 
 void print_status_data(int iter, double k_eff, double percent_missed, int is_active_region)
 {
-  // Print status data
-  if( is_active_region )
-    printf("Iter %5d   (Active):   k-eff = %.5lf   Miss Rate = %.2le\n", iter, k_eff, percent_missed / 100.0);
+  char color[64];
+  char color_reset[64];
+  if( percent_missed > 0.01 )
+  {
+    sprintf(color,       "\033[0;31m");
+    sprintf(color_reset, "\033[0m");
+  }
   else
-    printf("Iter %5d (Inactive):   k-eff = %.5lf   Miss Rate = %.2le\n", iter, k_eff, percent_missed / 100.0);
+  {
+    sprintf(color,       "");
+    sprintf(color_reset, "");
+  }
+
+  char active_status[64];
+  if(is_active_region)
+    sprintf(active_status, "  (Active)");
+  else
+    sprintf(active_status, "(Inactive)");
+
+  // Print status data
+    printf("Iter %5d %s:   k-eff = %.5lf   %sMiss Rate = %.2le %s\n", iter, active_status, k_eff, color, percent_missed / 100.0, color_reset);
 }
 
 // print error to screen, inform program options
@@ -244,6 +260,7 @@ Parameters read_CLI(int argc, char * argv[])
   P.inverse_length_per_dimension = 1.0 / P.length_per_dimension;
   P.n_iterations = P.n_inactive_iterations + P.n_active_iterations;
   P.cell_volume = 1.0 / P.n_cells;
+  printf("cell volume = %.6le\n", P.cell_volume);
   //P.cell_volume = P.inverse_total_track_length;
   //P.cell_volume = P.cell_expected_track_length;
 

@@ -49,15 +49,15 @@ typedef struct{
   int boundary_condition_y_positive;
   int boundary_condition_y_negative;
   // Derived
-  float cell_expected_track_length;
-  float inverse_total_track_length;
+  double cell_expected_track_length;
+  double inverse_total_track_length;
   double cell_width;
   double inverse_length_per_dimension;
   double inverse_cell_width;
   uint64_t n_cells;
   int n_iterations;
   int plotting_enabled;
-  float cell_volume;
+  double cell_volume;
 } Parameters;
 
 typedef struct{

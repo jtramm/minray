@@ -1,6 +1,9 @@
 #include "minray.h"
 
-#define BUMP 1.0e-11
+//#define BUMP 1.0e-12
+//#define BUMP 1.0e-11
+#define BUMP 1.0e-10
+//#define BUMP 1.0e-9
 
 int find_cell_id(double x, double y, double inverse_cell_width, int n_cells_per_dimension, double inverse_length_per_dimension, int * boundary_surface, int * x_idx, int * y_idx);
 double cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir, int * intersected_surface_direction);
@@ -21,6 +24,7 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
   int y_idx = cell_id / P.n_cells_per_dimension;
 
   int just_hit_vacuum = 0;
+  int is_terminal = 0;
 
   // We run this loop until either:
   // 1) The maximum number of intersections has been reached
@@ -39,6 +43,7 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
     if(distance_travelled + distance_to_surface >= P.distance_per_ray)
     {
       distance_to_surface = (P.distance_per_ray - distance_travelled) + BUMP;
+      is_terminal = 1;
     }
   
     // Record Intersection information
@@ -79,6 +84,18 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
     // Look up cell_ID of neighbor we are travelling into
     int neighbor_id = find_cell_id(x_across_surface, y_across_surface, P.inverse_cell_width, P.n_cells_per_dimension, P.inverse_length_per_dimension, &boundary_surface, &x_idx_across_surface, &y_idx_across_surface);
     //printf("neighbor_id = %d\n", neighbor_id);
+    if( neighbor_id == cell_id && !is_terminal)
+    {
+      printf("neighbor_id = cell_id = %d (x_idx_ac = %d y_idx_ac = %d)\n", neighbor_id, x_idx_across_surface, y_idx_across_surface);
+      printf("neighbor_id = cell_id = %d (x_idx    = %d y_idx    = %d)\n", neighbor_id, x_idx, y_idx);
+      printf("x, y = [%le, %le]  neib_x, neib_y = [%le, %le])\n", x, y, x_across_surface, y_across_surface);
+      printf("Location within cell = [%lf, %lf]\n", x - x_idx_across_surface* P.cell_width, y - y_idx_across_surface * P.cell_width);
+      printf("distance travelled to surface = %lf\n", distance_to_surface);
+      printf("intersection_id = %d\n", intersection_id);
+      print_ray(x, y, x_dir, y_dir, cell_id);
+      assert(neighbor_id != cell_id);
+    }
+
     
     //printf("boundary surface = %d\n", boundary_surface);
     // Reflect
@@ -139,6 +156,7 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
     }
     
     assert(x > 0.0 && y > 0.0 && x < P.length_per_dimension && y < P.length_per_dimension);
+    //printf("Location within cell = [%lf, %lf]\n", x - x_idx_across_surface* P.cell_width, y - y_idx_across_surface * P.cell_width);
 
 
     distance_travelled += distance_to_surface;
@@ -171,8 +189,8 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
 // positive_y = 4;
 int find_cell_id(double x, double y, double inverse_cell_width, int n_cells_per_dimension, double inverse_length_per_dimension, int * boundary_surface, int * x_idx, int * y_idx)
 {
-  *x_idx = x * inverse_cell_width;
-  *y_idx = y * inverse_cell_width;
+  *x_idx = floor(x * inverse_cell_width);
+  *y_idx = floor(y * inverse_cell_width);
   //printf("x_idx = %d, y_idx = %d\n", *x_idx, *y_idx);
 
   int boundary_x = floor(x * inverse_length_per_dimension);
