@@ -18,7 +18,6 @@ void add_source_to_scalar_flux_kernel(Parameters P, SimulationData SD, int cell,
 
   uint64_t idx = (uint64_t) cell * P.n_energy_groups + energy_group;
 
-  //new_scalar_flux[idx] /= Sigma_t * P.cell_expected_track_length;
   new_scalar_flux[idx] /= (Sigma_t * P.cell_volume);
 
   if( !isfinite( new_scalar_flux[idx] ) )
@@ -26,6 +25,6 @@ void add_source_to_scalar_flux_kernel(Parameters P, SimulationData SD, int cell,
 
   new_scalar_flux[idx] += FOUR_PI * isotropic_source[idx];
 
-  if( new_scalar_flux[idx] > 0.0f )
+  //if( new_scalar_flux[idx] > 0.0f )
     scalar_flux_accumulator[idx] += new_scalar_flux[idx];
 }

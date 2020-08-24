@@ -147,6 +147,26 @@ void compute_cell_fission_rates(Parameters P, SimulationData SD, float * scalar_
     compute_cell_fission_rates_kernel(P, SD, scalar_flux, cell);
 }
 
+double reduce_sum_float( float * v, int len )
+{
+  double sum = 0;
+  if( len <= 64 )
+  {
+    for( long i = 0; i < len; i++ )
+      sum += v[i];
+  }
+  else
+  {
+    int left_len = len / 2;
+    int right_len = len - left_len;
+    double left_sum = reduce_sum_float( v, left_len );
+    double right_sum = reduce_sum_float( v+left_len, right_len );
+    sum += left_sum + right_sum;
+  }
+  return sum;
+}
+
+/*
 double reduce_sum_float(float * a, int size)
 {
   double sum = 0.0;
@@ -156,6 +176,7 @@ double reduce_sum_float(float * a, int size)
 
   return sum;
 }
+*/
 
 int reduce_sum_int(int * a, int size)
 {
