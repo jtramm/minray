@@ -33,8 +33,8 @@ void update_isotropic_sources_kernel(Parameters P, SimulationData SD, int cell, 
     fission_source += nu_Sigma_f[energy_group_out] * scalar_flux[energy_group_out];
   }
 
-  fission_source *= Chi * inverse_k_eff; // Stride 1 access to Chi
-  float new_isotropic_source = (scatter_source + fission_source) * ONE_OVER_FOUR_PI / Sigma_t; // stride 1 access to Sigma_t and Q
+  fission_source *= Chi * inverse_k_eff;
+  float new_isotropic_source = (scatter_source + fission_source) * ONE_OVER_FOUR_PI / Sigma_t;
   SD.readWriteData.cellData.isotropic_source[scalar_flux_idx + energy_group_in] = new_isotropic_source;
 }
 

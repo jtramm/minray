@@ -1,76 +1,10 @@
 #include "minray.h"
 
-// Boundary surfaces:
-// inside_domain = 0
-// negative_x = 1;
-// positive_x = 3;
-// negative_y = 2;
-// positive_y = 4;
-int find_cell_id(double x, double y, double inverse_cell_width, int n_cells_per_dimension, double inverse_length_per_dimension, int * boundary_surface, int * x_idx, int * y_idx)
-{
-  *x_idx = x * inverse_cell_width;
-  *y_idx = y * inverse_cell_width;
-  //printf("x_idx = %d, y_idx = %d\n", *x_idx, *y_idx);
-
-  int boundary_x = floor(x * inverse_length_per_dimension);
-  int boundary_y = floor(y * inverse_length_per_dimension);
-  //printf("[%lf, %lf]  boundary_x = %d boundary_y = %d inverse_length_per = %lf\n", x, y, boundary_x, boundary_y, inverse_length_per_dimension);
-
-  if( boundary_x )
-    *boundary_surface = boundary_x+2;
-  else if( boundary_y )
-    *boundary_surface = boundary_y+3;
-  else
-    *boundary_surface = 0;
-
-  int cell_id = *y_idx * n_cells_per_dimension + *x_idx; 
-  return cell_id;
-}
-
-double cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir, int * intersected_surface_direction)
-{
-  x -= x_idx * cell_width;
-  y -= y_idx * cell_width;
-
-  double min_dist = 1e9;
-  //printf("Shifted coord [%lf, %lf]\n", x, y);
-  //printf("X,Y Indices:  [%d, %d]\n", x_idx, y_idx);
-
-  // Test out all 4 surfaces
-  double x_pos_dist = (cell_width - x) / x_dir;
-  double y_pos_dist = (cell_width - y) / y_dir;
-  double x_neg_dist = -x / x_dir;
-  double y_neg_dist = -y / y_dir;
-
-  // Determine closest one
-  if( x_pos_dist < min_dist && x_pos_dist > 0 )
-  {
-    min_dist = x_pos_dist;
-    *intersected_surface_direction = X_POS;
-  }
-  if( y_pos_dist < min_dist && y_pos_dist > 0 )
-  {
-    min_dist = y_pos_dist;
-    *intersected_surface_direction = Y_POS;
-  }
-  if( x_neg_dist < min_dist && x_neg_dist > 0)
-  {
-    min_dist = x_neg_dist;
-    *intersected_surface_direction = X_NEG;
-  }
-  if( y_neg_dist < min_dist && y_neg_dist > 0)
-  {
-    min_dist = y_neg_dist;
-    *intersected_surface_direction = Y_NEG;
-  }
-
-  return min_dist;
-}
-
-
 #define BUMP 1.0e-11
-//#define BUMP 1.0e-10
-//#define BUMP 1.0e-9
+
+int find_cell_id(double x, double y, double inverse_cell_width, int n_cells_per_dimension, double inverse_length_per_dimension, int * boundary_surface, int * x_idx, int * y_idx);
+double cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir, int * intersected_surface_direction);
+
 void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, int ray_id)
 {
   double distance_travelled = 0.0;
@@ -228,3 +162,71 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, int ray_
     
   SD.readWriteData.intersectionData.n_intersections[ray_id] = intersection_id;
 }
+
+// Boundary surfaces:
+// inside_domain = 0
+// negative_x = 1;
+// positive_x = 3;
+// negative_y = 2;
+// positive_y = 4;
+int find_cell_id(double x, double y, double inverse_cell_width, int n_cells_per_dimension, double inverse_length_per_dimension, int * boundary_surface, int * x_idx, int * y_idx)
+{
+  *x_idx = x * inverse_cell_width;
+  *y_idx = y * inverse_cell_width;
+  //printf("x_idx = %d, y_idx = %d\n", *x_idx, *y_idx);
+
+  int boundary_x = floor(x * inverse_length_per_dimension);
+  int boundary_y = floor(y * inverse_length_per_dimension);
+  //printf("[%lf, %lf]  boundary_x = %d boundary_y = %d inverse_length_per = %lf\n", x, y, boundary_x, boundary_y, inverse_length_per_dimension);
+
+  if( boundary_x )
+    *boundary_surface = boundary_x+2;
+  else if( boundary_y )
+    *boundary_surface = boundary_y+3;
+  else
+    *boundary_surface = 0;
+
+  int cell_id = *y_idx * n_cells_per_dimension + *x_idx; 
+  return cell_id;
+}
+
+double cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir, int * intersected_surface_direction)
+{
+  x -= x_idx * cell_width;
+  y -= y_idx * cell_width;
+
+  double min_dist = 1e9;
+  //printf("Shifted coord [%lf, %lf]\n", x, y);
+  //printf("X,Y Indices:  [%d, %d]\n", x_idx, y_idx);
+
+  // Test out all 4 surfaces
+  double x_pos_dist = (cell_width - x) / x_dir;
+  double y_pos_dist = (cell_width - y) / y_dir;
+  double x_neg_dist = -x / x_dir;
+  double y_neg_dist = -y / y_dir;
+
+  // Determine closest one
+  if( x_pos_dist < min_dist && x_pos_dist > 0 )
+  {
+    min_dist = x_pos_dist;
+    *intersected_surface_direction = X_POS;
+  }
+  if( y_pos_dist < min_dist && y_pos_dist > 0 )
+  {
+    min_dist = y_pos_dist;
+    *intersected_surface_direction = Y_POS;
+  }
+  if( x_neg_dist < min_dist && x_neg_dist > 0)
+  {
+    min_dist = x_neg_dist;
+    *intersected_surface_direction = X_NEG;
+  }
+  if( y_neg_dist < min_dist && y_neg_dist > 0)
+  {
+    min_dist = y_neg_dist;
+    *intersected_surface_direction = Y_NEG;
+  }
+
+  return min_dist;
+}
+

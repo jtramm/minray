@@ -100,9 +100,9 @@ void print_status_data(int iter, double k_eff, double percent_missed, int is_act
 {
   // Print status data
   if( is_active_region )
-    printf("Iter %5d (Active):     k-eff = %.5lf   Miss Rate = %.4lf%%\n", iter, k_eff, percent_missed);
+    printf("Iter %5d   (Active):   k-eff = %.5lf   Miss Rate = %.2le\n", iter, k_eff, percent_missed / 100.0);
   else
-    printf("Iter %5d (Inactive):   k-eff = %.5lf   Miss Rate = %.4lf%%\n", iter, k_eff, percent_missed);
+    printf("Iter %5d (Inactive):   k-eff = %.5lf   Miss Rate = %.2le\n", iter, k_eff, percent_missed / 100.0);
 }
 
 // print error to screen, inform program options
@@ -389,7 +389,15 @@ ReadOnlyData load_2D_C5G7_XS(Parameters P)
 
   char fname[512];
   sprintf(fname, "data/C5G7_2D/material_ids_%d.txt", P.n_cells_per_dimension);
+  printf("Searching for material data file \"%s\"...\n", fname); 
   FILE * material_file = fopen(fname, "r");
+  if( material_file == NULL )
+  {
+    printf("Material data file not found for dimension %d. Generate new data file with ARRC,\nor use a dimension or multipiler with existing data file.\nCurrently supported multipliers \"-m <1, 2, 4, 8, 16>\"\n", P.n_cells_per_dimension);
+    exit(1);
+  }
+  else
+    printf("Material data file found.\n");
   sz = P.n_cells * sizeof(int);
   int * material_id = (int *) malloc(sz);
   for( int c = 0; c < P.n_cells; c++ )
@@ -452,6 +460,8 @@ int eswap_int( int f )
 
 void plot_3D_vtk(Parameters P, float * scalar_flux_accumulator, int * material_id)
 {
+  center_print("PLOT GENERATION", 79);
+  border_print();
   int N = P.n_cells_per_dimension;
   int z_N = 1;
 
@@ -475,7 +485,7 @@ void plot_3D_vtk(Parameters P, float * scalar_flux_accumulator, int * material_i
   double y_delta = P.cell_width;
   double z_delta = P.cell_width;
 
-  printf("plotting 3D Data X x Y x Z = %d x %d x %d\n", N, N, z_N);
+  printf("Plotting 2D Data X x Y = %d x %d to file %s...\n", N, N, fname);
 
   fprintf(fp,"# vtk DataFile Version 2.0\n");
   fprintf(fp, "Dataset File\n");
@@ -541,6 +551,7 @@ void plot_3D_vtk(Parameters P, float * scalar_flux_accumulator, int * material_i
 
   fclose(fp);
   printf("Finished plotting!\n");
+  border_print();
 }
 
 void print_ray_tracing_buffer(Parameters P, SimulationData SD)
