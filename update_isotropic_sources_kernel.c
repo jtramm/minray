@@ -12,8 +12,8 @@ void update_isotropic_sources_kernel(Parameters P, SimulationData SD, int cell, 
 
   int material_id = SD.readOnlyData.material_id[cell];
 
-  const long scalar_flux_idx = cell * P.n_energy_groups;
-  const long XS_base = material_id * P.n_energy_groups;
+  const uint64_t scalar_flux_idx = cell * P.n_energy_groups;
+  const int XS_base = material_id * P.n_energy_groups;
   //const long sig_s_base = XS_base * P.n_energy_groups + energy_group_in * P.n_energy_groups;
 
   const float * Sigma_s = SD.readOnlyData.Sigma_s + XS_base * P.n_energy_groups + energy_group_in * P.n_energy_groups;
@@ -27,7 +27,7 @@ void update_isotropic_sources_kernel(Parameters P, SimulationData SD, int cell, 
   float scatter_source = 0.0;
   float fission_source = 0.0;
 
-  for( long energy_group_out = 0; energy_group_out < P.n_energy_groups; energy_group_out++ )
+  for( int energy_group_out = 0; energy_group_out < P.n_energy_groups; energy_group_out++ )
   {
     scatter_source += Sigma_s[   energy_group_out] * scalar_flux[energy_group_out];
     fission_source += nu_Sigma_f[energy_group_out] * scalar_flux[energy_group_out];

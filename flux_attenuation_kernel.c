@@ -2,7 +2,7 @@
 
 #define FOUR_PI 12.566370614359172953850573533118011536788677597500423283899778369f
 
-void flux_attenuation_kernel(Parameters P, SimulationData SD, int ray_id, int energy_group)
+void flux_attenuation_kernel(Parameters P, SimulationData SD, uint64_t ray_id, int energy_group)
 {
   // Cull threads in case of oversubscription
   if( ray_id >= P.n_rays )
@@ -78,7 +78,7 @@ void flux_attenuation_kernel(Parameters P, SimulationData SD, int ray_id, int en
       exponential = num / den;
     }
 
-    int flux_idx = cell_id * P.n_energy_groups + energy_group; 
+    uint64_t flux_idx = (uint64_t) cell_id * P.n_energy_groups + energy_group; 
 
     float delta_psi =  (angular_flux - isotropic_source[flux_idx]) * exponential;
 

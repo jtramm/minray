@@ -16,7 +16,7 @@ void add_source_to_scalar_flux_kernel(Parameters P, SimulationData SD, int cell,
   float * isotropic_source        = SD.readWriteData.cellData.isotropic_source; 
   float * scalar_flux_accumulator = SD.readWriteData.cellData.scalar_flux_accumulator; 
 
-  int idx = cell * P.n_energy_groups + energy_group;
+  uint64_t idx = (uint64_t) cell * P.n_energy_groups + energy_group;
 
   //new_scalar_flux[idx] /= Sigma_t * P.cell_expected_track_length;
   new_scalar_flux[idx] /= (Sigma_t * P.cell_volume);

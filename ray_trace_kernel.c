@@ -5,7 +5,7 @@
 int find_cell_id(double x, double y, double inverse_cell_width, int n_cells_per_dimension, double inverse_length_per_dimension, int * boundary_surface, int * x_idx, int * y_idx);
 double cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir, int * intersected_surface_direction);
 
-void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, int ray_id)
+void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t ray_id)
 {
   double distance_travelled = 0.0;
   int intersection_id = 0;

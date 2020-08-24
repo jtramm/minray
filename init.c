@@ -5,18 +5,28 @@ size_t estimate_memory_usage(Parameters P)
   size_t sz = 0;
   // Ray Data
   sz += P.n_rays * P.n_energy_groups * sizeof(float);
+  printf("sz = %lu\n", sz);
   sz += (P.n_rays * sizeof(double)) * 4;
+  printf("sz = %lu\n", sz);
   sz += P.n_rays * sizeof(int);
+  printf("sz = %lu\n", sz);
   // Intersection Data
   sz += (P.n_rays * P.max_intersections_per_ray * sizeof(int))*3;
+  printf("sz = %lu\n", sz);
   sz += P.n_rays * P.max_intersections_per_ray * sizeof(double);
+  printf("sz = %lu\n", sz);
   // Cell Data
   sz += (P.n_cells * P.n_energy_groups * sizeof(float))*5;
+  printf("sz = %lu\n", sz);
   sz += P.n_cells * sizeof(int);
+  printf("sz = %lu\n", sz);
   // XS Data
   sz += P.n_materials * P.n_energy_groups * sizeof(float)*4;
+  printf("sz = %lu\n", sz);
   sz += P.n_materials * P.n_energy_groups * P.n_energy_groups * sizeof(float);
+  printf("sz = %lu\n", sz);
   sz += P.n_cells * sizeof(int);
+  printf("sz = %lu\n", sz);
   return sz;
 }
 

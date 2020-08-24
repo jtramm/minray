@@ -35,7 +35,7 @@ typedef struct{
   int n_cells_per_dimension;
   double length_per_dimension;
   //double height;
-  int n_rays;
+  uint64_t n_rays;
   double distance_per_ray;
   int n_inactive_iterations;
   int n_active_iterations;
@@ -54,7 +54,7 @@ typedef struct{
   double cell_width;
   double inverse_length_per_dimension;
   double inverse_cell_width;
-  int n_cells;
+  uint64_t n_cells;
   int n_iterations;
   int plotting_enabled;
   float cell_volume;
@@ -144,9 +144,9 @@ double get_time(void);
 void ptr_swap(float ** a, float ** b);
 
 // ray_trace_kernel.c
-void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, int ray_id);
+void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t ray_id);
 void update_isotropic_sources_kernel(Parameters P, SimulationData SD, int cell, int energy_group_in, double inverse_k_eff);
-void flux_attenuation_kernel(Parameters P, SimulationData SD, int ray_id, int energy_group);
+void flux_attenuation_kernel(Parameters P, SimulationData SD, uint64_t ray_id, int energy_group);
 void normalize_scalar_flux_kernel(Parameters P, float * new_scalar_flux, int cell, int energy_group);
 void add_source_to_scalar_flux_kernel(Parameters P, SimulationData SD, int cell, int energy_group);
 void compute_cell_fission_rates_kernel(Parameters P, SimulationData SD, float * scalar_flux, int cell);

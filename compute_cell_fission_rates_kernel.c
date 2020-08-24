@@ -9,7 +9,7 @@ void compute_cell_fission_rates_kernel(Parameters P, SimulationData SD, float * 
   int XS_idx      = material_id * P.n_energy_groups;
   float * nu_Sigma_f = SD.readOnlyData.nu_Sigma_f + XS_idx;
 
-  int flux_idx = cell * P.n_energy_groups;
+  uint64_t flux_idx = (uint64_t) cell * P.n_energy_groups;
   scalar_flux += flux_idx;
 
   float fission_rate = 0.0;
