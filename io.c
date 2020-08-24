@@ -197,7 +197,7 @@ Parameters read_CLI(int argc, char * argv[])
   P.n_cells_per_dimension = 102 * problem_size_multiplier;
   P.max_intersections_per_ray = 100 * problem_size_multiplier;
   if( !has_user_set_rays)
-    P.n_rays *= problem_size_multiplier;
+    P.n_rays *= problem_size_multiplier * problem_size_multiplier;
   P.cell_width = P.length_per_dimension / P.n_cells_per_dimension;
   P.inverse_cell_width = 1.0 / P.cell_width;
   P.n_cells = P.n_cells_per_dimension * P.n_cells_per_dimension;

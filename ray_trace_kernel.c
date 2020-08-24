@@ -27,7 +27,7 @@ int find_cell_id(double x, double y, double inverse_cell_width, int n_cells_per_
   return cell_id;
 }
 
-double cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir)
+double cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir, int * intersected_surface_direction)
 {
   x -= x_idx * cell_width;
   y -= y_idx * cell_width;
@@ -44,19 +44,33 @@ double cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int
 
   // Determine closest one
   if( x_pos_dist < min_dist && x_pos_dist > 0 )
+  {
     min_dist = x_pos_dist;
+    *intersected_surface_direction = X_POS;
+  }
   if( y_pos_dist < min_dist && y_pos_dist > 0 )
+  {
     min_dist = y_pos_dist;
+    *intersected_surface_direction = Y_POS;
+  }
   if( x_neg_dist < min_dist && x_neg_dist > 0)
+  {
     min_dist = x_neg_dist;
+    *intersected_surface_direction = X_NEG;
+  }
   if( y_neg_dist < min_dist && y_neg_dist > 0)
+  {
     min_dist = y_neg_dist;
+    *intersected_surface_direction = Y_NEG;
+  }
 
   return min_dist;
 }
 
 
-#define BUMP 1.0e-10
+#define BUMP 1.0e-11
+//#define BUMP 1.0e-10
+//#define BUMP 1.0e-9
 void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, int ray_id)
 {
   double distance_travelled = 0.0;
@@ -83,7 +97,8 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, int ray_
     //print_ray(x, y, x_dir, y_dir, cell_id);
 
     // Find distance to next surface
-    double distance_to_surface = cartesian_ray_trace(x, y, P.cell_width, x_idx, y_idx, x_dir, y_dir);
+    int intersected_surface_direction = 0;
+    double distance_to_surface = cartesian_ray_trace(x, y, P.cell_width, x_idx, y_idx, x_dir, y_dir, &intersected_surface_direction);
     //printf("distance to surface = %.3lf\n", distance_to_surface);
   
     // Check to see if we are terminal
@@ -113,8 +128,18 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, int ray_
     x += x_dir * distance_to_surface;
     y += y_dir * distance_to_surface;
 
-    double x_across_surface = x + x_dir * BUMP;
-    double y_across_surface = y + y_dir * BUMP;
+    //double x_across_surface = x + x_dir * BUMP;
+    //double y_across_surface = y + y_dir * BUMP;
+    double x_across_surface = x;
+    double y_across_surface = y;
+    if( intersected_surface_direction == X_NEG )
+      x_across_surface -= BUMP;
+    else if( intersected_surface_direction == X_POS )
+      x_across_surface += BUMP;
+    else if( intersected_surface_direction == Y_NEG )
+      y_across_surface -= BUMP;
+    else if( intersected_surface_direction == Y_POS )
+      y_across_surface += BUMP;
     int x_idx_across_surface, y_idx_across_surface;
     
     // Look up cell_ID of neighbor we are travelling into
@@ -153,14 +178,46 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, int ray_
     assert(cell_id >= 0 && cell_id < P.n_cells);
 
     // Move ray off the surface
-    x += x_dir * BUMP;
-    y += y_dir * BUMP;
+    //x += x_dir * BUMP;
+    //y += y_dir * BUMP;
+    
+    if( boundary_condition == NONE )
+    {
+      if( intersected_surface_direction == X_NEG )
+        x -= BUMP;
+      else if( intersected_surface_direction == X_POS )
+        x += BUMP;
+      else if( intersected_surface_direction == Y_NEG )
+        y -= BUMP;
+      else if( intersected_surface_direction == Y_POS )
+        y += BUMP;
+    }
+    else
+    {
+      if( intersected_surface_direction == X_NEG )
+        x += BUMP;
+      else if( intersected_surface_direction == X_POS )
+        x -= BUMP;
+      else if( intersected_surface_direction == Y_NEG )
+        y += BUMP;
+      else if( intersected_surface_direction == Y_POS )
+        y -= BUMP;
+    }
+    
+    assert(x > 0.0 && y > 0.0 && x < P.length_per_dimension && y < P.length_per_dimension);
+
 
     distance_travelled += distance_to_surface;
     //printf("distance_travelled = %lf\n", distance_travelled);
     //print_ray(x, y, x_dir, y_dir, cell_id);
   }
-  assert(intersection_id < P.max_intersections_per_ray);
+  //assert(intersection_id < P.max_intersections_per_ray);
+  if(intersection_id >= P.max_intersections_per_ray)
+  {
+    printf("WARNING: Increase max number of intersections per ray\n");
+    print_ray(x, y, x_dir, y_dir, cell_id);
+  }
+  
   
   rayData.location_x[ray_id] = x;
   rayData.location_y[ray_id] = y;

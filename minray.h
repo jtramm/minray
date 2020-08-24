@@ -15,6 +15,10 @@
 #define VACUUM 1
 #define REFLECTIVE 2
 
+#define X_NEG 0
+#define X_POS 1
+#define Y_NEG 2
+#define Y_POS 3
 
 
 typedef struct{
@@ -133,7 +137,6 @@ void ptr_swap(float ** a, float ** b);
 // ray_trace_kernel.c
 void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, int ray_id);
 void update_isotropic_sources_kernel(Parameters P, SimulationData SD, int cell, int energy_group_in, double inverse_k_eff);
-double cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir);
 void flux_attenuation_kernel(Parameters P, SimulationData SD, int ray_id, int energy_group);
 void normalize_scalar_flux_kernel(Parameters P, float * new_scalar_flux, int cell, int energy_group);
 void add_source_to_scalar_flux_kernel(Parameters P, SimulationData SD, int cell, int energy_group);
