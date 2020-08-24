@@ -98,18 +98,27 @@ typedef struct{
   ReadWriteData readWriteData;
 } SimulationData;
 
+typedef struct{
+  uint64_t n_geometric_intersections;
+  double runtime;
+  double k_eff;
+  double k_eff_std_dev;
+} SimulationResult;
+
 // io.c
 Parameters read_CLI(int argc, char * argv[]);
 ReadOnlyData load_2D_C5G7_XS(Parameters P);
 void plot_3D_vtk(Parameters P, float * scalar_flux_accumulator, int * material_id);
 void print_user_inputs(Parameters P);
+void print_results(Parameters P, SimulationResult SR);
+void print_status_data(int iter, double k_eff, double percent_missed, int is_active_region);
 void center_print(const char *s, int width);
 void border_print(void);
 void print_ray_tracing_buffer(Parameters P, SimulationData SD);
 void print_ray(double x, double y, double x_dir, double y_dir, int cell_id);
 
 // simulation.c
-void run_simulation(Parameters P, SimulationData SD);
+SimulationResult run_simulation(Parameters P, SimulationData SD);
 void transport_sweep(Parameters P, SimulationData SD);
 void update_isotropic_sources(Parameters P, SimulationData SD, double k_eff);
 void normalize_scalar_flux(Parameters P, SimulationData SD);

@@ -16,7 +16,10 @@ int main(int argc, char * argv[])
   initialize_fluxes(P, SD);
 
   // Run Random Ray Simulation
-  run_simulation(P, SD);
+  SimulationResult SR = run_simulation(P, SD);
+
+  // Display Results
+  print_results(P, SR);
 
   // Output VTK plotting file if enabled
   if(P.plotting_enabled)

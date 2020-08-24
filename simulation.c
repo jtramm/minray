@@ -1,6 +1,6 @@
 #include "minray.h"
 
-void run_simulation(Parameters P, SimulationData SD)
+SimulationResult run_simulation(Parameters P, SimulationData SD)
 {
   center_print("SIMULATION", 79);
   border_print();
@@ -9,12 +9,18 @@ void run_simulation(Parameters P, SimulationData SD)
   // The eigenvector is the scalar flux vector
   double k_eff = 1.0;
 
-  int active_region = 0;
+  // We also want to accumulate an average k-eff across all active iterations, and
+  // to know the std. dev. of this sample mean.
+  double k_eff_total_accumulator = 0.0;
+  double k_eff_sum_of_squares_accumulator = 0.0;
+
+  int is_active_region = 0;
 
   uint64_t n_total_geometric_intersections = 0;
 
   double start_time = get_time();
 
+  // Power Iteration Loop
   for( int iter = 0; iter < P.n_iterations; iter++ )
   {
     // Update Source
@@ -40,11 +46,17 @@ void run_simulation(Parameters P, SimulationData SD)
     // Compute K-eff
     k_eff = compute_k_eff(P, SD, k_eff);
 
-    // Reset scalar flux accumulators if we have finished our inactive iterations
-    if( iter >= P.n_inactive_iterations && !active_region )
+    // Track k_eff statistics
+    k_eff_total_accumulator += k_eff;
+    k_eff_sum_of_squares_accumulator += k_eff * k_eff;
+
+    // Reset scalar flux and k-eff accumulators if we have finished our inactive iterations
+    if( iter >= P.n_inactive_iterations && !is_active_region )
     {
-      active_region = 1;
+      is_active_region = 1;
       memset(SD.readWriteData.cellData.scalar_flux_accumulator, 0, P.n_cells * P.n_energy_groups * sizeof(float));
+      k_eff_total_accumulator = 0.0;
+      k_eff_sum_of_squares_accumulator = 0.0;
     }
 
     // Swap old and new scalar flux pointers
@@ -53,24 +65,23 @@ void run_simulation(Parameters P, SimulationData SD)
     // Reduce number of intersections performed
     n_total_geometric_intersections += reduce_sum_int(SD.readWriteData.intersectionData.n_intersections, P.n_rays);
 
-    // Print status data
-    if( active_region )
-      printf("Iter %5d (Active):     k-eff = %.5lf   Miss Rate = %.4lf%%\n", iter, k_eff, percent_missed);
-    else
-      printf("Iter %5d (Inactive):   k-eff = %.5lf   Miss Rate = %.4lf%%\n", iter, k_eff, percent_missed);
-  }
+    print_status_data(iter, k_eff, percent_missed, is_active_region);
+
+  } // End Power Iteration Loop
   
-  double end_time = get_time();
-  double runtime = end_time - start_time;
+  double runtime = get_time() - start_time;
+  
+  // Gather simulation results
+  SimulationResult SR;
+  int n = P.n_active_iterations;
+  SR.k_eff_std_dev = sqrt( (k_eff_sum_of_squares_accumulator - k_eff_total_accumulator * k_eff_total_accumulator / n ) / n);
+  SR.k_eff_std_dev /= sqrt(n);
+  SR.k_eff = k_eff_total_accumulator / P.n_active_iterations;
 
-  uint64_t n_total_integrations = n_total_geometric_intersections * P.n_energy_groups;
-  double time_per_integration = runtime * 1.0e9 / n_total_integrations;
+  SR.n_geometric_intersections = n_total_geometric_intersections;
+  SR.runtime = runtime;
 
-  border_print();
-  center_print("RESULTS", 79);
-  border_print();
-
-  printf("Time per Integration (TPI) = %.3lf [ns]\n", time_per_integration);
+  return SR;
 }
 
 void transport_sweep(Parameters P, SimulationData SD)

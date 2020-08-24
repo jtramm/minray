@@ -63,22 +63,46 @@ void print_user_inputs(Parameters P)
   logo();
   center_print("INPUT SUMMARY", 79);
   border_print();
-  printf("Number of Cells per Dimension = %d\n",    P.n_cells_per_dimension);
-  printf("Total Number of Cells (FSRs)  = %d\n",    P.n_cells);
-  printf("Number of Rays per Iteration  = %d\n",    P.n_rays);
-  printf("Length of each ray [cm]       = %.2lf\n", P.distance_per_ray);
-  printf("Energy Groups                 = %d\n",    P.n_energy_groups);
-  printf("Number of Inactive Iterations = %d\n",    P.n_inactive_iterations);
-  printf("Number of Active Iterations   = %d\n",    P.n_active_iterations);
-  printf("Pseudorandom Seed             = %lu\n",   P.seed);
-  printf("Maximum Intersections per Ray = %d\n",    P.max_intersections_per_ray);
+  printf("Number of Cells per Dimension     = %d\n",    P.n_cells_per_dimension);
+  printf("Total Number of Cells (FSRs)      = %d\n",    P.n_cells);
+  printf("Number of Rays per Iteration      = %d\n",    P.n_rays);
+  printf("Length of each ray [cm]           = %.2lf\n", P.distance_per_ray);
+  printf("Energy Groups                     = %d\n",    P.n_energy_groups);
+  printf("Number of Inactive Iterations     = %d\n",    P.n_inactive_iterations);
+  printf("Number of Active Iterations       = %d\n",    P.n_active_iterations);
+  printf("Pseudorandom Seed                 = %lu\n",   P.seed);
+  printf("Maximum Intersections per Ray     = %d\n",    P.max_intersections_per_ray);
   size_t bytes = estimate_memory_usage(P);
   double MB = (double) bytes / 1024.0 /1024.0;
-  printf("Estimated Memory Usage        = %.2lf [MB]\n", MB);
+  printf("Estimated Memory Usage            = %.2lf [MB]\n", MB);
   if( P.plotting_enabled )
-    printf("Plotting                      = Enabled\n");
+    printf("Plotting                          = Enabled\n");
   else
-    printf("Plotting                      = Disabled\n");
+    printf("Plotting                          = Disabled\n");
+}
+
+void print_results(Parameters P, SimulationResult SR)
+{
+  border_print();
+  center_print("RESULTS", 79);
+  border_print();
+  printf("k-effective                       = %.5f\n", SR.k_eff);
+  printf("k-effective std. dev.             = %.5f\n", SR.k_eff_std_dev);
+  printf("Simulation Runtime                = %.3le [s]\n", SR.runtime);
+  printf("Number of Geometric Intersections = %.3le\n", (double) SR.n_geometric_intersections);
+  printf("Number of Integrations            = %.3le\n", (double) SR.n_geometric_intersections * P.n_energy_groups);
+  double time_per_integration = SR.runtime * 1.0e9 / ( SR.n_geometric_intersections * P.n_energy_groups);
+  printf("Time per Integration (TPI)        = %.3lf [ns]\n", time_per_integration);
+  border_print();
+}
+
+void print_status_data(int iter, double k_eff, double percent_missed, int is_active_region)
+{
+  // Print status data
+  if( is_active_region )
+    printf("Iter %5d (Active):     k-eff = %.5lf   Miss Rate = %.4lf%%\n", iter, k_eff, percent_missed);
+  else
+    printf("Iter %5d (Inactive):   k-eff = %.5lf   Miss Rate = %.4lf%%\n", iter, k_eff, percent_missed);
 }
 
 // print error to screen, inform program options
