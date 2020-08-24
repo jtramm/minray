@@ -46,7 +46,19 @@ void fancy_int( int a )
 void logo(void)
 {
   border_print();
-  center_print("MINRAY", 79);
+  printf(
+         "        .___  ___.  __  .__   __. .______        ___   ____    ____ \n"
+         "        |   \\/   | |  | |  \\ |  | |   _  \\      /   \\  \\   \\  /   / \n"
+         "        |  \\  /  | |  | |   \\|  | |  |_)  |    /  ^  \\  \\   \\/   /  \n"
+         "        |  |\\/|  | |  | |  . `  | |      /    /  /_\\  \\  \\_    _/   \n"
+         "        |  |  |  | |  | |  |\\   | |  |\\  \\   /  _____  \\   |  |    \n"
+         "        |__|  |__| |__| |__| \\__| |  | \\  \\ /__/     \\__\\  |__|    \\\n"
+         "                                  |  |  \\  \\                        \\ \n"
+         "                                  |__|   \\__\\________________________\\\n"
+         "                                                                     /\n"
+         "                                                                    /\n"
+         "                                                                   /\n\n"
+);
   border_print();
   printf("\n");
   center_print("Developed at", 79);
@@ -64,8 +76,8 @@ void print_user_inputs(Parameters P)
   center_print("INPUT SUMMARY", 79);
   border_print();
   printf("Number of Cells per Dimension     = %d\n",    P.n_cells_per_dimension);
-  printf("Total Number of Cells (FSRs)      = %d\n",    P.n_cells);
-  printf("Number of Rays per Iteration      = %d\n",    P.n_rays);
+  printf("Total Number of Cells (FSRs)      = %lu\n",   P.n_cells);
+  printf("Number of Rays per Iteration      = %lu\n",   P.n_rays);
   printf("Length of each ray [cm]           = %.2lf\n", P.distance_per_ray);
   printf("Energy Groups                     = %d\n",    P.n_energy_groups);
   printf("Number of Inactive Iterations     = %d\n",    P.n_inactive_iterations);
@@ -88,10 +100,12 @@ void print_results(Parameters P, SimulationResult SR)
   border_print();
   printf("k-effective                       = %.5f\n", SR.k_eff);
   printf("k-effective std. dev.             = %.5f\n", SR.k_eff_std_dev);
-  printf("Simulation Runtime                = %.3le [s]\n", SR.runtime);
+  printf("Simulation Runtime                = %.3le [s]\n", SR.runtime_total);
+  printf("    Transport Sweep Time          = %.3le [s] (%.2lf%%)\n", SR.runtime_transport_sweep, 100.0 * SR.runtime_transport_sweep / SR.runtime_total);
+  printf("    Iteration Time                = %.3le [s] (%.2lf%%)\n", SR.runtime_total - SR.runtime_transport_sweep, 100.0* (1.0 - SR.runtime_transport_sweep / SR.runtime_total));
   printf("Number of Geometric Intersections = %.3le\n", (double) SR.n_geometric_intersections);
   printf("Number of Integrations            = %.3le\n", (double) SR.n_geometric_intersections * P.n_energy_groups);
-  double time_per_integration = SR.runtime * 1.0e9 / ( SR.n_geometric_intersections * P.n_energy_groups);
+  double time_per_integration = SR.runtime_total * 1.0e9 / ( SR.n_geometric_intersections * P.n_energy_groups);
   printf("Time per Integration (TPI)        = %.3lf [ns]\n", time_per_integration);
   border_print();
 }

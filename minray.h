@@ -100,7 +100,8 @@ typedef struct{
 
 typedef struct{
   uint64_t n_geometric_intersections;
-  double runtime;
+  double runtime_total;
+  double runtime_transport_sweep;
   double k_eff;
   double k_eff_std_dev;
 } SimulationResult;

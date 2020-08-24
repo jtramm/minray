@@ -18,7 +18,8 @@ SimulationResult run_simulation(Parameters P, SimulationData SD)
 
   uint64_t n_total_geometric_intersections = 0;
 
-  double start_time = get_time();
+  double start_time_simulation = get_time();
+  double time_in_transport_sweep = 0.0;
 
   // Power Iteration Loop
   for( int iter = 0; iter < P.n_iterations; iter++ )
@@ -28,7 +29,9 @@ SimulationResult run_simulation(Parameters P, SimulationData SD)
     // Set new scalar fluxes to zero
     memset(SD.readWriteData.cellData.new_scalar_flux, 0, P.n_cells * P.n_energy_groups * sizeof(float));
 
+    double start_time_transport = get_time();
     transport_sweep(P, SD);
+    time_in_transport_sweep += get_time() - start_time_transport;
 
     // Check hit rate to ensure we are running enough rays
     double percent_missed = check_hit_rate(SD.readWriteData.cellData.hit_count, P.n_cells);
@@ -60,7 +63,7 @@ SimulationResult run_simulation(Parameters P, SimulationData SD)
 
   } // End Power Iteration Loop
   
-  double runtime = get_time() - start_time;
+  double runtime_total = get_time() - start_time_simulation;
   
   // Gather simulation results
   SimulationResult SR;
@@ -70,7 +73,8 @@ SimulationResult run_simulation(Parameters P, SimulationData SD)
   SR.k_eff = k_eff_total_accumulator / P.n_active_iterations;
 
   SR.n_geometric_intersections = n_total_geometric_intersections;
-  SR.runtime = runtime;
+  SR.runtime_total = runtime_total;
+  SR.runtime_transport_sweep = time_in_transport_sweep;
 
   return SR;
 }
@@ -79,6 +83,7 @@ void update_isotropic_sources(Parameters P, SimulationData SD, double k_eff)
 {
   double inv_k_eff = 1.0/k_eff;
 
+  #pragma omp parallel for
   for( int cell = 0; cell < P.n_cells; cell++ )
     for( int energy_group = 0; energy_group < P.n_energy_groups; energy_group++ )
       update_isotropic_sources_kernel(P, SD, cell, energy_group, inv_k_eff);
@@ -101,6 +106,7 @@ void transport_sweep(Parameters P, SimulationData SD)
 
 void normalize_scalar_flux(Parameters P, SimulationData SD)
 {
+  #pragma omp parallel for
   for( int cell = 0; cell < P.n_cells; cell++ )
     for( int energy_group = 0; energy_group < P.n_energy_groups; energy_group++ )
       normalize_scalar_flux_kernel(P, SD.readWriteData.cellData.new_scalar_flux, cell, energy_group);
@@ -108,6 +114,7 @@ void normalize_scalar_flux(Parameters P, SimulationData SD)
 
 void add_source_to_scalar_flux(Parameters P, SimulationData SD)
 {
+  #pragma omp parallel for
   for( int cell = 0; cell < P.n_cells; cell++ )
     for( int energy_group = 0; energy_group < P.n_energy_groups; energy_group++ )
       add_source_to_scalar_flux_kernel(P, SD, cell, energy_group);
@@ -135,6 +142,7 @@ double compute_k_eff(Parameters P, SimulationData SD, double old_k_eff)
   
 void compute_cell_fission_rates(Parameters P, SimulationData SD, float * scalar_flux)
 {
+  #pragma omp parallel for
   for( int cell = 0; cell < P.n_cells; cell++ )
     compute_cell_fission_rates_kernel(P, SD, scalar_flux, cell);
 }
