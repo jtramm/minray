@@ -19,11 +19,11 @@ int main(int argc, char * argv[])
   SimulationResult SR = run_simulation(P, SD);
 
   // Display Results
-  print_results(P, SR);
+  int is_valid_result = print_results(P, SR);
 
   // Output VTK plotting file if enabled
   if(P.plotting_enabled)
     plot_3D_vtk(P, SD.readWriteData.cellData.scalar_flux_accumulator, SD.readOnlyData.material_id);
 
-  return 0;
+  return is_valid_result;
 }

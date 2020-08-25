@@ -61,8 +61,8 @@ void logo(void)
 );
   border_print();
   printf("\n");
-  center_print("Developed at", 79);
-  center_print("Argonne National Laboratory", 79);
+  //center_print("Developed at", 79);
+  //center_print("Argonne National Laboratory", 79);
   char v[100];
   sprintf(v, "Version: %s", VERSION);
   center_print(v, 79);
@@ -91,13 +91,17 @@ void print_user_inputs(Parameters P)
     printf("Plotting                          = Enabled\n");
   else
     printf("Plotting                          = Disabled\n");
+  
+  char * validation_strings[3] = {"small", "medium", "large"};
+  if( P.validation_problem_id )
+    printf("Validation problem                = %s\n", validation_strings[P.validation_problem_id-1]);
 
   #ifdef OPENMP
   printf("Number of Threads                 = %d\n", omp_get_max_threads());
   #endif
 }
 
-void print_results(Parameters P, SimulationResult SR)
+int print_results(Parameters P, SimulationResult SR)
 {
   border_print();
   center_print("RESULTS", 79);
@@ -113,7 +117,9 @@ void print_results(Parameters P, SimulationResult SR)
   double time_per_integration = SR.runtime_total * 1.0e9 / ( SR.n_geometric_intersections * P.n_energy_groups);
   printf("Time per Integration (TPI)        = %.3lf [ns]\n", time_per_integration);
   printf("Est. Total Time Req. to Converge  = %.3le [s]\n", (SR.runtime_total / P.n_iterations) * 2000.0);
+  int is_valid_result = validate_results(P.validation_problem_id, SR.k_eff);
   border_print();
+  return is_valid_result;
 }
 
 void print_status_data(int iter, double k_eff, double percent_missed, int is_active_region, double k_eff_total_accumulator, double k_eff_sum_of_squares_accumulator, int n_active_iterations)
@@ -177,6 +183,7 @@ Parameters read_CLI(int argc, char * argv[])
   P.n_materials = 8;
   P.n_energy_groups = 7;
   P.plotting_enabled = 0;
+  P.validation_problem_id = NONE;
 
   P.boundary_conditions[1][1] = NONE;
   P.boundary_conditions[1][2] = REFLECTIVE; // x+
@@ -247,8 +254,54 @@ Parameters read_CLI(int argc, char * argv[])
       else
         print_CLI_error();
     }
+    // validation problem selection
+    else if( strcmp(arg, "-v") == 0 )
+    {
+      char * size;
+      if( ++i < argc )
+        size = argv[i];
+      else
+        print_CLI_error();
+
+      if( strcmp(size, "small") == 0 )
+      {
+        P.validation_problem_id = SMALL;
+      }
+      else if( strcmp(size, "medium") == 0 )
+      {
+        P.validation_problem_id = MEDIUM;
+      }
+      else if( strcmp(size, "large") == 0 )
+      {
+        P.validation_problem_id = LARGE;
+      }
+      else
+        print_CLI_error();
+    }
     else
       print_CLI_error();
+  }
+
+  if( P.validation_problem_id == SMALL )
+  {
+    problem_size_multiplier = 1;
+    P.n_inactive_iterations = 10;
+    P.n_active_iterations = 10;
+    P.seed = 42;
+  }
+  else if( P.validation_problem_id == MEDIUM )
+  {
+    problem_size_multiplier = 4;
+    P.n_inactive_iterations = 100;
+    P.n_active_iterations = 100;
+    P.seed = 2001;
+  }
+  else if( P.validation_problem_id == LARGE )
+  {
+    problem_size_multiplier = 16;
+    P.n_inactive_iterations = 1000;
+    P.n_active_iterations = 1000;
+    P.seed = 123456789;
   }
 
   // Derived Values

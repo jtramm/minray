@@ -15,6 +15,10 @@
 #define VACUUM 1
 #define REFLECTIVE 2
 
+#define SMALL 1
+#define MEDIUM 2
+#define LARGE 3
+
 #define BUMP 1.0e-11
 
 typedef struct{
@@ -66,6 +70,7 @@ typedef struct{
   int n_iterations;
   int plotting_enabled;
   double cell_volume;
+  int validation_problem_id;
 } Parameters;
 
 typedef struct{
@@ -117,7 +122,7 @@ Parameters read_CLI(int argc, char * argv[]);
 ReadOnlyData load_2D_C5G7_XS(Parameters P);
 void plot_3D_vtk(Parameters P, float * scalar_flux_accumulator, int * material_id);
 void print_user_inputs(Parameters P);
-void print_results(Parameters P, SimulationResult SR);
+int print_results(Parameters P, SimulationResult SR);
 void print_status_data(int iter, double k_eff, double percent_missed, int is_active_region, double k_eff_total_accumulator, double k_eff_sum_of_squares_accumulator, int n_active_iterations);
 void center_print(const char *s, int width);
 void border_print(void);
@@ -150,6 +155,7 @@ size_t estimate_memory_usage(Parameters P);
 double get_time(void);
 void ptr_swap(float ** a, float ** b);
 void compute_statistics(double sum, double sum_of_squares, int n, double * sample_mean, double * std_dev_of_sample_mean);
+int validate_results(int validation_problem_id, double k_eff);
 
 // ray_trace_kernel.c
 void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t ray_id);
