@@ -15,10 +15,21 @@
 #define VACUUM 1
 #define REFLECTIVE 2
 
-#define X_NEG 0
-#define X_POS 1
-#define Y_NEG 2
-#define Y_POS 3
+#define BUMP 1.0e-10
+
+typedef struct{
+  double distance_to_surface;
+  double surface_normal_x;
+  double surface_normal_y;
+} TraceResult;
+
+typedef struct{
+  int cell_id;
+  int cartesian_cell_idx_x;
+  int cartesian_cell_idx_y;
+  int boundary_condition;
+} CellLookup;
+
 
 
 typedef struct{
@@ -146,6 +157,10 @@ void ptr_swap(float ** a, float ** b);
 
 // ray_trace_kernel.c
 void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t ray_id);
+CellLookup find_cell_id(Parameters P, double x, double y);
+TraceResult cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir);
+
+// Other kernel files
 void update_isotropic_sources_kernel(Parameters P, SimulationData SD, int cell, int energy_group_in, double inverse_k_eff);
 void flux_attenuation_kernel(Parameters P, SimulationData SD, uint64_t ray_id, int energy_group);
 void normalize_scalar_flux_kernel(Parameters P, float * new_scalar_flux, int cell, int energy_group);

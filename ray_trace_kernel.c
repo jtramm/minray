@@ -1,26 +1,5 @@
 #include "minray.h"
 
-//#define BUMP 1.0e-12
-//#define BUMP 1.0e-11
-#define BUMP 1.0e-10
-//#define BUMP 1.0e-9
-
-typedef struct{
-  double distance_to_surface;
-  double surface_normal_x;
-  double surface_normal_y;
-} TraceResult;
-
-typedef struct{
-  int cell_id;
-  int cartesian_cell_idx_x;
-  int cartesian_cell_idx_y;
-  int boundary_condition;
-} CellLookup;
-
-CellLookup find_cell_id(double x, double y, double inverse_cell_width, int n_cells_per_dimension, double inverse_length_per_dimension, int boundary_conditions[3][3]);
-TraceResult cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir);
-
 void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t ray_id)
 {
   double distance_travelled = 0.0;
@@ -30,7 +9,6 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
   double y =     rayData.location_y[ray_id];
   double x_dir = rayData.direction_x[ray_id];
   double y_dir = rayData.direction_y[ray_id];
-  //double z_dir = rayData.direction_z[ray_id];
   int cell_id =  rayData.cell_id[ray_id];
   int x_idx = cell_id % P.n_cells_per_dimension;
   int y_idx = cell_id / P.n_cells_per_dimension;
@@ -70,7 +48,7 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
     double y_across_surface = y + trace.surface_normal_y * BUMP;
     
     // Look up the "neighbor" cell id of the test point
-    CellLookup lookup = find_cell_id(x_across_surface, y_across_surface, P.inverse_cell_width, P.n_cells_per_dimension, P.inverse_length_per_dimension, P.boundary_conditions);
+    CellLookup lookup = find_cell_id(P, x_across_surface, y_across_surface);
     assert( lookup.cell_id != cell_id || is_terminal);
 
     // If we hit an outer boundary, reflect the ray
@@ -126,34 +104,17 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
   SD.readWriteData.intersectionData.n_intersections[ray_id] = intersection_id;
 }
 
-
-// Boundary surfaces:
-// inside_domain = 0
-// negative_x = 1;
-// positive_x = 3;
-// negative_y = 2;
-// positive_y = 4;
-CellLookup find_cell_id(double x, double y, double inverse_cell_width, int n_cells_per_dimension, double inverse_length_per_dimension, int boundary_conditions[3][3])
+CellLookup find_cell_id(Parameters P, double x, double y)
 {
-  int cartesian_cell_idx_x = floor(x * inverse_cell_width);
-  int cartesian_cell_idx_y = floor(y * inverse_cell_width);
+  int cartesian_cell_idx_x = floor(x * P.inverse_cell_width);
+  int cartesian_cell_idx_y = floor(y * P.inverse_cell_width);
 
-  int boundary_x = floor(x * inverse_length_per_dimension) + 1;
-  int boundary_y = floor(y * inverse_length_per_dimension) + 1;
+  int boundary_x = floor(x * P.inverse_length_per_dimension) + 1;
+  int boundary_y = floor(y * P.inverse_length_per_dimension) + 1;
 
-  int boundary_condition = boundary_conditions[boundary_x][boundary_y];
+  int boundary_condition = P.boundary_conditions[boundary_x][boundary_y];
 
-  /*
-  if( boundary_x )
-    *boundary_surface = boundary_x+2;
-  else if( boundary_y )
-    *boundary_surface = boundary_y+3;
-  else
-    *boundary_surface = 0;
-    */
-
-  int cell_id = cartesian_cell_idx_y * n_cells_per_dimension + cartesian_cell_idx_x; 
-  //return cell_id;
+  int cell_id = cartesian_cell_idx_y * P.n_cells_per_dimension + cartesian_cell_idx_x; 
   
   CellLookup lookup;
   lookup.cell_id = cell_id;
