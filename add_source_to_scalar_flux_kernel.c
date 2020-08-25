@@ -24,7 +24,8 @@ void add_source_to_scalar_flux_kernel(Parameters P, SimulationData SD, int cell,
   //if( !isfinite( new_scalar_flux[idx] ) )
   //  new_scalar_flux[idx] = 0.0f;
 
-  new_scalar_flux[idx] += FOUR_PI * isotropic_source[idx];
+  //new_scalar_flux[idx] += FOUR_PI * isotropic_source[idx];
+  new_scalar_flux[idx] += isotropic_source[idx];
   
   if( new_scalar_flux[idx] < 0 )
     new_scalar_flux[idx] = 0;

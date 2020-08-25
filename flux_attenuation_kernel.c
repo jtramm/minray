@@ -85,7 +85,8 @@ void flux_attenuation_kernel(Parameters P, SimulationData SD, uint64_t ray_id, i
 
     // TODO NOTE: This operation must be atomic if running in parallel
     #pragma omp atomic
-    new_scalar_flux[flux_idx] += FOUR_PI * delta_psi;
+    new_scalar_flux[flux_idx] += delta_psi;
+    //new_scalar_flux[flux_idx] += FOUR_PI * delta_psi;
 
     angular_flux -= delta_psi;
     //if( ray_id == 4784)
