@@ -13,6 +13,24 @@ Key Features:
 
 ![minray](docs/img/2D_C5G7_thermal_flux_wm.jpg)
 
+## Installing, Compiling, and Running
+
+Minray is written in C with no dependencies.
+
+Use the included makefile to install. Several options (optimization, OpenMP usage, debugging) are available as toggles at the top of the makefile.
+
+Run the appliation as `./minray` to get the default problem. Other options are:
+
+Usage: ./minray <options>
+Options:
+    -r <rays>                    Number of discrete rays
+    -d <distance per ray>        Travel distance per ray (cm)
+    -i <inactive iterations>     Set fixed number of inactive power iterations
+    -a <active iterations>       Set fixed number of active power iterations
+    -s <seed>                    Random number generator seed (for reproducibility)
+    -m <problem size multiplier> Multiplioer to increase/decrease problem size/resolution
+    -p                           Enables plotting
+
 ## Citing minray
 
 Papers wishing to cite random ray, ARRC, or minray should in general refer to:
