@@ -11,7 +11,7 @@ Key Features:
   - Hard coded reactor simulation problem of interest: 2D C5G7
   - Kernelized for easy porting to accelerator languages
 
-![minray](doc/img/2D_C5G7_thermal_flux_wm.jpg)
+![minray](doc/img/2D_C5G7_thermal_flux_wm.png)
 
 ## Installing, Compiling, and Running
 
