@@ -88,7 +88,8 @@ void flux_attenuation_kernel(Parameters P, SimulationData SD, uint64_t ray_id, i
     new_scalar_flux[flux_idx] += FOUR_PI * delta_psi;
 
     angular_flux -= delta_psi;
-    //printf("angular_flux = %.3le\n", angular_flux);
+    //if( ray_id == 4784)
+    //  printf("group %d: cell_id = %d  angular_flux = %+.3e  delta_psi = %+.3e  exponential = %+.3e  dist = %+.3e   tau = %+.3e\n", energy_group, cell_id, angular_flux, delta_psi, exponential, distances[i], tau);
 
   } // end intersection loop
 

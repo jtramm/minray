@@ -165,7 +165,7 @@ Parameters read_CLI(int argc, char * argv[])
   P.distance_per_ray = 10.0;
   P.n_inactive_iterations = 1000;
   P.n_active_iterations = 1000;
-  P.seed = 1337;
+  P.seed = time(NULL);
   P.n_materials = 8;
   P.n_energy_groups = 7;
   P.plotting_enabled = 0;
@@ -576,6 +576,25 @@ void plot_3D_vtk(Parameters P, float * scalar_flux_accumulator, int * material_i
         int material = material_id[cell_id++];
         material = eswap_int(material);
         fwrite(&material, sizeof(int), 1, fp);
+      }
+    }
+  }
+  
+  if( plot_materials )
+  {
+    fprintf(fp, "SCALARS trouble int\n");
+    fprintf(fp, "LOOKUP_TABLE default\n");
+    int cell_id = 0;
+    for( int y = 0; y < P.n_cells_per_dimension; y++)
+    {
+      for( int x = 0; x < P.n_cells_per_dimension; x++)
+      {
+        int material = 0;
+        if( cell_id == 577797 || cell_id == 545226)
+          material = 1;
+        material = eswap_int(material);
+        fwrite(&material, sizeof(int), 1, fp);
+        cell_id++;
       }
     }
   }

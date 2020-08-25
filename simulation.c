@@ -24,6 +24,15 @@ SimulationResult run_simulation(Parameters P, SimulationData SD)
   // Power Iteration Loop
   for( int iter = 0; iter < P.n_iterations; iter++ )
   {
+    // Reset scalar flux and k-eff accumulators if we have finished our inactive iterations
+    if( iter >= P.n_inactive_iterations && !is_active_region )
+    {
+      is_active_region = 1;
+      memset(SD.readWriteData.cellData.scalar_flux_accumulator, 0, P.n_cells * P.n_energy_groups * sizeof(float));
+      k_eff_total_accumulator = 0.0;
+      k_eff_sum_of_squares_accumulator = 0.0;
+    }
+
     update_isotropic_sources(P, SD, k_eff);
 
     // Set new scalar fluxes to zero
@@ -43,15 +52,6 @@ SimulationResult run_simulation(Parameters P, SimulationData SD)
     k_eff = compute_k_eff(P, SD, k_eff);
     k_eff_total_accumulator += k_eff;
     k_eff_sum_of_squares_accumulator += k_eff * k_eff;
-
-    // Reset scalar flux and k-eff accumulators if we have finished our inactive iterations
-    if( iter >= P.n_inactive_iterations && !is_active_region )
-    {
-      is_active_region = 1;
-      memset(SD.readWriteData.cellData.scalar_flux_accumulator, 0, P.n_cells * P.n_energy_groups * sizeof(float));
-      k_eff_total_accumulator = 0.0;
-      k_eff_sum_of_squares_accumulator = 0.0;
-    }
 
     // Set old scalar flux to equal the new scalar flux. To optimize, we simply swap the old and new scalar flux pointers
     ptr_swap(&SD.readWriteData.cellData.new_scalar_flux, &SD.readWriteData.cellData.old_scalar_flux);

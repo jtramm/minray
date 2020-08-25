@@ -108,20 +108,53 @@ void initialize_ray_kernel(uint64_t base_seed, int ray_id, double length_per_dim
 
     // Sample Angle
     double theta = LCG_random_double(&seed) * 2.0 * M_PI;
+
+    // Full 3D Random
     double z = -1.0 + 2.0 * LCG_random_double(&seed);
+    if( ray_id == 4784 )
+      z = 0.23;
+    
+    // TY Quadrature 1 angle
+    //double z = 0.602399;
+    
+    // TY Quadrature 3 angle
+    /*
+    double polar_sample = LCG_random_double(&seed);
+    double TY_polar_quadrature_angles[3] = {0.9860164522440789375086539997532650579039834891670296157543, 0.8431317703366419817667837235644272158155494503259851492417, 0.3599956025898094216886083598423368551278604552721705292320};
+    //double TY_polar_quadrature_weights[3] = {0.046233, 0.283619, 0.670148};
+    double TY_polar_quadrature_CDF[3] = {0.046233, 0.329852, 1.0};
+    int polar_angle;
+    for( polar_angle = 0; polar_angle < 3; polar_angle++ )
+    {
+      if( polar_sample < TY_polar_quadrature_CDF[polar_angle] )
+          break;
+    }
+    double z = TY_polar_quadrature_angles[polar_angle];
+    */
+
     double zo = sqrt(1.0 - z*z);
 
     // Spherical conversion
-    RD.direction_x[ray_id] = zo * cosf(theta);
-    RD.direction_y[ray_id] = zo * sinf(theta);
+    double x = zo * cosf(theta);
+    double y = zo * sinf(theta);
     //RD.direction_z[ray_id] = z;
 
-    // TODO?: Normalize Direction
+    // Normalize Direction
+    double inverse = 1.0 / sqrt( x*x + y*y + z*z );
+    x *= inverse;
+    y *= inverse;
+    z *= inverse;
     
     // Compute Cell ID
     int x_idx = RD.location_x[ray_id] * inverse_cell_width;
     int y_idx = RD.location_y[ray_id] * inverse_cell_width;
     RD.cell_id[ray_id] = y_idx * n_cells_per_dimension + x_idx; 
+
+    RD.direction_x[ray_id] = x;
+    RD.direction_y[ray_id] = y;
+    
+    if(fabs(z) > 0.999)
+      printf("ray id: %d direction = [%+.5lf, %+.5lf, %+.5lf] location = [%.5lf, %.5lf] idx = [%d, %d] cell_id = %d\n", ray_id, x, y, z, RD.location_x[ray_id], RD.location_y[ray_id], x_idx, y_idx, RD.cell_id[ray_id]) ;
 }  
 
 void initialize_rays(Parameters P, SimulationData SD)

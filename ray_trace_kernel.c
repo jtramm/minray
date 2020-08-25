@@ -67,8 +67,10 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
     x += x_dir * distance_to_surface;
     y += y_dir * distance_to_surface;
 
-    //double x_across_surface = x + x_dir * BUMP;
-    //double y_across_surface = y + y_dir * BUMP;
+    /*
+    double x_across_surface = x + x_dir * BUMP;
+    double y_across_surface = y + y_dir * BUMP;
+    */
     double x_across_surface = x;
     double y_across_surface = y;
     if( intersected_surface_direction == X_NEG )
@@ -129,8 +131,10 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
     assert(cell_id >= 0 && cell_id < P.n_cells);
 
     // Move ray off the surface
-    //x += x_dir * BUMP;
-    //y += y_dir * BUMP;
+    /*
+    x += x_dir * BUMP;
+    y += y_dir * BUMP;
+    */
     
     if( boundary_condition == NONE )
     {
