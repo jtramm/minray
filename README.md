@@ -21,14 +21,14 @@ Use the included makefile to install. Several options (optimization, OpenMP usag
 
 Run the appliation as `./minray` to get the default problem. Other options are:
 
-Usage: ./minray <options>
+Usage: ./minray \[options\]
 Options:
-    -r <rays>                    Number of discrete rays
-    -d <distance per ray>        Travel distance per ray (cm)
-    -i <inactive iterations>     Set fixed number of inactive power iterations
-    -a <active iterations>       Set fixed number of active power iterations
-    -s <seed>                    Random number generator seed (for reproducibility)
-    -m <problem size multiplier> Multiplioer to increase/decrease problem size/resolution
+    -r \[rays\]                    Number of discrete rays
+    -d \[distance per ray\]        Travel distance per ray (cm)
+    -i \[inactive iterations\]     Set fixed number of inactive power iterations
+    -a \[active iterations\]       Set fixed number of active power iterations
+    -s \[seed\]                    Random number generator seed (for reproducibility)
+    -m \[problem size multiplier\] Multiplioer to increase/decrease problem size/resolution
     -p                           Enables plotting
 
 ## Citing minray
