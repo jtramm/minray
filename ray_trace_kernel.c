@@ -77,7 +77,20 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
         y_dir *= -1.0;
     }
 
-
+    /*
+    if( boundary_surface && !is_terminal )
+    {
+      trace.surface_normal_x *= -1.0;
+      trace.surface_normal_y *= -1.0;
+      x_dir *= trace.surface_normal_x;
+      y_dir *= trace.surface_normal_y;
+    }
+    */
+    if( boundary_surface && !is_terminal )
+    {
+      trace.surface_normal_x *= -1.0;
+      trace.surface_normal_y *= -1.0;
+    }
 
     // Lookup boundary condition information based on boundary surface hit
     int boundary_condition = P.boundary_conditions[boundary_surface];
@@ -92,12 +105,6 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
       cell_id = neighbor_id;
       x_idx = x_idx_across_surface;
       y_idx = y_idx_across_surface;
-    }
-    
-    if( boundary_condition != NONE )
-    {
-      trace.surface_normal_x *= -1.0;
-      trace.surface_normal_y *= -1.0;
     }
 
     x += trace.surface_normal_x * BUMP;

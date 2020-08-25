@@ -111,7 +111,8 @@ void initialize_ray_kernel(uint64_t base_seed, int ray_id, double length_per_dim
 
     // Full 3D Random
     double z = -1.0 + 2.0 * LCG_random_double(&seed);
-    if(fabs(z) > 0.99999)
+    //if(fabs(z) > 0.99999)
+    if(fabs(z) > 0.9999)
       z = 0.602399;
     
     // TY Quadrature 1 angle
