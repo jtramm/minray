@@ -111,8 +111,8 @@ void initialize_ray_kernel(uint64_t base_seed, int ray_id, double length_per_dim
 
     // Full 3D Random
     double z = -1.0 + 2.0 * LCG_random_double(&seed);
-    if( ray_id == 4784 )
-      z = 0.23;
+    if(fabs(z) > 0.99999)
+      z = 0.602399;
     
     // TY Quadrature 1 angle
     //double z = 0.602399;
@@ -153,8 +153,8 @@ void initialize_ray_kernel(uint64_t base_seed, int ray_id, double length_per_dim
     RD.direction_x[ray_id] = x;
     RD.direction_y[ray_id] = y;
     
-    if(fabs(z) > 0.999)
-      printf("ray id: %d direction = [%+.5lf, %+.5lf, %+.5lf] location = [%.5lf, %.5lf] idx = [%d, %d] cell_id = %d\n", ray_id, x, y, z, RD.location_x[ray_id], RD.location_y[ray_id], x_idx, y_idx, RD.cell_id[ray_id]) ;
+    //if(fabs(z) > 0.999)
+    //  printf("ray id: %d direction = [%+.5lf, %+.5lf, %+.5lf] location = [%.5lf, %.5lf] idx = [%d, %d] cell_id = %d\n", ray_id, x, y, z, RD.location_x[ray_id], RD.location_y[ray_id], x_idx, y_idx, RD.cell_id[ray_id]) ;
 }  
 
 void initialize_rays(Parameters P, SimulationData SD)
