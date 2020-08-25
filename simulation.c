@@ -60,7 +60,7 @@ SimulationResult run_simulation(Parameters P, SimulationData SD)
     n_total_geometric_intersections += reduce_sum_int(SD.readWriteData.intersectionData.n_intersections, P.n_rays);
 
     // Output some status data on the results of the power iteration
-    print_status_data(iter, k_eff, percent_missed, is_active_region);
+    print_status_data(iter, k_eff, percent_missed, is_active_region, k_eff_total_accumulator, k_eff_sum_of_squares_accumulator, iter - P.n_inactive_iterations + 1);
 
   } // End Power Iteration Loop
   
@@ -68,11 +68,7 @@ SimulationResult run_simulation(Parameters P, SimulationData SD)
   
   // Gather simulation results
   SimulationResult SR;
-  int n = P.n_active_iterations;
-  SR.k_eff_std_dev = sqrt( (k_eff_sum_of_squares_accumulator - k_eff_total_accumulator * k_eff_total_accumulator / n ) / n);
-  SR.k_eff_std_dev /= sqrt(n);
-  SR.k_eff = k_eff_total_accumulator / P.n_active_iterations;
-
+  compute_statistics(k_eff_total_accumulator, k_eff_sum_of_squares_accumulator, P.n_active_iterations, &SR.k_eff, &SR.k_eff_std_dev);
   SR.n_geometric_intersections = n_total_geometric_intersections;
   SR.runtime_total = runtime_total;
   SR.runtime_transport_sweep = time_in_transport_sweep;

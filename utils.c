@@ -18,3 +18,10 @@ void ptr_swap(float ** a, float ** b)
   *a = *b;
   *b = tmp;
 }
+
+void compute_statistics(double sum, double sum_of_squares, int n, double * sample_mean, double * std_dev_of_sample_mean)
+{
+  *std_dev_of_sample_mean = sqrt( (sum_of_squares - sum * sum / n ) / n);
+  *std_dev_of_sample_mean /= sqrt(n);
+  *sample_mean = sum / n;
+}

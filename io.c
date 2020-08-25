@@ -114,7 +114,7 @@ void print_results(Parameters P, SimulationResult SR)
   border_print();
 }
 
-void print_status_data(int iter, double k_eff, double percent_missed, int is_active_region)
+void print_status_data(int iter, double k_eff, double percent_missed, int is_active_region, double k_eff_total_accumulator, double k_eff_sum_of_squares_accumulator, int n_active_iterations)
 {
   char color[64];
   char color_reset[64];
@@ -129,14 +129,19 @@ void print_status_data(int iter, double k_eff, double percent_missed, int is_act
     sprintf(color_reset, "");
   }
 
-  char active_status[64];
+  double k_eff_avg, k_eff_std_dev;
+  compute_statistics(k_eff_total_accumulator, k_eff_sum_of_squares_accumulator, n_active_iterations, &k_eff_avg, &k_eff_std_dev);
+
+  char active_info[256];
   if(is_active_region)
-    sprintf(active_status, "  (Active)");
+  {
+    sprintf(active_info, "k-avg = %.5lf +/- %.5lf", k_eff_avg, k_eff_std_dev);
+  }
   else
-    sprintf(active_status, "(Inactive)");
+    sprintf(active_info, "Inactive");
 
   // Print status data
-  printf("Iter %5d %s:   k-eff = %.5lf   %sMiss Rate = %.2le %s\n", iter, active_status, k_eff, color, percent_missed / 100.0, color_reset);
+  printf("Iter %5d   k = %.5lf   %sMiss Rate = %.2le%s   %s\n", iter, k_eff, color, percent_missed / 100.0, color_reset, active_info);
 }
 
 // print error to screen, inform program options
