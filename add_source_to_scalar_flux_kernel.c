@@ -18,9 +18,6 @@ void add_source_to_scalar_flux_kernel(Parameters P, SimulationData SD, int cell,
 
   new_scalar_flux[idx] /= (Sigma_t * P.cell_volume);
   new_scalar_flux[idx] += isotropic_source[idx];
-  
-  //if( new_scalar_flux[idx] < 0 )
-  //  new_scalar_flux[idx] = 0;
 
-   scalar_flux_accumulator[idx] += new_scalar_flux[idx];
+  scalar_flux_accumulator[idx] += new_scalar_flux[idx];
 }

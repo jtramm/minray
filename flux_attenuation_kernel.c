@@ -8,6 +8,7 @@ void flux_attenuation_kernel(Parameters P, SimulationData SD, uint64_t ray_id, i
   if( energy_group >= P.n_energy_groups)
     return;
 
+  // Indexing
   float * isotropic_source  = SD.readWriteData.cellData.isotropic_source;
   float * new_scalar_flux   = SD.readWriteData.cellData.new_scalar_flux;
   float angular_flux        = SD.readWriteData.rayData.angular_flux[ray_id * P.n_energy_groups + energy_group];
@@ -24,7 +25,7 @@ void flux_attenuation_kernel(Parameters P, SimulationData SD, uint64_t ray_id, i
   for( int i = 0; i < n_intersections; i++ )
   {
     // The cell ID for the FSR the ray starts life in
-    int cell_id = cell_ids[i];
+    uint64_t cell_id = cell_ids[i];
 
     if( did_vacuum_reflects[i] )
       angular_flux = 0.0f;
@@ -32,8 +33,14 @@ void flux_attenuation_kernel(Parameters P, SimulationData SD, uint64_t ray_id, i
     // tau calculation ( tau = Sigma_t * distance )
     float tau = Sigma_t[material_id[cell_id] * P.n_energy_groups + energy_group] * distances[i];
 
-    // Exponential ( exponential = 1 - exp( -tau ) )
-    //float exponential = -expm1(-tau);
+    /////////////////////////////////////////////////////////////////////
+    // Exponential Computation ( exponential = 1 - exp( -tau ) )
+    /////////////////////////////////////////////////////////////////////
+
+    // Intrinsic version:
+    // float exponential = -expm1(-tau);
+
+    // Explicit version:
     float exponential;
     {
       const float c1n =-1.0000013559236386308f;
@@ -76,18 +83,16 @@ void flux_attenuation_kernel(Parameters P, SimulationData SD, uint64_t ray_id, i
 
       exponential = num / den;
     }
+    /////////////////////////////////////////////////////////////////////
 
-    uint64_t flux_idx = (uint64_t) cell_id * P.n_energy_groups + energy_group; 
+    uint64_t flux_idx = cell_id * P.n_energy_groups + energy_group; 
 
-    float delta_psi =  (angular_flux - isotropic_source[flux_idx]) * exponential;
+    float delta_psi = (angular_flux - isotropic_source[flux_idx]) * exponential;
 
-    // TODO NOTE: This operation must be atomic if running in parallel
     #pragma omp atomic
     new_scalar_flux[flux_idx] += delta_psi;
 
     angular_flux -= delta_psi;
-    //if( ray_id == 4784)
-    //  printf("group %d: cell_id = %d  angular_flux = %+.3e  delta_psi = %+.3e  exponential = %+.3e  dist = %+.3e   tau = %+.3e\n", energy_group, cell_id, angular_flux, delta_psi, exponential, distances[i], tau);
 
   } // end intersection loop
 

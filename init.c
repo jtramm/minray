@@ -104,41 +104,22 @@ void initialize_ray_kernel(uint64_t base_seed, int ray_id, double length_per_dim
     uint64_t seed = fast_forward_LCG(base_seed, offset);
     RD.location_x[ray_id] = LCG_random_double(&seed) * length_per_dimension;
     RD.location_y[ray_id] = LCG_random_double(&seed) * length_per_dimension;
-    //RD.location_z[ray_id] = 0.0;
 
-    // Sample Angle
+    // Sample azimuthal angle
     double theta = LCG_random_double(&seed) * 2.0 * M_PI;
 
-    // Full 3D Random
+    // Sample polar angle
     double z = -1.0 + 2.0 * LCG_random_double(&seed);
-    //if(fabs(z) > 0.99999)
+
+    // If polar angle approaches unity (i.e., very steep), this can cause numerical instability.
+    // To fix this, for polar angles ~1.0 we will just reset their angle to the TY 1 angle quadrature
     if(fabs(z) > 0.9999)
       z = 0.602399;
-    
-    // TY Quadrature 1 angle
-    //double z = 0.602399;
-    
-    // TY Quadrature 3 angle
-    /*
-    double polar_sample = LCG_random_double(&seed);
-    double TY_polar_quadrature_angles[3] = {0.9860164522440789375086539997532650579039834891670296157543, 0.8431317703366419817667837235644272158155494503259851492417, 0.3599956025898094216886083598423368551278604552721705292320};
-    //double TY_polar_quadrature_weights[3] = {0.046233, 0.283619, 0.670148};
-    double TY_polar_quadrature_CDF[3] = {0.046233, 0.329852, 1.0};
-    int polar_angle;
-    for( polar_angle = 0; polar_angle < 3; polar_angle++ )
-    {
-      if( polar_sample < TY_polar_quadrature_CDF[polar_angle] )
-          break;
-    }
-    double z = TY_polar_quadrature_angles[polar_angle];
-    */
-
-    double zo = sqrt(1.0 - z*z);
 
     // Spherical conversion
+    double zo = sqrt(1.0 - z*z);
     double x = zo * cosf(theta);
     double y = zo * sinf(theta);
-    //RD.direction_z[ray_id] = z;
 
     // Normalize Direction
     double inverse = 1.0 / sqrt( x*x + y*y + z*z );
@@ -146,16 +127,15 @@ void initialize_ray_kernel(uint64_t base_seed, int ray_id, double length_per_dim
     y *= inverse;
     z *= inverse;
     
-    // Compute Cell ID
+    // Compute Starting Cell ID
     int x_idx = RD.location_x[ray_id] * inverse_cell_width;
     int y_idx = RD.location_y[ray_id] * inverse_cell_width;
-    RD.cell_id[ray_id] = y_idx * n_cells_per_dimension + x_idx; 
+    int cell_id = y_idx * n_cells_per_dimension + x_idx;
 
+    // Store sampled ray data
+    RD.cell_id[    ray_id] = cell_id; 
     RD.direction_x[ray_id] = x;
     RD.direction_y[ray_id] = y;
-    
-    //if(fabs(z) > 0.999)
-    //  printf("ray id: %d direction = [%+.5lf, %+.5lf, %+.5lf] location = [%.5lf, %.5lf] idx = [%d, %d] cell_id = %d\n", ray_id, x, y, z, RD.location_x[ray_id], RD.location_y[ray_id], x_idx, y_idx, RD.cell_id[ray_id]) ;
 }  
 
 void initialize_rays(Parameters P, SimulationData SD)

@@ -19,5 +19,4 @@ void compute_cell_fission_rates_kernel(Parameters P, SimulationData SD, float * 
   }
 
   SD.readWriteData.cellData.fission_rate[cell] = fission_rate * P.cell_volume;
-  //SD.readWriteData.cellData.fission_rate[cell] = fission_rate;
 }
