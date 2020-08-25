@@ -112,6 +112,7 @@ void print_results(Parameters P, SimulationResult SR)
   printf("Number of Integrations            = %.3le\n", (double) SR.n_geometric_intersections * P.n_energy_groups);
   double time_per_integration = SR.runtime_total * 1.0e9 / ( SR.n_geometric_intersections * P.n_energy_groups);
   printf("Time per Integration (TPI)        = %.3lf [ns]\n", time_per_integration);
+  printf("Est. Total Time Req. to Converge  = %.3le [s]\n", (SR.runtime_total / P.n_iterations) * 2000.0);
   border_print();
 }
 
