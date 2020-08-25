@@ -21,7 +21,7 @@ Use the included makefile to install. Several options (optimization, OpenMP usag
 
 Run the appliation as `./minray` to get the default problem. Other options are:
 
-Usage `./minray <options>`:
+`./minray <options>`:
  - `-r <rays>`                    Number of discrete rays
  - `-d <distance per ray>`        Travel distance per ray (cm)
  - `-i <inactive iterations>`     Set fixed number of inactive power iterations
