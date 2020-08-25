@@ -43,7 +43,7 @@ typedef struct{
   int n_materials;
   int n_energy_groups;
   int max_intersections_per_ray;
-  int boundary_conditions[5];
+  int boundary_conditions[3][3];
   int boundary_condition_x_positive;
   int boundary_condition_x_negative;
   int boundary_condition_y_positive;

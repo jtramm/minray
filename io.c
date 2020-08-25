@@ -174,11 +174,25 @@ Parameters read_CLI(int argc, char * argv[])
 // positive_x = 3;
 // negative_y = 2;
 // positive_y = 4;
+
+// inside_domain = 0
+// negative_x = 1;
+// positive_x = 3;
+// negative_y = 2;
+// positive_y = 4;
+  P.boundary_conditions[1][1] = NONE;
+  P.boundary_conditions[1][2] = REFLECTIVE; // x-minus
+  P.boundary_conditions[1][0] = VACUUM;     // x-positive
+  P.boundary_conditions[2][1] = VACUUM;     // y-minus
+  P.boundary_conditions[0][1] = REFLECTIVE; // y-positive
+
+  /*
   P.boundary_conditions[0] = NONE;
   P.boundary_conditions[1] = REFLECTIVE;
   P.boundary_conditions[2] = VACUUM;
   P.boundary_conditions[3] = VACUUM;
   P.boundary_conditions[4] = REFLECTIVE;
+  */
 
   int has_user_set_rays = 0;
 
