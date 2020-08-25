@@ -108,6 +108,7 @@ void print_results(Parameters P, SimulationResult SR)
   printf("    Transport Sweep Time          = %.3le [s] (%.2lf%%)\n", SR.runtime_transport_sweep, 100.0 * SR.runtime_transport_sweep / SR.runtime_total);
   printf("    Iteration Time                = %.3le [s] (%.2lf%%)\n", SR.runtime_total - SR.runtime_transport_sweep, 100.0* (1.0 - SR.runtime_transport_sweep / SR.runtime_total));
   printf("Number of Geometric Intersections = %.3le\n", (double) SR.n_geometric_intersections);
+  printf("Avg. Geom. Intersections per Ray  = %.1lf\n", SR.n_geometric_intersections / ((double)P.n_rays * P.n_iterations));
   printf("Number of Integrations            = %.3le\n", (double) SR.n_geometric_intersections * P.n_energy_groups);
   double time_per_integration = SR.runtime_total * 1.0e9 / ( SR.n_geometric_intersections * P.n_energy_groups);
   printf("Time per Integration (TPI)        = %.3lf [ns]\n", time_per_integration);
@@ -155,6 +156,7 @@ void print_CLI_error(void)
   printf("    -a <active iterations>       Set fixed number of active power iterations\n");
   printf("    -s <seed>                    Random number generator seed (for reproducibility)\n");
   printf("    -m <problem size multiplier> Multiplioer to increase problem size/resolution\n");
+  printf("    -p                           Enables plotting\n");
 
   printf("See readme for full description of default run values\n");
   exit(1);
@@ -167,7 +169,6 @@ Parameters read_CLI(int argc, char * argv[])
   // Set Defaults
   Parameters P;
   P.length_per_dimension = 64.26;
-  P.n_rays = 7500;
   P.distance_per_ray = 10.0;
   P.n_inactive_iterations = 1000;
   P.n_active_iterations = 1000;
@@ -251,9 +252,9 @@ Parameters read_CLI(int argc, char * argv[])
 
   // Derived Values
   P.n_cells_per_dimension = 102 * problem_size_multiplier;
-  P.max_intersections_per_ray = 100 * problem_size_multiplier;
+  P.max_intersections_per_ray = 30 * problem_size_multiplier;
   if( !has_user_set_rays)
-    P.n_rays *= problem_size_multiplier * problem_size_multiplier;
+    P.n_rays = 6170.0 * problem_size_multiplier + 1955.0;
   P.cell_width = P.length_per_dimension / P.n_cells_per_dimension;
   P.inverse_cell_width = 1.0 / P.cell_width;
   P.n_cells = P.n_cells_per_dimension * P.n_cells_per_dimension;
