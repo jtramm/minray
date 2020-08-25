@@ -50,6 +50,9 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
     // Look up the "neighbor" cell id of the test point.
     // This function also gives us some info on if we hit a boundary, and what type it was.
     CellLookup lookup = find_cell_id(P, x_across_surface, y_across_surface);
+    
+    // A sanity check
+    assert(lookup.cell_id != cell_id || is_terminal);
 
     // If we hit an outer boundary, reflect the ray
     if( lookup.boundary_condition != NONE && !is_terminal )
@@ -82,7 +85,6 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
     distance_travelled += trace.distance_to_surface;
 
     // Some sanity checks (can be disabled if desired)
-    assert(lookup.cell_id != cell_id || is_terminal);
     assert(cell_id >= 0 && cell_id < P.n_cells);
     assert(x > 0.0 && y > 0.0 && x < P.length_per_dimension && y < P.length_per_dimension);
   }
