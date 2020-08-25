@@ -67,29 +67,16 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
     // Look up the "neighbor" cell id of the test point
     int neighbor_id = find_cell_id(x_across_surface, y_across_surface, P.inverse_cell_width, P.n_cells_per_dimension, P.inverse_length_per_dimension, &boundary_surface, &x_idx_across_surface, &y_idx_across_surface);
     assert( neighbor_id != cell_id || is_terminal);
-    
+
     // If we hit an outer boundary, reflect the ray
-    if( boundary_surface )
+    if( boundary_surface && !is_terminal )
     {
-      if( boundary_surface % 2 == 1 )
+      trace.surface_normal_x *= -1.0;
+      trace.surface_normal_y *= -1.0;
+      if( trace.surface_normal_x )
         x_dir *= -1.0;
       else
         y_dir *= -1.0;
-    }
-
-    /*
-    if( boundary_surface && !is_terminal )
-    {
-      trace.surface_normal_x *= -1.0;
-      trace.surface_normal_y *= -1.0;
-      x_dir *= trace.surface_normal_x;
-      y_dir *= trace.surface_normal_y;
-    }
-    */
-    if( boundary_surface && !is_terminal )
-    {
-      trace.surface_normal_x *= -1.0;
-      trace.surface_normal_y *= -1.0;
     }
 
     // Lookup boundary condition information based on boundary surface hit
@@ -188,20 +175,24 @@ TraceResult cartesian_ray_trace(double x, double y, double cell_width, int x_idx
   {
     min_dist = x_pos_dist;
     surface_normal_x = 1.0;
+    surface_normal_y = 0.0;
   }
   if( y_pos_dist < min_dist && y_pos_dist > 0 )
   {
     min_dist = y_pos_dist;
+    surface_normal_x = 0.0;
     surface_normal_y = 1.0;
   }
   if( x_neg_dist < min_dist && x_neg_dist > 0)
   {
     min_dist = x_neg_dist;
     surface_normal_x = -1.0;
+    surface_normal_y =  0.0;
   }
   if( y_neg_dist < min_dist && y_neg_dist > 0)
   {
     min_dist = y_neg_dist;
+    surface_normal_x =  0.0;
     surface_normal_y = -1.0;
   }
 
