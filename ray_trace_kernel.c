@@ -31,7 +31,7 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
       is_terminal = 1;
     }
   
-    // Record Intersection information
+    // Record intersection information for use by flux attenuation kernel
     uint64_t global_intersection_id = ray_id * P.max_intersections_per_ray + intersection_id;
     SD.readWriteData.intersectionData.distances[          global_intersection_id] = trace.distance_to_surface;
     SD.readWriteData.intersectionData.cell_ids[           global_intersection_id] = cell_id;
@@ -47,9 +47,9 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
     double x_across_surface = x + trace.surface_normal_x * BUMP;
     double y_across_surface = y + trace.surface_normal_y * BUMP;
     
-    // Look up the "neighbor" cell id of the test point
+    // Look up the "neighbor" cell id of the test point.
+    // This function also gives us some info on if we hit a boundary, and what type it was.
     CellLookup lookup = find_cell_id(P, x_across_surface, y_across_surface);
-    assert( lookup.cell_id != cell_id || is_terminal);
 
     // If we hit an outer boundary, reflect the ray
     if( lookup.boundary_condition != NONE && !is_terminal )
@@ -62,14 +62,11 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
         y_dir *= -1.0;
     }
 
-    // Lookup boundary condition information based on boundary surface hit
-    //int boundary_condition = P.boundary_conditions[boundary_surface];
-
-    // Note boundary information for next intersection.
+    // Note if we hit a vacuum boundary
     if( lookup.boundary_condition == VACUUM )
       just_hit_vacuum = 1;
 
-    // If we didn't hit a boundary, move into the next cell.
+    // If we didn't hit a boundary, the ray is moved into the next cell
     if( lookup.boundary_condition == NONE )
     {
       cell_id = lookup.cell_id;
@@ -77,30 +74,33 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
       y_idx =   lookup.cartesian_cell_idx_y;
     }
 
+    // Move ray off of surface
     x += trace.surface_normal_x * BUMP;
     y += trace.surface_normal_y * BUMP;
-    
-    //print_ray(x, y, x_dir, y_dir, cell_id);
-    //printf("trace dist = %.6lf\n", trace.distance_to_surface);
+
+    // Add this intersection's distance to the total for the ray
+    distance_travelled += trace.distance_to_surface;
+
+    // Some sanity checks (can be disabled if desired)
+    assert(lookup.cell_id != cell_id || is_terminal);
     assert(cell_id >= 0 && cell_id < P.n_cells);
     assert(x > 0.0 && y > 0.0 && x < P.length_per_dimension && y < P.length_per_dimension);
-
-    distance_travelled += trace.distance_to_surface;
   }
-  //assert(intersection_id < P.max_intersections_per_ray);
+
   if(intersection_id >= P.max_intersections_per_ray)
   {
     printf("WARNING: Increase max number of intersections per ray\n");
     print_ray(x, y, x_dir, y_dir, cell_id);
   }
   
-  
-  rayData.location_x[ray_id] = x;
-  rayData.location_y[ray_id] = y;
+  // Bank the ray's status for use in the next iteration
+  rayData.location_x[ ray_id] = x;
+  rayData.location_y[ ray_id] = y;
   rayData.direction_x[ray_id] = x_dir;
   rayData.direction_y[ray_id] = y_dir;
-  rayData.cell_id[ray_id] = cell_id;
+  rayData.cell_id[    ray_id] = cell_id;
     
+  // Bank number of intersections that this ray had this iteration
   SD.readWriteData.intersectionData.n_intersections[ray_id] = intersection_id;
 }
 
