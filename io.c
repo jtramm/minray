@@ -164,6 +164,7 @@ void print_CLI_error(void)
   printf("    -s <seed>                    Random number generator seed (for reproducibility)\n");
   printf("    -m <problem size multiplier> Multiplioer to increase problem size/resolution\n");
   printf("    -p                           Enables plotting\n");
+  printf("    -v <small, medium, large>    Executes a specific validation probem to test for correctness\n");
 
   printf("See readme for full description of default run values\n");
   exit(1);

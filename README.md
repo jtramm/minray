@@ -29,6 +29,7 @@ Run the appliation as `./minray` to get the default problem. Other options are:
  - `-s <seed>`                    Random number generator seed (for reproducibility)
  - `-m <problem size multiplier>` Multiplioer to increase/decrease problem size/resolution
  - `-p`                           Enables plotting
+ - `-v <small, medium, large>`    Executes a specific validation probem to test for correctness
 
 ## Citing minray
 
