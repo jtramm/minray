@@ -132,7 +132,7 @@ void print_status_data(int iter, double k_eff, double percent_missed, int is_act
     sprintf(active_status, "(Inactive)");
 
   // Print status data
-    printf("Iter %5d %s:   k-eff = %.5lf   %sMiss Rate = %.2le %s\n", iter, active_status, k_eff, color, percent_missed / 100.0, color_reset);
+  printf("Iter %5d %s:   k-eff = %.5lf   %sMiss Rate = %.2le %s\n", iter, active_status, k_eff, color, percent_missed / 100.0, color_reset);
 }
 
 // print error to screen, inform program options
@@ -155,11 +155,8 @@ Parameters read_CLI(int argc, char * argv[])
 {
   int problem_size_multiplier = 1;
 
-  Parameters P;
-
   // Set Defaults
-
-  // User Inputs
+  Parameters P;
   P.length_per_dimension = 64.26;
   P.n_rays = 7500;
   P.distance_per_ray = 10.0;

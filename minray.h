@@ -30,8 +30,6 @@ typedef struct{
   int boundary_condition;
 } CellLookup;
 
-
-
 typedef struct{
   int * material_id;
   float * nu_Sigma_f;
