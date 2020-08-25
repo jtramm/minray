@@ -15,7 +15,7 @@
 #define VACUUM 1
 #define REFLECTIVE 2
 
-#define BUMP 1.0e-10
+#define BUMP 1.0e-11
 
 typedef struct{
   double distance_to_surface;
@@ -45,7 +45,6 @@ typedef struct{
   // User Inputs
   int n_cells_per_dimension;
   double length_per_dimension;
-  //double height;
   uint64_t n_rays;
   double distance_per_ray;
   int n_inactive_iterations;
@@ -75,10 +74,8 @@ typedef struct{
   float * angular_flux;
   double * location_x;
   double * location_y;
-  //double * location_z;
   double * direction_x;
   double * direction_y;
-  //double * direction_z;
   int * cell_id;
 } RayData;
 

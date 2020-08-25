@@ -5,12 +5,7 @@ SimulationResult run_simulation(Parameters P, SimulationData SD)
   center_print("SIMULATION", 79);
   border_print();
 
-  // k is the multiplication factor (or eigenvalue) we are trying to solve for.
-  // The eigenvector is the scalar flux vector
   double k_eff = 1.0;
-
-  // We also want to accumulate an average k-eff across all active iterations, and
-  // to know the std. dev. of this sample mean.
   double k_eff_total_accumulator = 0.0;
   double k_eff_sum_of_squares_accumulator = 0.0;
 
@@ -33,11 +28,13 @@ SimulationResult run_simulation(Parameters P, SimulationData SD)
       k_eff_sum_of_squares_accumulator = 0.0;
     }
 
+    // Recompute the isotropic neutron source based on the last iteration's estimate of the scalar flux
     update_isotropic_sources(P, SD, k_eff);
 
-    // Set new scalar fluxes to zero
+    // Reset this iteration's scalar flux tallies to zero
     memset(SD.readWriteData.cellData.new_scalar_flux, 0, P.n_cells * P.n_energy_groups * sizeof(float));
 
+    // Run the transport sweep
     double start_time_transport = get_time();
     transport_sweep(P, SD);
     time_in_transport_sweep += get_time() - start_time_transport;
@@ -45,10 +42,13 @@ SimulationResult run_simulation(Parameters P, SimulationData SD)
     // Check hit rate to ensure we are running enough rays
     double percent_missed = check_hit_rate(SD.readWriteData.cellData.hit_count, P.n_cells);
 
+    // Normalize the scalar flux tallies to the total distance travelled by all rays this iteration
     normalize_scalar_flux(P, SD);
 
+    // Add the source together with the scalar flux tallies to compute this iteration's estimate of the scalar flux
     add_source_to_scalar_flux(P, SD);
 
+    // Compute a new estimate of the eigenvalue based on the old and new scalar fluxes
     k_eff = compute_k_eff(P, SD, k_eff);
     k_eff_total_accumulator += k_eff;
     k_eff_sum_of_squares_accumulator += k_eff * k_eff;
@@ -59,6 +59,7 @@ SimulationResult run_simulation(Parameters P, SimulationData SD)
     // Compute the total number of intersections performed this iteration
     n_total_geometric_intersections += reduce_sum_int(SD.readWriteData.intersectionData.n_intersections, P.n_rays);
 
+    // Output some status data on the results of the power iteration
     print_status_data(iter, k_eff, percent_missed, is_active_region);
 
   } // End Power Iteration Loop

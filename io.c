@@ -170,29 +170,11 @@ Parameters read_CLI(int argc, char * argv[])
   P.n_energy_groups = 7;
   P.plotting_enabled = 0;
 
-// negative_x = 1;
-// positive_x = 3;
-// negative_y = 2;
-// positive_y = 4;
-
-// inside_domain = 0
-// negative_x = 1;
-// positive_x = 3;
-// negative_y = 2;
-// positive_y = 4;
   P.boundary_conditions[1][1] = NONE;
-  P.boundary_conditions[1][2] = REFLECTIVE; // x-minus
-  P.boundary_conditions[1][0] = VACUUM;     // x-positive
-  P.boundary_conditions[2][1] = VACUUM;     // y-minus
-  P.boundary_conditions[0][1] = REFLECTIVE; // y-positive
-
-  /*
-  P.boundary_conditions[0] = NONE;
-  P.boundary_conditions[1] = REFLECTIVE;
-  P.boundary_conditions[2] = VACUUM;
-  P.boundary_conditions[3] = VACUUM;
-  P.boundary_conditions[4] = REFLECTIVE;
-  */
+  P.boundary_conditions[1][2] = REFLECTIVE; // x+
+  P.boundary_conditions[1][0] = VACUUM;     // x-
+  P.boundary_conditions[2][1] = VACUUM;     // y+
+  P.boundary_conditions[0][1] = REFLECTIVE; // y-
 
   int has_user_set_rays = 0;
 
@@ -274,9 +256,6 @@ Parameters read_CLI(int argc, char * argv[])
   P.inverse_length_per_dimension = 1.0 / P.length_per_dimension;
   P.n_iterations = P.n_inactive_iterations + P.n_active_iterations;
   P.cell_volume = 1.0 / P.n_cells;
-  printf("cell volume = %.6le\n", P.cell_volume);
-  //P.cell_volume = P.inverse_total_track_length;
-  //P.cell_volume = P.cell_expected_track_length;
 
   return P;
 }
@@ -534,7 +513,6 @@ void plot_3D_vtk(Parameters P, float * scalar_flux_accumulator, int * material_i
 
   fprintf(fp,"# vtk DataFile Version 2.0\n");
   fprintf(fp, "Dataset File\n");
-  //fprintf(fp, "ASCII\n");
   fprintf(fp, "BINARY\n");
   fprintf(fp, "DATASET STRUCTURED_POINTS\n");
   fprintf(fp, "DIMENSIONS %d %d %d\n", N, N, z_N);

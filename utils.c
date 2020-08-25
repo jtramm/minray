@@ -2,10 +2,6 @@
 
 double get_time(void)
 {
-  #ifdef _MPI
-  return MPI_Wtime();
-  #endif
-
   #ifdef OPENMP
   return omp_get_wtime();
   #endif

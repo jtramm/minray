@@ -30,10 +30,8 @@ RayData initialize_ray_data(Parameters P)
   sz = P.n_rays * sizeof(double);
   rayData.location_x  = (double *) malloc(sz);
   rayData.location_y  = (double *) malloc(sz);
-  //rayData.location_z  = (double *) malloc(sz);
   rayData.direction_x = (double *) malloc(sz);
   rayData.direction_y = (double *) malloc(sz);
- // rayData.direction_z = (double *) malloc(sz);
   
   sz = P.n_rays * sizeof(int);
   rayData.cell_id  = (int *) malloc(sz);
@@ -97,7 +95,7 @@ SimulationData initialize_simulation(Parameters P)
   return SD;
 }
 
-#define PRNG_SAMPLES_PER_RAY 4
+#define PRNG_SAMPLES_PER_RAY 10
 void initialize_ray_kernel(uint64_t base_seed, int ray_id, double length_per_dimension, int n_cells_per_dimension, double inverse_cell_width, RayData RD)
 {
     uint64_t offset = ray_id * PRNG_SAMPLES_PER_RAY;
@@ -112,9 +110,9 @@ void initialize_ray_kernel(uint64_t base_seed, int ray_id, double length_per_dim
     double z = -1.0 + 2.0 * LCG_random_double(&seed);
 
     // If polar angle approaches unity (i.e., very steep), this can cause numerical instability.
-    // To fix this, for polar angles ~1.0 we will just reset their angle to the TY 1 angle quadrature
-    if(fabs(z) > 0.9999)
-      z = 0.602399;
+    // To fix this, for polar angles ~1.0 we will just resample.
+    while(fabs(z) > 0.9999)
+      z = -1.0 + 2.0 * LCG_random_double(&seed);
 
     // Spherical conversion
     double zo = sqrt(1.0 - z*z);
