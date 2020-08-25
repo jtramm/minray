@@ -1,7 +1,5 @@
 #include "minray.h"
 
-#define ONE_OVER_FOUR_PI 0.0795774715459476678844418816862571810172298228702282243738f
-      
 void update_isotropic_sources_kernel(Parameters P, SimulationData SD, int cell, int energy_group_in, double inverse_k_eff)
 {
   // Cull threads if oversubscribed
@@ -14,7 +12,6 @@ void update_isotropic_sources_kernel(Parameters P, SimulationData SD, int cell, 
 
   const uint64_t scalar_flux_idx = cell * P.n_energy_groups;
   const int XS_base = material_id * P.n_energy_groups;
-  //const long sig_s_base = XS_base * P.n_energy_groups + energy_group_in * P.n_energy_groups;
 
   const float * Sigma_s = SD.readOnlyData.Sigma_s + XS_base * P.n_energy_groups + energy_group_in * P.n_energy_groups;
   const float * nu_Sigma_f = SD.readOnlyData.nu_Sigma_f + XS_base;
@@ -34,7 +31,6 @@ void update_isotropic_sources_kernel(Parameters P, SimulationData SD, int cell, 
   }
 
   fission_source *= Chi * inverse_k_eff;
-  //float new_isotropic_source = (scatter_source + fission_source) * ONE_OVER_FOUR_PI / Sigma_t;
   float new_isotropic_source = (scatter_source + fission_source)  / Sigma_t;
   SD.readWriteData.cellData.isotropic_source[scalar_flux_idx + energy_group_in] = new_isotropic_source;
 }

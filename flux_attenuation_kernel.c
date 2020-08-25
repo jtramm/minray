@@ -1,7 +1,5 @@
 #include "minray.h"
 
-#define FOUR_PI 12.566370614359172953850573533118011536788677597500423283899778369f
-
 void flux_attenuation_kernel(Parameters P, SimulationData SD, uint64_t ray_id, int energy_group)
 {
   // Cull threads in case of oversubscription
@@ -86,7 +84,6 @@ void flux_attenuation_kernel(Parameters P, SimulationData SD, uint64_t ray_id, i
     // TODO NOTE: This operation must be atomic if running in parallel
     #pragma omp atomic
     new_scalar_flux[flux_idx] += delta_psi;
-    //new_scalar_flux[flux_idx] += FOUR_PI * delta_psi;
 
     angular_flux -= delta_psi;
     //if( ray_id == 4784)
