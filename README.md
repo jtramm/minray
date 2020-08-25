@@ -15,7 +15,7 @@ Key Features:
 
 ## Citing minray
 
-Papers discussing random ray, ARRC, or minray should in general refer to:
+Papers wishing to cite random ray, ARRC, or minray should in general refer to:
 
 John R. Tramm, Kord S. Smith, Benoit Forget, and Andrew R. Siegel.  The Random
 Ray Method for neutral particle transport. Journal of Computational Physics,
