@@ -164,14 +164,14 @@ void print_CLI_error(void)
 
 Parameters read_CLI(int argc, char * argv[])
 {
-  int problem_size_multiplier = 1;
+  int problem_size_multiplier = 16;
 
   // Set Defaults
   Parameters P;
   P.length_per_dimension = 64.26;
   P.distance_per_ray = 10.0;
-  P.n_inactive_iterations = 1000;
-  P.n_active_iterations = 1000;
+  P.n_inactive_iterations = 10;
+  P.n_active_iterations = 10;
   P.seed = time(NULL);
   P.n_materials = 8;
   P.n_energy_groups = 7;
