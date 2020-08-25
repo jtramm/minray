@@ -91,6 +91,10 @@ void print_user_inputs(Parameters P)
     printf("Plotting                          = Enabled\n");
   else
     printf("Plotting                          = Disabled\n");
+
+  #ifdef OPENMP
+  printf("Number of Threads                 = %d\n", omp_get_max_threads());
+  #endif
 }
 
 void print_results(Parameters P, SimulationResult SR)
@@ -565,25 +569,6 @@ void plot_3D_vtk(Parameters P, float * scalar_flux_accumulator, int * material_i
         int material = material_id[cell_id++];
         material = eswap_int(material);
         fwrite(&material, sizeof(int), 1, fp);
-      }
-    }
-  }
-  
-  if( plot_materials )
-  {
-    fprintf(fp, "SCALARS trouble int\n");
-    fprintf(fp, "LOOKUP_TABLE default\n");
-    int cell_id = 0;
-    for( int y = 0; y < P.n_cells_per_dimension; y++)
-    {
-      for( int x = 0; x < P.n_cells_per_dimension; x++)
-      {
-        int material = 0;
-        if( cell_id == 577797 || cell_id == 545226)
-          material = 1;
-        material = eswap_int(material);
-        fwrite(&material, sizeof(int), 1, fp);
-        cell_id++;
       }
     }
   }
