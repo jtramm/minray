@@ -5,11 +5,11 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
   double distance_travelled = 0.0;
   int intersection_id = 0;
 
-  double x =     rayData.location_x[ray_id];
-  double y =     rayData.location_y[ray_id];
+  double x =     rayData.location_x[ ray_id];
+  double y =     rayData.location_y[ ray_id];
   double x_dir = rayData.direction_x[ray_id];
   double y_dir = rayData.direction_y[ray_id];
-  int cell_id =  rayData.cell_id[ray_id];
+  int cell_id =  rayData.cell_id[    ray_id];
   int x_idx = cell_id % P.n_cells_per_dimension;
   int y_idx = cell_id / P.n_cells_per_dimension;
 
