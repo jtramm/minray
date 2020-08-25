@@ -6,7 +6,7 @@
 //#define BUMP 1.0e-9
 
 int find_cell_id(double x, double y, double inverse_cell_width, int n_cells_per_dimension, double inverse_length_per_dimension, int * boundary_surface, int * x_idx, int * y_idx);
-double cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir, int * intersected_surface_direction);
+double cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir, int * intersected_surface_direction, double * normal_x, double * normal_y);
 
 void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t ray_id)
 {
@@ -36,7 +36,10 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
 
     // Find distance to next surface
     int intersected_surface_direction = 0;
-    double distance_to_surface = cartesian_ray_trace(x, y, P.cell_width, x_idx, y_idx, x_dir, y_dir, &intersected_surface_direction);
+    double normal_x = 0.0;
+    double normal_y = 0.0;
+
+    double distance_to_surface = cartesian_ray_trace(x, y, P.cell_width, x_idx, y_idx, x_dir, y_dir, &intersected_surface_direction, &normal_x, &normal_y);
     //printf("distance to surface = %.3lf\n", distance_to_surface);
   
     // Check to see if we are terminal
@@ -71,6 +74,11 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
     double x_across_surface = x + x_dir * BUMP;
     double y_across_surface = y + y_dir * BUMP;
     */
+    
+    double x_across_surface = x + normal_x * BUMP;
+    double y_across_surface = y + normal_y * BUMP;
+
+    /*
     double x_across_surface = x;
     double y_across_surface = y;
     if( intersected_surface_direction == X_NEG )
@@ -81,6 +89,8 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
       y_across_surface -= BUMP;
     else if( intersected_surface_direction == Y_POS )
       y_across_surface += BUMP;
+      */
+
     int x_idx_across_surface, y_idx_across_surface;
     
     // Look up cell_ID of neighbor we are travelling into
@@ -136,6 +146,16 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
     y += y_dir * BUMP;
     */
     
+    if( boundary_condition != NONE )
+    {
+      normal_x *= -1.0;
+      normal_y *= -1.0;
+    }
+
+    x += normal_x * BUMP;
+    y += normal_y * BUMP;
+    
+    /*
     if( boundary_condition == NONE )
     {
       if( intersected_surface_direction == X_NEG )
@@ -158,6 +178,7 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
       else if( intersected_surface_direction == Y_POS )
         y -= BUMP;
     }
+    */
     
     assert(x > 0.0 && y > 0.0 && x < P.length_per_dimension && y < P.length_per_dimension);
     //printf("Location within cell = [%lf, %lf]\n", x - x_idx_across_surface* P.cell_width, y - y_idx_across_surface * P.cell_width);
@@ -212,7 +233,7 @@ int find_cell_id(double x, double y, double inverse_cell_width, int n_cells_per_
   return cell_id;
 }
 
-double cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir, int * intersected_surface_direction)
+double cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir, int * intersected_surface_direction, double * normal_x, double * normal_y)
 {
   x -= x_idx * cell_width;
   y -= y_idx * cell_width;
@@ -232,21 +253,29 @@ double cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int
   {
     min_dist = x_pos_dist;
     *intersected_surface_direction = X_POS;
+    *normal_x = 1.0;
+    *normal_y = 0.0;
   }
   if( y_pos_dist < min_dist && y_pos_dist > 0 )
   {
     min_dist = y_pos_dist;
     *intersected_surface_direction = Y_POS;
+    *normal_x = 0.0;
+    *normal_y = 1.0;
   }
   if( x_neg_dist < min_dist && x_neg_dist > 0)
   {
     min_dist = x_neg_dist;
     *intersected_surface_direction = X_NEG;
+    *normal_x = -1.0;
+    *normal_y =  0.0;
   }
   if( y_neg_dist < min_dist && y_neg_dist > 0)
   {
     min_dist = y_neg_dist;
     *intersected_surface_direction = Y_NEG;
+    *normal_x =  0.0;
+    *normal_y = -1.0;
   }
 
   return min_dist;
