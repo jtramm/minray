@@ -1,21 +1,26 @@
-__kernel void compute_cell_fission_rates_kernel(__global float * scalar_flux, ulong size, ulong n_energy_groups, double cell_volume,
-    __global int * material_id,
-    __global float * nu_Sigma_f,
-    __global float * fission_rate
-    )
+#include "parameters.h"
+
+__kernel void compute_cell_fission_rates_kernel(ARGUMENTS)
 {
   ulong cell = get_global_id(0);
-  if( cell >= size )
+  if( cell >= P.n_cells )
     return;
 
-  nu_Sigma_f += material_id[cell] * n_energy_groups;
-  scalar_flux += cell * n_energy_groups;
+
+  __global float * scalar_flux;
+  if( utility_variable == 0.0 )
+    scalar_flux = old_scalar_flux;
+  else
+    scalar_flux = new_scalar_flux;
+  
+  scalar_flux += cell * P.n_energy_groups;
+  nu_Sigma_f += material_id[cell] * P.n_energy_groups;
 
   double fission_rate_accumulator = 0.0;
-  for( int energy_group = 0; energy_group < n_energy_groups; energy_group++ )
+  for( int energy_group = 0; energy_group < P.n_energy_groups; energy_group++ )
   {
     fission_rate_accumulator += nu_Sigma_f[energy_group] * scalar_flux[energy_group];
   }
 
-  fission_rate[cell] = fission_rate_accumulator * cell_volume;
+  fission_rate[cell] = fission_rate_accumulator * P.cell_volume;
 }
