@@ -1,3 +1,8 @@
+
+// This floating point atomic function was written by:
+// Anca Hamuraru of STREAM HPC on 2/9/2016
+// and is available online at:
+// https://streamhpc.com/blog/2016-02-09/atomic-operations-for-floats-in-opencl-improved/
 void atomicAdd_g_f(volatile __global float *addr, float val)
 {
   union {

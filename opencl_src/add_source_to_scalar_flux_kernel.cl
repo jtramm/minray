@@ -1,23 +1,21 @@
-#include "minray.h"
-
-void add_source_to_scalar_flux_kernel(Parameters P, SimulationData SD, int cell, int energy_group)
+__kernel void add_source_to_scalar_flux_kernel(ulong size, ulong n_energy_groups, double cell_volume,
+    __global int * material_id,
+    __global double * Sigma_t,
+    __global float * new_scalar_flux,
+    __global float * isotropic_source,
+    __global float * scalar_flux_accumulator)
 {
-  if( cell >= P.n_cells )
+  // Get the index of the current element to be processed
+	ulong i = get_global_id(0);
+  if( i >= size)
     return;
-  if( energy_group >= P.n_energy_groups )
-    return;
+  ulong cell         = get_group_id(0);
+  ulong energy_group = get_local_id(0);
 
-  int material_id = SD.readOnlyData.material_id[cell];
-  double Sigma_t   = SD.readOnlyData.Sigma_t[material_id * P.n_energy_groups + energy_group];
+  double Sigma_t_value = Sigma_t[material_id[cell] * n_energy_groups + energy_group];
 
-  float * new_scalar_flux         = SD.readWriteData.cellData.new_scalar_flux;
-  float * isotropic_source        = SD.readWriteData.cellData.isotropic_source; 
-  float * scalar_flux_accumulator = SD.readWriteData.cellData.scalar_flux_accumulator; 
+  new_scalar_flux[i] /= (Sigma_t_value * cell_volume);
+  new_scalar_flux[i] += isotropic_source[i];
 
-  uint64_t idx = (uint64_t) cell * P.n_energy_groups + energy_group;
-
-  new_scalar_flux[idx] /= (Sigma_t * P.cell_volume);
-  new_scalar_flux[idx] += isotropic_source[idx];
-
-  scalar_flux_accumulator[idx] += new_scalar_flux[idx];
+  scalar_flux_accumulator[i] += new_scalar_flux[i];
 }
