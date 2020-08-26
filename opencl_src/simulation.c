@@ -17,6 +17,8 @@ SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD
   double start_time_simulation = get_time();
   double time_in_transport_sweep = 0.0;
 
+  size_t flux_bytes = P.n_cells * P.n_energy_groups * sizeof(float);
+
   // Power Iteration Loop
   for( int iter = 0; iter < P.n_iterations; iter++ )
   {
@@ -24,8 +26,8 @@ SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD
     if( iter >= P.n_inactive_iterations && !is_active_region )
     {
       is_active_region = 1;
-      printf("resetting scalar flux accumulators...\n");
-      clear_array(CL, &SD.readWriteData.cellData.d_scalar_flux_accumulator, P.n_cells * P.n_energy_groups * sizeof(float));
+      //printf("resetting scalar flux accumulators...\n");
+      clear_array(CL, &SD.readWriteData.cellData.d_scalar_flux_accumulator, flux_bytes);
       //memset(SD.readWriteData.cellData.scalar_flux_accumulator, 0, P.n_cells * P.n_energy_groups * sizeof(float));
       k_eff_total_accumulator = 0.0;
       k_eff_sum_of_squares_accumulator = 0.0;
@@ -35,11 +37,12 @@ SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD
     update_isotropic_sources(CL, P, SD, k_eff);
 
     // Reset this iteration's scalar flux tallies to zero
-    memset(SD.readWriteData.cellData.new_scalar_flux, 0, P.n_cells * P.n_energy_groups * sizeof(float));
+    //memset(SD.readWriteData.cellData.new_scalar_flux, 0, P.n_cells * P.n_energy_groups * sizeof(float));
+    clear_array(CL, &SD.readWriteData.cellData.d_new_scalar_flux, flux_bytes);
 
     // Run the transport sweep
     double start_time_transport = get_time();
-    transport_sweep(P, SD);
+    transport_sweep(CL, P, SD);
     time_in_transport_sweep += get_time() - start_time_transport;
 
     // Check hit rate to ensure we are running enough rays
@@ -95,20 +98,25 @@ void update_isotropic_sources(OpenCLInfo * CL, Parameters P, SimulationData SD, 
   check(ret);
 }
 
-void transport_sweep(Parameters P, SimulationData SD)
+void transport_sweep(OpenCLInfo * CL, Parameters P, SimulationData SD)
 {
-  // Ray Trace Kernel
-  for( int ray = 0; ray < P.n_rays; ray++ )
-  {
-    //ray_trace_kernel(P, SD, SD.readWriteData.rayData, ray);
-    ;
-  }
-
-  // Flux Attenuate Kernel
-  for( int ray = 0; ray < P.n_rays; ray++ )
-    for( int energy_group = 0; energy_group < P.n_energy_groups; energy_group++ )
-      ;
-  //flux_attenuation_kernel(P, SD, ray, energy_group);
+  size_t global_item_size;
+  size_t local_item_size;
+  cl_int ret;
+  
+  // Launch Ray Tracing kernel
+  printf("Launching ray tracing kernel...\n");
+  global_item_size = P.n_rays; // Process the entire lists
+  local_item_size = 8; // Divide work items into groups
+  ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.ray_trace_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
+  check(ret);
+  
+  // Launch Ray Tracing kernel
+  printf("Launching flux attenuation kernel...\n");
+  global_item_size = P.n_rays * P.n_energy_groups; // Process the entire lists
+  local_item_size = P.n_energy_groups; // Divide work items into groups
+  ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.flux_attenuation_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
+  check(ret);
 }
 
 

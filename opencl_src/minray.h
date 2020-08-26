@@ -147,7 +147,7 @@ void print_ray(double x, double y, double x_dir, double y_dir, int cell_id);
 
 // simulation.c
 SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD);
-void transport_sweep(Parameters P, SimulationData SD);
+void transport_sweep(OpenCLInfo * CL, Parameters P, SimulationData SD);
 void update_isotropic_sources(OpenCLInfo * CL, Parameters P, SimulationData SD, double k_eff);
 void normalize_scalar_flux(Parameters P, SimulationData SD);
 void add_source_to_scalar_flux(Parameters P, SimulationData SD);
