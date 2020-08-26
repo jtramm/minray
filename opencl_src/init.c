@@ -26,15 +26,21 @@ RayData initialize_ray_data(Parameters P)
 
   size_t sz = P.n_rays * P.n_energy_groups * sizeof(float);
   rayData.angular_flux = (float *) malloc(sz);
+  rayData.sz_angular_flux = sz;
 
   sz = P.n_rays * sizeof(double);
   rayData.location_x  = (double *) malloc(sz);
   rayData.location_y  = (double *) malloc(sz);
   rayData.direction_x = (double *) malloc(sz);
   rayData.direction_y = (double *) malloc(sz);
+  rayData.sz_location_x  = sz;
+  rayData.sz_location_y  = sz;
+  rayData.sz_direction_x = sz;
+  rayData.sz_direction_y = sz;
   
   sz = P.n_rays * sizeof(int);
   rayData.cell_id  = (int *) malloc(sz);
+  rayData.sz_cell_id  = sz;
 
   return rayData;
 }
@@ -47,9 +53,13 @@ IntersectionData initialize_intersection_data(Parameters P)
   intersectionData.n_intersections     = (int *) malloc(sz);
   intersectionData.cell_ids            = (int *) malloc(sz);
   intersectionData.did_vacuum_reflects = (int *) malloc(sz);
+  intersectionData.sz_n_intersections     = sz;
+  intersectionData.sz_cell_ids            = sz;
+  intersectionData.sz_did_vacuum_reflects = sz;
 
   sz        = P.n_rays * P.max_intersections_per_ray * sizeof(double);
   intersectionData.distances = (double *) malloc(sz);
+  intersectionData.sz_distances = sz;
 
   return intersectionData;
 }
@@ -64,9 +74,15 @@ CellData initialize_cell_data(Parameters P)
   CD.old_scalar_flux          = (float *) malloc(sz);
   CD.scalar_flux_accumulator  = (float *) malloc(sz);
   CD.fission_rate             = (float *) malloc(sz);
+  CD.sz_isotropic_source         = sz;
+  CD.sz_new_scalar_flux          = sz;
+  CD.sz_old_scalar_flux          = sz;
+  CD.sz_scalar_flux_accumulator  = sz;
+  CD.sz_fission_rate             = sz;
 
   sz = P.n_cells * sizeof(int);
   CD.hit_count = (int *) malloc(sz);
+  CD.sz_hit_count = sz;
 
   return CD;
 }

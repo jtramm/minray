@@ -1,5 +1,49 @@
 #include "minray.h"
 
+typedef struct{
+  cl_platform_id platform_id;
+  cl_device_id device_id;
+  cl_context context;
+  cl_command_queue command_queue;
+} OpenCLInfo;
+
+OpenCLInfo initialize_device(void)
+{
+  // Get platform and device information
+  cl_platform_id platform_id = NULL;
+  cl_device_id device_id = NULL;   
+  cl_uint ret_num_devices;
+  cl_uint ret_num_platforms;
+  cl_int ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
+  check(ret);
+  ret = clGetDeviceIDs( platform_id, CL_DEVICE_TYPE_DEFAULT, 1, &device_id, &ret_num_devices);
+  //ret = clGetDeviceIDs( platform_id, CL_DEVICE_TYPE_CPU, 1, &device_id, &ret_num_devices);
+  //ret = clGetDeviceIDs( platform_id, CL_DEVICE_TYPE_GPU, 1, &device_id, &ret_num_devices);
+  check(ret);
+
+  // Print info about where we are running
+  print_single_info(platform_id, device_id);
+
+  // Create an OpenCL context
+  cl_context context = clCreateContext( NULL, 1, &device_id, NULL, NULL, &ret);
+  check(ret);
+
+  // Create a command queue
+  cl_command_queue command_queue = clCreateCommandQueueWithProperties(context, device_id, 0, &ret);
+  check(ret);
+
+  OpenCLInfo CL;
+  CL.platform_id = platform_id;
+  CL.device_id = device_id;
+  CL.context = context;
+  CL.command_queue = command_queue;
+  return CL;
+}
+
+void initialize_device_data(Parameters P, SimulationData SD, OpenCLInfo CL)
+{
+}
+
 SimulationResult run_simulation(Parameters P, SimulationData SD)
 {
   center_print("SIMULATION", 79);
@@ -63,9 +107,9 @@ SimulationResult run_simulation(Parameters P, SimulationData SD)
     print_status_data(iter, k_eff, percent_missed, is_active_region, k_eff_total_accumulator, k_eff_sum_of_squares_accumulator, iter - P.n_inactive_iterations + 1);
 
   } // End Power Iteration Loop
-  
+
   double runtime_total = get_time() - start_time_simulation;
-  
+
   // Gather simulation results
   SimulationResult SR;
   compute_statistics(k_eff_total_accumulator, k_eff_sum_of_squares_accumulator, P.n_active_iterations, &SR.k_eff, &SR.k_eff_std_dev);
@@ -124,7 +168,7 @@ double compute_k_eff(Parameters P, SimulationData SD, double old_k_eff)
 
   // Reduce total old fission rate
   double old_total_fission_rate = reduce_sum_float(SD.readWriteData.cellData.fission_rate, P.n_cells * P.n_energy_groups);
-  
+
   // Compute new fission rates
   compute_cell_fission_rates(P, SD, SD.readWriteData.cellData.new_scalar_flux);
 
@@ -136,7 +180,7 @@ double compute_k_eff(Parameters P, SimulationData SD, double old_k_eff)
 
   return new_k_eff;
 }
-  
+
 void compute_cell_fission_rates(Parameters P, SimulationData SD, float * scalar_flux)
 {
   #pragma omp parallel for

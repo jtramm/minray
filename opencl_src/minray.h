@@ -42,6 +42,18 @@ typedef struct{
   float * Sigma_t;
   float * Sigma_s;
   float * Chi;
+  cl_mem d_material_id;
+  cl_mem d_nu_Sigma_f;
+  cl_mem d_Sigma_f;
+  cl_mem d_Sigma_t;
+  cl_mem d_Sigma_s;
+  cl_mem d_Chi;
+  size_t sz_material_id;
+  size_t sz_nu_Sigma_f;
+  size_t sz_Sigma_f;
+  size_t sz_Sigma_t;
+  size_t sz_Sigma_s;
+  size_t sz_Chi;
 } ReadOnlyData;
 
 typedef struct{
@@ -75,19 +87,39 @@ typedef struct{
 } Parameters;
 
 typedef struct{
-  float * angular_flux;
+  float  * angular_flux;
   double * location_x;
   double * location_y;
   double * direction_x;
   double * direction_y;
-  int * cell_id;
+  int    * cell_id;
+  cl_mem d_angular_flux;
+  cl_mem d_location_x;
+  cl_mem d_location_y;
+  cl_mem d_direction_x;
+  cl_mem d_direction_y;
+  cl_mem d_cell_id;
+  size_t sz_angular_flux;
+  size_t sz_location_x;
+  size_t sz_location_y;
+  size_t sz_direction_x;
+  size_t sz_direction_y;
+  size_t sz_cell_id;
 } RayData;
 
 typedef struct{
-  int * n_intersections;
-  int * cell_ids;
+  int    * n_intersections;
+  int    * cell_ids;
   double * distances;
-  int * did_vacuum_reflects;
+  int    * did_vacuum_reflects;
+  cl_mem d_n_intersections;
+  cl_mem d_cell_ids;
+  cl_mem d_distances;
+  cl_mem d_did_vacuum_reflects;
+  size_t sz_n_intersections;
+  size_t sz_cell_ids;
+  size_t sz_distances;
+  size_t sz_did_vacuum_reflects;
 } IntersectionData;
 
 typedef struct{
@@ -97,6 +129,18 @@ typedef struct{
   float * scalar_flux_accumulator;
   int   * hit_count;
   float * fission_rate;
+  cl_mem d_isotropic_source;
+  cl_mem d_new_scalar_flux;
+  cl_mem d_old_scalar_flux;
+  cl_mem d_scalar_flux_accumulator;
+  cl_mem d_hit_count;
+  cl_mem d_fission_rate;
+  size_t sz_isotropic_source;
+  size_t sz_new_scalar_flux;
+  size_t sz_old_scalar_flux;
+  size_t sz_scalar_flux_accumulator;
+  size_t sz_hit_count;
+  size_t sz_fission_rate;
 } CellData;
 
 typedef struct{

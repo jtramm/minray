@@ -500,12 +500,25 @@ ReadOnlyData load_2D_C5G7_XS(Parameters P)
   fclose(material_file);
 
   ReadOnlyData ROD;
-  ROD.Sigma_f = Sigma_f;
-  ROD.Sigma_t = Sigma_t;
-  ROD.Sigma_s = Sigma_s;
-  ROD.nu_Sigma_f = nu_Sigma_f;
-  ROD.Chi = Chi;
+
+  ROD.Sigma_f     = Sigma_f;
+  ROD.Sigma_t     = Sigma_t;
+  ROD.nu_Sigma_f  = nu_Sigma_f;
+  ROD.Chi         = Chi;
+  ROD.Sigma_s     = Sigma_s;
   ROD.material_id = material_id;
+
+  sz = P.n_materials * P.n_energy_groups;
+  ROD.sz_Sigma_f    = sz;
+  ROD.sz_Sigma_t    = sz;
+  ROD.sz_nu_Sigma_f = sz;
+  ROD.sz_Chi        = sz;
+
+  sz = P.n_materials * P.n_energy_groups * P.n_energy_groups;
+  ROD.sz_Sigma_s = sz;
+
+  sz = P.n_cells * sizeof(int);
+  ROD.sz_material_id = sz;
 
   if( ret == 0 )
   {
