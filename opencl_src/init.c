@@ -220,6 +220,8 @@ void initialize_kernels(OpenCLInfo * CL)
   CL->kernels.update_isotropic_sources_kernel   = compile_kernel(CL, "update_isotropic_sources_kernel");
   CL->kernels.add_source_to_scalar_flux_kernel  = compile_kernel(CL, "add_source_to_scalar_flux_kernel");
   CL->kernels.compute_cell_fission_rates_kernel = compile_kernel(CL, "compute_cell_fission_rates_kernel");
+  CL->kernels.reduce_int_kernel                 = compile_kernel(CL, "reduce_int_kernel");
+  CL->kernels.reduce_float_kernel               = compile_kernel(CL, "reduce_float_kernel");
 }
 
 #define NUM_ARGS 24

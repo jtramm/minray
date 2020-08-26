@@ -46,7 +46,7 @@ SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD
     time_in_transport_sweep += get_time() - start_time_transport;
 
     // Check hit rate to ensure we are running enough rays
-    double percent_missed = check_hit_rate(SD.readWriteData.cellData.hit_count, P.n_cells);
+    double percent_missed = check_hit_rate(CL, SD, P.n_cells);
 
     // Normalize the scalar flux tallies to the total distance travelled by all rays this iteration
     normalize_scalar_flux(P, SD);
@@ -63,7 +63,7 @@ SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD
     ptr_swap(&SD.readWriteData.cellData.new_scalar_flux, &SD.readWriteData.cellData.old_scalar_flux);
 
     // Compute the total number of intersections performed this iteration
-    n_total_geometric_intersections += reduce_sum_int(SD.readWriteData.intersectionData.n_intersections, P.n_rays);
+    //n_total_geometric_intersections += reduce_sum_int(SD.readWriteData.intersectionData.n_intersections, P.n_rays);
 
     // Output some status data on the results of the power iteration
     print_status_data(iter, k_eff, percent_missed, is_active_region, k_eff_total_accumulator, k_eff_sum_of_squares_accumulator, iter - P.n_inactive_iterations + 1);
@@ -174,24 +174,47 @@ double reduce_sum_float(float * a, int size)
   return sum;
 }
 
-int reduce_sum_int(int * a, int size)
+int reduce_hit_count(OpenCLInfo *CL, SimulationData SD, int n_cells)
 {
-  int sum = 0.0;
+  int sum = 0;
+  cl_mem d_sum = copy_array_to_device(CL, CL_MEM_READ_WRITE, (void *) &sum, sizeof(int));
+  
+  int argc = 3;
+  size_t arg_sz[3];
+  void * args[3];
 
-  for( int i = 0; i < size; i++ )
-    sum += a[i];
+  // Set argument sizes
+  arg_sz[0] = sizeof(int *);
+  arg_sz[1] = sizeof(int *);
+  arg_sz[2] = sizeof(int);
+
+  args[0] = (void *) &SD.readWriteData.cellData.d_hit_count;
+  args[1] = (void *) &d_sum;
+  args[2] = (void *) &n_cells;
+  
+  set_kernel_arguments(&CL->kernels.reduce_int_kernel, argc, arg_sz, args);
+  
+  size_t local_item_size = 64;
+  size_t global_item_size = ceil(n_cells/64.0) * 64.0;
+  cl_int ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.reduce_int_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
+  check(ret);
+
+  copy_array_from_device(CL, &d_sum, (void *) &sum, sizeof(int));
+
+  ret = clReleaseMemObject(d_sum);
+	check(ret);
 
   return sum;
 }
 
-
-double check_hit_rate(int * hit_count, int n_cells)
+double check_hit_rate(OpenCLInfo * CL, SimulationData SD, int n_cells)
 {
   // Determine how many FSRs were hit
-  int n_cells_hit = reduce_sum_int(hit_count, n_cells);
+  int n_cells_hit = reduce_hit_count(CL, SD, n_cells);
 
   // Reset cell hit counters
-  memset(hit_count, 0, n_cells * sizeof(int));
+  //memset(hit_count, 0, n_cells * sizeof(int));
+  clear_array(CL, &SD.readWriteData.cellData.d_hit_count, n_cells * sizeof(int));
 
   // Compute percentage of cells missed
   double percent_missed = (1.0 - (double) n_cells_hit/n_cells) * 100.0;

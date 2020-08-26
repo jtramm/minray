@@ -239,6 +239,13 @@ cl_mem copy_array_to_device(OpenCLInfo * CL, cl_mem_flags mem_flags, void * arra
   return d_array;
 }
 
+void copy_array_from_device(OpenCLInfo * CL, cl_mem * d_array, void * h_array, size_t sz)
+{
+  cl_int ret;
+  ret = clEnqueueReadBuffer(CL->command_queue, *d_array, CL_TRUE, 0, sz, h_array, 0, NULL, NULL);
+  check(ret);
+}
+
 void set_kernel_arguments(cl_kernel * kernel, int argc, size_t * arg_sz, void ** args)
 {
   cl_int ret;

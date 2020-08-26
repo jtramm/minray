@@ -25,6 +25,8 @@ typedef struct{
   cl_kernel normalize_scalar_flux_kernel;   
   cl_kernel add_source_to_scalar_flux_kernel; 
   cl_kernel compute_cell_fission_rates_kernel;
+  cl_kernel reduce_int_kernel;
+  cl_kernel reduce_float_kernel;
 } Kernels;
 
 typedef struct{
@@ -155,7 +157,7 @@ void compute_cell_fission_rates(Parameters P, SimulationData SD, float * scalar_
 double reduce_sum_float(float * a, int size);
 int reduce_sum_int(int * a, int size);
 double compute_k_eff(Parameters P, SimulationData SD, double old_k_eff);
-double check_hit_rate(int * hit_count, int n_cells);
+double check_hit_rate(OpenCLInfo * CL, SimulationData SD, int n_cells);
 
 // rand.c
 double LCG_random_double(uint64_t * seed);
@@ -187,6 +189,7 @@ cl_mem copy_array_to_device(OpenCLInfo * CL, cl_mem_flags mem_flags, void * arra
 cl_kernel compile_kernel(OpenCLInfo * CL, char * kernel_name);
 void set_kernel_arguments(cl_kernel * kernel, int argc, size_t * arg_sz, void ** args);
 void clear_array(OpenCLInfo * CL, cl_mem * buffer, size_t sz);
+void copy_array_from_device(OpenCLInfo * CL, cl_mem * d_array, void * h_array, size_t sz);
 
 
 // ray_trace_kernel.c
