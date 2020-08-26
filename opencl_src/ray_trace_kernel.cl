@@ -16,18 +16,7 @@ typedef struct{
 CellLookup find_cell_id(Parameters P, double x, double y);
 TraceResult cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir);
 
-__kernel void ray_trace_kernel(Parameters P,
-    __global double * location_x,
-    __global double * location_y,
-    __global double * direction_x,
-    __global double * direction_y,
-    __global int    * ray_cell_id,
-    __global double * distances,
-    __global int    * cell_ids,
-    __global int    * did_vacuum_reflects,
-    __global int    * hit_count,
-    __global int    * n_intersections
-    )
+__kernel void ray_trace_kernel(ARGUMENTS)
 {
   ulong ray_id = get_global_id(0);
   if( ray_id >= P.n_cells)
@@ -39,9 +28,9 @@ __kernel void ray_trace_kernel(Parameters P,
   double y =     location_y[ ray_id];
   double x_dir = direction_x[ray_id];
   double y_dir = direction_y[ray_id];
-  int cell_id =  ray_cell_id[    ray_id];
-  int x_idx = cell_id % P.n_cells_per_dimension;
-  int y_idx = cell_id / P.n_cells_per_dimension;
+  int ray_cell_id =  cell_id[    ray_id];
+  int x_idx = ray_cell_id % P.n_cells_per_dimension;
+  int y_idx = ray_cell_id / P.n_cells_per_dimension;
 
   int just_hit_vacuum = 0;
   int is_terminal = 0;
@@ -64,9 +53,9 @@ __kernel void ray_trace_kernel(Parameters P,
     // Record intersection information for use by flux attenuation kernel
     ulong global_intersection_id = ray_id * P.max_intersections_per_ray + intersection_id;
     distances[          global_intersection_id] = trace.distance_to_surface;
-    cell_ids[           global_intersection_id] = cell_id;
+    cell_ids[           global_intersection_id] = ray_cell_id;
     did_vacuum_reflects[global_intersection_id] = just_hit_vacuum;
-    hit_count[                         cell_id] = 1;
+    hit_count[                     ray_cell_id] = 1;
     just_hit_vacuum = 0;
 
     // Move ray forward to intersection surface
@@ -102,7 +91,7 @@ __kernel void ray_trace_kernel(Parameters P,
     // If we didn't hit a boundary, the ray is moved into the next cell
     if( lookup.boundary_condition == NONE )
     {
-      cell_id = lookup.cell_id;
+      ray_cell_id = lookup.cell_id;
       x_idx =   lookup.cartesian_cell_idx_x;
       y_idx =   lookup.cartesian_cell_idx_y;
     }
@@ -132,7 +121,7 @@ __kernel void ray_trace_kernel(Parameters P,
   location_y[ ray_id] = y;
   direction_x[ray_id] = x_dir;
   direction_y[ray_id] = y_dir;
-  ray_cell_id[ray_id] = cell_id;
+  cell_id[ray_id] = ray_cell_id;
 
   // Bank number of intersections that this ray had this iteration
   n_intersections[ray_id] = intersection_id;

@@ -1,3 +1,4 @@
+#include "parameters.h"
 
 // This floating point atomic function was written by:
 // Anca Hamuraru of STREAM HPC on 2/9/2016
@@ -18,21 +19,11 @@ void atomicAdd_g_f(volatile __global float *addr, float val)
   } while( current.u32 != expected.u32 );
 }
 
-__kernel void flux_attenuation_kernel(ulong size, ulong max_intersections_per_ray, int n_energy_groups,
-    __global float * isotropic_source,
-    __global float * new_scalar_flux,
-    __global float * angular_flux,
-    __global int   * material_id,
-    __global float * Sigma_t,
-    __global int   * n_intersections,
-    __global int   * cell_ids,
-    __global double * distances,
-    __global int    * did_vacuum_reflects
-    )
+__kernel void flux_attenuation_kernel(ARGUMENTS)
 {
   // Get the index of the current element to be processed
   ulong ray_group_idx = get_global_id(0);
-  if( ray_group_idx >= size)
+  if( ray_group_idx >= P.n_rays * P.n_energy_groups)
     return;
   ulong ray_id       = get_group_id(0);
   ulong energy_group = get_local_id(0);
@@ -41,7 +32,7 @@ __kernel void flux_attenuation_kernel(ulong size, ulong max_intersections_per_ra
   float ray_angular_flux    = angular_flux[ray_group_idx];
   int ray_n_intersections   = n_intersections[ray_id];
 
-  ulong ray_offset = ray_id * max_intersections_per_ray;
+  ulong ray_offset = ray_id * P.max_intersections_per_ray;
   cell_ids            += ray_offset;
   distances           += ray_offset;
   did_vacuum_reflects += ray_offset;
@@ -56,7 +47,7 @@ __kernel void flux_attenuation_kernel(ulong size, ulong max_intersections_per_ra
       ray_angular_flux = 0.0f;
 
     // tau calculation ( tau = Sigma_t * distance )
-    float tau = Sigma_t[material_id[cell_id] * n_energy_groups + energy_group] * distances[i];
+    float tau = Sigma_t[material_id[cell_id] * P.n_energy_groups + energy_group] * distances[i];
 
     /////////////////////////////////////////////////////////////////////
     // Exponential Computation ( exponential = 1 - exp( -tau ) )
@@ -110,7 +101,7 @@ __kernel void flux_attenuation_kernel(ulong size, ulong max_intersections_per_ra
     }
     /////////////////////////////////////////////////////////////////////
 
-    ulong flux_idx = cell_id * n_energy_groups + energy_group; 
+    ulong flux_idx = cell_id * P.n_energy_groups + energy_group; 
 
     float delta_psi = (ray_angular_flux - isotropic_source[flux_idx]) * exponential;
 
