@@ -73,11 +73,13 @@ CellData initialize_cell_data(Parameters P)
   CD.new_scalar_flux          = (float *) malloc(sz);
   CD.old_scalar_flux          = (float *) malloc(sz);
   CD.scalar_flux_accumulator  = (float *) malloc(sz);
-  CD.fission_rate             = (float *) malloc(sz);
   CD.sz_isotropic_source         = sz;
   CD.sz_new_scalar_flux          = sz;
   CD.sz_old_scalar_flux          = sz;
   CD.sz_scalar_flux_accumulator  = sz;
+
+  sz = P.n_cells * sizeof(float);
+  CD.fission_rate             = (float *) malloc(sz);
   CD.sz_fission_rate             = sz;
 
   sz = P.n_cells * sizeof(int);
