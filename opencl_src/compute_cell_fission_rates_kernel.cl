@@ -1,22 +1,21 @@
-#include "minray.h"
-
-void compute_cell_fission_rates_kernel(Parameters P, SimulationData SD, float * scalar_flux, int cell)
+__kernel void compute_cell_fission_rates_kernel(__global float * scalar_flux, ulong size, ulong n_energy_groups, double cell_volume,
+    __global int * material_id,
+    __global float * nu_Sigma_f,
+    __global float * fission_rate
+    )
 {
-  if( cell >= P.n_cells )
+  ulong cell = get_global_id(0);
+  if( cell >= size )
     return;
 
-  int material_id = SD.readOnlyData.material_id[cell];
-  int XS_idx      = material_id * P.n_energy_groups;
-  float * nu_Sigma_f = SD.readOnlyData.nu_Sigma_f + XS_idx;
+  nu_Sigma_f += material_id[cell] * n_energy_groups;
+  scalar_flux += cell * n_energy_groups;
 
-  uint64_t flux_idx = (uint64_t) cell * P.n_energy_groups;
-  scalar_flux += flux_idx;
-
-  double fission_rate = 0.0;
-  for( int energy_group = 0; energy_group < P.n_energy_groups; energy_group++ )
+  double fission_rate_accumulator = 0.0;
+  for( int energy_group = 0; energy_group < n_energy_groups; energy_group++ )
   {
-    fission_rate += nu_Sigma_f[energy_group] * scalar_flux[energy_group];
+    fission_rate_accumulator += nu_Sigma_f[energy_group] * scalar_flux[energy_group];
   }
 
-  SD.readWriteData.cellData.fission_rate[cell] = fission_rate * P.cell_volume;
+  fission_rate[cell] = fission_rate_accumulator * cell_volume;
 }
