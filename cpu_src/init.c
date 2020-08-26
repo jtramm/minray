@@ -11,7 +11,8 @@ size_t estimate_memory_usage(Parameters P)
   sz += (P.n_rays * P.max_intersections_per_ray * sizeof(int))*3;
   sz += P.n_rays * P.max_intersections_per_ray * sizeof(double);
   // Cell Data
-  sz += (P.n_cells * P.n_energy_groups * sizeof(float))*5;
+  sz += (P.n_cells * P.n_energy_groups * sizeof(float))*4;
+  sz += P.n_cells * sizeof(float);
   sz += P.n_cells * sizeof(int);
   // XS Data
   sz += P.n_materials * P.n_energy_groups * sizeof(float)*4;
@@ -63,6 +64,8 @@ CellData initialize_cell_data(Parameters P)
   CD.new_scalar_flux          = (float *) malloc(sz);
   CD.old_scalar_flux          = (float *) malloc(sz);
   CD.scalar_flux_accumulator  = (float *) malloc(sz);
+
+  sz = P.n_cells * sizeof(float);
   CD.fission_rate             = (float *) malloc(sz);
 
   sz = P.n_cells * sizeof(int);
