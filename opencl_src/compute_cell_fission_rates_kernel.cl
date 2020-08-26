@@ -6,7 +6,6 @@ __kernel void compute_cell_fission_rates_kernel(ARGUMENTS)
   if( cell >= P.n_cells )
     return;
 
-
   __global float * scalar_flux;
   if( utility_variable == 0.0 )
     scalar_flux = old_scalar_flux;

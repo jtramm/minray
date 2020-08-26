@@ -123,13 +123,13 @@ double compute_k_eff(Parameters P, SimulationData SD, double old_k_eff)
   compute_cell_fission_rates(P, SD, SD.readWriteData.cellData.old_scalar_flux);
 
   // Reduce total old fission rate
-  double old_total_fission_rate = reduce_sum_float(SD.readWriteData.cellData.fission_rate, P.n_cells * P.n_energy_groups);
+  double old_total_fission_rate = reduce_sum_float(SD.readWriteData.cellData.fission_rate, P.n_cells);
   
   // Compute new fission rates
   compute_cell_fission_rates(P, SD, SD.readWriteData.cellData.new_scalar_flux);
 
   // Reduce total new fission rate
-  double new_total_fission_rate = reduce_sum_float(SD.readWriteData.cellData.fission_rate, P.n_cells * P.n_energy_groups);
+  double new_total_fission_rate = reduce_sum_float(SD.readWriteData.cellData.fission_rate, P.n_cells);
 
   // Update estimate of k-eff
   double new_k_eff = old_k_eff * (new_total_fission_rate / old_total_fission_rate);

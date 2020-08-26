@@ -153,11 +153,12 @@ void transport_sweep(OpenCLInfo * CL, Parameters P, SimulationData SD);
 void update_isotropic_sources(OpenCLInfo * CL, Parameters P, SimulationData SD, double k_eff);
 void normalize_scalar_flux(OpenCLInfo * CL, Parameters P, SimulationData SD);
 void add_source_to_scalar_flux(OpenCLInfo * CL, Parameters P, SimulationData SD);
-void compute_cell_fission_rates(Parameters P, SimulationData SD, float * scalar_flux);
 double reduce_sum_float(float * a, int size);
 int reduce_sum_int(int * a, int size);
-double compute_k_eff(Parameters P, SimulationData SD, double old_k_eff);
+double compute_k_eff(OpenCLInfo * CL, Parameters P, SimulationData SD, double old_k_eff);
+void compute_cell_fission_rates(OpenCLInfo * CL, Parameters P, SimulationData SD, double utility_variable);
 double check_hit_rate(OpenCLInfo * CL, SimulationData SD, int n_cells);
+float reduce_fission_rates(OpenCLInfo *CL, SimulationData SD, int n_cells);
 
 // rand.c
 double LCG_random_double(uint64_t * seed);

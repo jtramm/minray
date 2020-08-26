@@ -55,7 +55,7 @@ SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD
     add_source_to_scalar_flux(CL, P, SD);
 
     // Compute a new estimate of the eigenvalue based on the old and new scalar fluxes
-    k_eff = compute_k_eff(P, SD, k_eff);
+    k_eff = compute_k_eff(CL, P, SD, k_eff);
     k_eff_total_accumulator += k_eff;
     k_eff_sum_of_squares_accumulator += k_eff * k_eff;
 
@@ -138,16 +138,17 @@ void add_source_to_scalar_flux(OpenCLInfo * CL, Parameters P, SimulationData SD)
   check(ret);
 }
 
-double compute_k_eff(Parameters P, SimulationData SD, double old_k_eff)
+double compute_k_eff(OpenCLInfo * CL, Parameters P, SimulationData SD, double old_k_eff)
 {
   // Compute old fission rates
-  compute_cell_fission_rates(P, SD, SD.readWriteData.cellData.old_scalar_flux);
+  compute_cell_fission_rates(CL, P, SD, 0.0);
 
   // Reduce total old fission rate
-  double old_total_fission_rate = reduce_sum_float(SD.readWriteData.cellData.fission_rate, P.n_cells * P.n_energy_groups);
+  //double old_total_fission_rate = reduce_sum_float(SD.readWriteData.cellData.fission_rate, P.n_cells * P.n_energy_groups);
+  double old_total_fission_rate = reduce_fission_rates
 
   // Compute new fission rates
-  compute_cell_fission_rates(P, SD, SD.readWriteData.cellData.new_scalar_flux);
+  compute_cell_fission_rates(CL, P, SD, 1.0);
 
   // Reduce total new fission rate
   double new_total_fission_rate = reduce_sum_float(SD.readWriteData.cellData.fission_rate, P.n_cells * P.n_energy_groups);
@@ -158,11 +159,16 @@ double compute_k_eff(Parameters P, SimulationData SD, double old_k_eff)
   return new_k_eff;
 }
 
-void compute_cell_fission_rates(Parameters P, SimulationData SD, float * scalar_flux)
+void compute_cell_fission_rates(OpenCLInfo * CL, Parameters P, SimulationData SD, double utility_variable)
 {
-  for( int cell = 0; cell < P.n_cells; cell++ )
-    ;
-  //compute_cell_fission_rates_kernel(P, SD, scalar_flux, cell);
+  cl_int ret = clSetKernelArg(CL->kernels.compute_cell_fission_rates_kernel, 0, sizeof(double), (void *)&utility_variable);
+  check(ret);
+  
+  printf("Launching cell fission rates kernel...\n");
+  size_t local_item_size = 64;
+  size_t global_item_size = ceil(P.n_cells/64.0) * 64.0;
+  cl_int ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.compute_cell_fission_rates_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
+  check(ret);
 }
 
 // May need to be a pairwise reduction
@@ -172,6 +178,39 @@ double reduce_sum_float(float * a, int size)
 
   for( int i = 0; i < size; i++ )
     sum += a[i];
+
+  return sum;
+}
+
+float reduce_fission_rates(OpenCLInfo *CL, SimulationData SD, int n_cells)
+{
+  float sum = 0;
+  cl_mem d_sum = copy_array_to_device(CL, CL_MEM_READ_WRITE, (void *) &sum, sizeof(float));
+  
+  int argc = 3;
+  size_t arg_sz[3];
+  void * args[3];
+
+  // Set argument sizes
+  arg_sz[0] = sizeof(float *);
+  arg_sz[1] = sizeof(float *);
+  arg_sz[2] = sizeof(int);
+
+  args[0] = (void *) &SD.readWriteData.cellData.d_fission_rate;
+  args[1] = (void *) &d_sum;
+  args[2] = (void *) &n_cells;
+  
+  set_kernel_arguments(&CL->kernels.reduce_float_kernel, argc, arg_sz, args);
+  
+  size_t local_item_size = 64;
+  size_t global_item_size = ceil(n_cells/64.0) * 64.0;
+  cl_int ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.reduce_float_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
+  check(ret);
+
+  copy_array_from_device(CL, &d_sum, (void *) &sum, sizeof(float));
+
+  ret = clReleaseMemObject(d_sum);
+	check(ret);
 
   return sum;
 }
