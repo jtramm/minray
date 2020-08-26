@@ -1,36 +1,57 @@
-#include "minray.h"
+void atomicAdd_g_f(volatile __global float *addr, float val)
+{
+  union {
+    unsigned int u32;
+    float f32;
+  } next, expected, current;
+  current.f32 = *addr;
+  do {
+    expected.f32 = current.f32;
+    next.f32 = expected.f32 + val;
+    current.u32 = atomic_cmpxchg( (volatile __global unsigned int *)addr,
+        expected.u32, next.u32);
+  } while( current.u32 != expected.u32 );
+}
 
-__kernel void flux_attenuation_kernel(ulong size, Parameters P, SimulationData SD)
+__kernel void flux_attenuation_kernel(ulong size, ulong max_intersections_per_ray, int n_energy_groups,
+    __global float * isotropic_source,
+    __global float * new_scalar_flux,
+    __global float * angular_flux,
+    __global int   * material_id,
+    __global float * Sigma_t,
+    __global int   * n_intersections,
+    __global int   * cell_ids,
+    __global double * distances,
+    __global int    * did_vacuum_reflects
+    )
 {
   // Get the index of the current element to be processed
-	ulong i = get_global_id(0);
-  if( i >= size)
+  ulong ray_group_idx = get_global_id(0);
+  if( ray_group_idx >= size)
     return;
+  ulong ray_id       = get_group_id(0);
+  ulong energy_group = get_local_id(0);
 
   // Indexing
-  float * isotropic_source  = SD.readWriteData.cellData.isotropic_source;
-  float * new_scalar_flux   = SD.readWriteData.cellData.new_scalar_flux;
-  float angular_flux        = SD.readWriteData.rayData.angular_flux[ray_id * P.n_energy_groups + energy_group];
+  float ray_angular_flux    = angular_flux[ray_group_idx];
+  int ray_n_intersections   = n_intersections[ray_id];
 
-  int * material_id         = SD.readOnlyData.material_id;
-  float * Sigma_t           = SD.readOnlyData.Sigma_t;
-
-  int n_intersections       = SD.readWriteData.intersectionData.n_intersections[ray_id];
-  int * cell_ids            = SD.readWriteData.intersectionData.cell_ids            + ray_id * P.max_intersections_per_ray;
-  double * distances        = SD.readWriteData.intersectionData.distances           + ray_id * P.max_intersections_per_ray;
-  int * did_vacuum_reflects = SD.readWriteData.intersectionData.did_vacuum_reflects + ray_id * P.max_intersections_per_ray;
+  ulong ray_offset = ray_id * max_intersections_per_ray;
+  cell_ids            += ray_offset;
+  distances           += ray_offset;
+  did_vacuum_reflects += ray_offset;
 
   // Loop over all of this ray's intersections
-  for( int i = 0; i < n_intersections; i++ )
+  for( int i = 0; i < ray_n_intersections; i++ )
   {
     // The cell ID for the FSR the ray starts life in
-    uint64_t cell_id = cell_ids[i];
+    ulong cell_id = cell_ids[i];
 
     if( did_vacuum_reflects[i] )
-      angular_flux = 0.0f;
+      ray_angular_flux = 0.0f;
 
     // tau calculation ( tau = Sigma_t * distance )
-    float tau = Sigma_t[material_id[cell_id] * P.n_energy_groups + energy_group] * distances[i];
+    float tau = Sigma_t[material_id[cell_id] * n_energy_groups + energy_group] * distances[i];
 
     /////////////////////////////////////////////////////////////////////
     // Exponential Computation ( exponential = 1 - exp( -tau ) )
@@ -84,17 +105,18 @@ __kernel void flux_attenuation_kernel(ulong size, Parameters P, SimulationData S
     }
     /////////////////////////////////////////////////////////////////////
 
-    uint64_t flux_idx = cell_id * P.n_energy_groups + energy_group; 
+    ulong flux_idx = cell_id * n_energy_groups + energy_group; 
 
-    float delta_psi = (angular_flux - isotropic_source[flux_idx]) * exponential;
+    float delta_psi = (ray_angular_flux - isotropic_source[flux_idx]) * exponential;
 
-    #pragma omp atomic
-    new_scalar_flux[flux_idx] += delta_psi;
+    //#pragma omp atomic
+    //new_scalar_flux[flux_idx] += delta_psi;
+    atomicAdd_g_f(new_scalar_flux + flux_idx, delta_psi);
 
-    angular_flux -= delta_psi;
+    ray_angular_flux -= delta_psi;
 
   } // end intersection loop
 
   // Store final angular flux for next iteration
-  SD.readWriteData.rayData.angular_flux[ray_id * P.n_energy_groups + energy_group] = angular_flux;
+  angular_flux[ray_group_idx] = ray_angular_flux;
 }
