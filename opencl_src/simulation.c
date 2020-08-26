@@ -49,10 +49,10 @@ SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD
     double percent_missed = check_hit_rate(CL, SD, P.n_cells);
 
     // Normalize the scalar flux tallies to the total distance travelled by all rays this iteration
-    normalize_scalar_flux(P, SD);
+    normalize_scalar_flux(CL, P, SD);
 
     // Add the source together with the scalar flux tallies to compute this iteration's estimate of the scalar flux
-    add_source_to_scalar_flux(P, SD);
+    add_source_to_scalar_flux(CL, P, SD);
 
     // Compute a new estimate of the eigenvalue based on the old and new scalar fluxes
     k_eff = compute_k_eff(P, SD, k_eff);
@@ -92,8 +92,8 @@ void update_isotropic_sources(OpenCLInfo * CL, Parameters P, SimulationData SD, 
 
   // Launch kernel
   printf("Launching update_isotropic_sources kernel...\n");
-  size_t global_item_size = P.n_cells * P.n_energy_groups; // Process the entire lists
-  size_t local_item_size = P.n_energy_groups; // Divide work items into groups of 64
+  size_t global_item_size = P.n_cells * P.n_energy_groups;
+  size_t local_item_size = P.n_energy_groups;
   ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.update_isotropic_sources_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
   check(ret);
 }
@@ -106,34 +106,36 @@ void transport_sweep(OpenCLInfo * CL, Parameters P, SimulationData SD)
   
   // Launch Ray Tracing kernel
   printf("Launching ray tracing kernel...\n");
-  global_item_size = P.n_rays; // Process the entire lists
-  local_item_size = 8; // Divide work items into groups
+  global_item_size = P.n_rays;
+  local_item_size = 8; 
   ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.ray_trace_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
   check(ret);
   
   // Launch Ray Tracing kernel
   printf("Launching flux attenuation kernel...\n");
-  global_item_size = P.n_rays * P.n_energy_groups; // Process the entire lists
-  local_item_size = P.n_energy_groups; // Divide work items into groups
+  global_item_size = P.n_rays * P.n_energy_groups;
+  local_item_size = P.n_energy_groups;
   ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.flux_attenuation_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
   check(ret);
 }
 
 
-void normalize_scalar_flux(Parameters P, SimulationData SD)
+void normalize_scalar_flux(OpenCLInfo * CL, Parameters P, SimulationData SD)
 {
-  for( int cell = 0; cell < P.n_cells; cell++ )
-    for( int energy_group = 0; energy_group < P.n_energy_groups; energy_group++ )
-      ;
-  //normalize_scalar_flux_kernel(P, SD.readWriteData.cellData.new_scalar_flux, cell, energy_group);
+  printf("Launching flux scalar flux normalization kernel...\n");
+  size_t global_item_size = P.n_cells * P.n_energy_groups;
+  size_t local_item_size = P.n_energy_groups;
+  cl_int ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.normalize_scalar_flux_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
+  check(ret);
 }
 
-void add_source_to_scalar_flux(Parameters P, SimulationData SD)
+void add_source_to_scalar_flux(OpenCLInfo * CL, Parameters P, SimulationData SD)
 {
-  for( int cell = 0; cell < P.n_cells; cell++ )
-    for( int energy_group = 0; energy_group < P.n_energy_groups; energy_group++ )
-      ;
-  //add_source_to_scalar_flux_kernel(P, SD, cell, energy_group);
+  printf("Launching add source to scalar flux normalization kernel...\n");
+  size_t global_item_size = P.n_cells * P.n_energy_groups;
+  size_t local_item_size = P.n_energy_groups;
+  cl_int ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.add_source_to_scalar_flux_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
+  check(ret);
 }
 
 double compute_k_eff(Parameters P, SimulationData SD, double old_k_eff)
