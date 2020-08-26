@@ -124,8 +124,8 @@ int print_results(Parameters P, SimulationResult SR)
 
 void print_status_data(int iter, double k_eff, double percent_missed, int is_active_region, double k_eff_total_accumulator, double k_eff_sum_of_squares_accumulator, int n_active_iterations)
 {
-  char color[64];
-  char color_reset[64];
+  char color[64] = "";
+  char color_reset[64] = "";
   if( percent_missed > 0.01 )
   {
     sprintf(color,       "\033[0;31m");
@@ -133,8 +133,8 @@ void print_status_data(int iter, double k_eff, double percent_missed, int is_act
   }
   else
   {
-    sprintf(color,       "");
-    sprintf(color_reset, "");
+    //sprintf(color,       "");
+   // sprintf(color_reset, "");
   }
 
   double k_eff_avg, k_eff_std_dev;
@@ -345,51 +345,57 @@ ReadOnlyData load_2D_C5G7_XS(Parameters P)
   float * Sigma_s =     (float *) calloc(sz, sizeof(float));
 
   // UO2 fuel-clad mixture
-  FILE * UO2_scatter   = fopen("data/C5G7_2D/UO2_scatter.txt",   "r");
-  FILE * UO2_transport = fopen("data/C5G7_2D/UO2_transport.txt", "r");
-  FILE * UO2_nufission = fopen("data/C5G7_2D/UO2_nufission.txt", "r");
-  FILE * UO2_fission   = fopen("data/C5G7_2D/UO2_fission.txt", "r");
-  FILE * UO2_chi       = fopen("data/C5G7_2D/UO2_chi.txt", "r");
+  FILE * UO2_scatter   = fopen("../data/C5G7_2D/UO2_scatter.txt",   "r");
+  FILE * UO2_transport = fopen("../data/C5G7_2D/UO2_transport.txt", "r");
+  FILE * UO2_nufission = fopen("../data/C5G7_2D/UO2_nufission.txt", "r");
+  FILE * UO2_fission   = fopen("../data/C5G7_2D/UO2_fission.txt", "r");
+  FILE * UO2_chi       = fopen("../data/C5G7_2D/UO2_chi.txt", "r");
 
   // MOX 4.3% fuel-clad mixture
-  FILE * MOX_43_scatter   = fopen("data/C5G7_2D/MOX_43_scatter.txt",   "r");
-  FILE * MOX_43_transport = fopen("data/C5G7_2D/MOX_43_transport.txt", "r");
-  FILE * MOX_43_nufission = fopen("data/C5G7_2D/MOX_43_nufission.txt", "r");
-  FILE * MOX_43_fission   = fopen("data/C5G7_2D/MOX_43_fission.txt", "r");
-  FILE * MOX_43_chi       = fopen("data/C5G7_2D/MOX_43_chi.txt", "r");
+  FILE * MOX_43_scatter   = fopen("../data/C5G7_2D/MOX_43_scatter.txt",   "r");
+  FILE * MOX_43_transport = fopen("../data/C5G7_2D/MOX_43_transport.txt", "r");
+  FILE * MOX_43_nufission = fopen("../data/C5G7_2D/MOX_43_nufission.txt", "r");
+  FILE * MOX_43_fission   = fopen("../data/C5G7_2D/MOX_43_fission.txt", "r");
+  FILE * MOX_43_chi       = fopen("../data/C5G7_2D/MOX_43_chi.txt", "r");
 
   // MOX 7.0% fuel-clad mixture
-  FILE * MOX_70_scatter   = fopen("data/C5G7_2D/MOX_70_scatter.txt",   "r");
-  FILE * MOX_70_transport = fopen("data/C5G7_2D/MOX_70_transport.txt", "r");
-  FILE * MOX_70_nufission = fopen("data/C5G7_2D/MOX_70_nufission.txt", "r");
-  FILE * MOX_70_fission   = fopen("data/C5G7_2D/MOX_70_fission.txt", "r");
-  FILE * MOX_70_chi       = fopen("data/C5G7_2D/MOX_70_chi.txt", "r");
+  FILE * MOX_70_scatter   = fopen("../data/C5G7_2D/MOX_70_scatter.txt",   "r");
+  FILE * MOX_70_transport = fopen("../data/C5G7_2D/MOX_70_transport.txt", "r");
+  FILE * MOX_70_nufission = fopen("../data/C5G7_2D/MOX_70_nufission.txt", "r");
+  FILE * MOX_70_fission   = fopen("../data/C5G7_2D/MOX_70_fission.txt", "r");
+  FILE * MOX_70_chi       = fopen("../data/C5G7_2D/MOX_70_chi.txt", "r");
 
   // MOX 8.7% fuel-clad mixture
-  FILE * MOX_87_scatter   = fopen("data/C5G7_2D/MOX_87_scatter.txt",   "r");
-  FILE * MOX_87_transport = fopen("data/C5G7_2D/MOX_87_transport.txt", "r");
-  FILE * MOX_87_nufission = fopen("data/C5G7_2D/MOX_87_nufission.txt", "r");
-  FILE * MOX_87_fission   = fopen("data/C5G7_2D/MOX_87_fission.txt", "r");
-  FILE * MOX_87_chi       = fopen("data/C5G7_2D/MOX_87_chi.txt", "r");
+  FILE * MOX_87_scatter   = fopen("../data/C5G7_2D/MOX_87_scatter.txt",   "r");
+  FILE * MOX_87_transport = fopen("../data/C5G7_2D/MOX_87_transport.txt", "r");
+  FILE * MOX_87_nufission = fopen("../data/C5G7_2D/MOX_87_nufission.txt", "r");
+  FILE * MOX_87_fission   = fopen("../data/C5G7_2D/MOX_87_fission.txt", "r");
+  FILE * MOX_87_chi       = fopen("../data/C5G7_2D/MOX_87_chi.txt", "r");
 
   // Fission Chamber
-  FILE * FC_scatter   = fopen("data/C5G7_2D/FC_scatter.txt",   "r");
-  FILE * FC_transport = fopen("data/C5G7_2D/FC_transport.txt", "r");
-  FILE * FC_nufission = fopen("data/C5G7_2D/FC_nufission.txt", "r");
-  FILE * FC_fission   = fopen("data/C5G7_2D/FC_fission.txt", "r");
-  FILE * FC_chi       = fopen("data/C5G7_2D/FC_chi.txt", "r");
+  FILE * FC_scatter   = fopen("../data/C5G7_2D/FC_scatter.txt",   "r");
+  FILE * FC_transport = fopen("../data/C5G7_2D/FC_transport.txt", "r");
+  FILE * FC_nufission = fopen("../data/C5G7_2D/FC_nufission.txt", "r");
+  FILE * FC_fission   = fopen("../data/C5G7_2D/FC_fission.txt", "r");
+  FILE * FC_chi       = fopen("../data/C5G7_2D/FC_chi.txt", "r");
 
   // Guide Tube
-  FILE * GT_scatter   = fopen("data/C5G7_2D/GT_scatter.txt",   "r");
-  FILE * GT_transport = fopen("data/C5G7_2D/GT_transport.txt", "r");
+  FILE * GT_scatter   = fopen("../data/C5G7_2D/GT_scatter.txt",   "r");
+  FILE * GT_transport = fopen("../data/C5G7_2D/GT_transport.txt", "r");
 
   // Moderator
-  FILE * Mod_scatter   = fopen("data/C5G7_2D/Mod_scatter.txt",   "r");
-  FILE * Mod_transport = fopen("data/C5G7_2D/Mod_transport.txt", "r");
+  FILE * Mod_scatter   = fopen("../data/C5G7_2D/Mod_scatter.txt",   "r");
+  FILE * Mod_transport = fopen("../data/C5G7_2D/Mod_transport.txt", "r");
 
   // Control Rod
-  FILE * CR_scatter   = fopen("data/C5G7_2D/CR_scatter.txt",   "r");
-  FILE * CR_transport = fopen("data/C5G7_2D/CR_transport.txt", "r");
+  FILE * CR_scatter   = fopen("../data/C5G7_2D/CR_scatter.txt",   "r");
+  FILE * CR_transport = fopen("../data/C5G7_2D/CR_transport.txt", "r");
+  
+  if( CR_transport == NULL )
+  {
+    printf("Cross section data files not found at ../data/C5G7_2D/\n");
+    exit(1);
+  }
 
   int ret = 0;
 
@@ -474,12 +480,12 @@ ReadOnlyData load_2D_C5G7_XS(Parameters P)
   fclose(CR_transport    );
 
   char fname[512];
-  sprintf(fname, "data/C5G7_2D/material_ids_%d.txt", P.n_cells_per_dimension);
+  sprintf(fname, "../data/C5G7_2D/material_ids_%d.txt", P.n_cells_per_dimension);
   printf("Searching for material data file \"%s\"...\n", fname); 
   FILE * material_file = fopen(fname, "r");
   if( material_file == NULL )
   {
-    printf("Material data file not found for dimension %d. Generate new data file with ARRC,\nor use a dimension or multipiler with existing data file.\nCurrently supported multipliers \"-m <1, 2, 4, 8, 16>\"\n", P.n_cells_per_dimension);
+    printf("Material data file not found for dimension %d. Generate new data file with ARRC,\nor use a dimension or multipiler with existing data file.\nCurrently supported multipliers \"-m <1, 2, 4, 8, 16, 32>\"\n", P.n_cells_per_dimension);
     exit(1);
   }
   else
@@ -513,35 +519,37 @@ ReadOnlyData load_2D_C5G7_XS(Parameters P)
 float eswap_float( float f )
 {    
   char * ptr = (char *) &f;
-  char orig[4];
-  orig[0] = ptr[0];
-  orig[1] = ptr[1];
-  orig[2] = ptr[2];
-  orig[3] = ptr[3];
-  char new[4];
-  new[0] = orig[3];
-  new[1] = orig[2];
-  new[2] = orig[1];
-  new[3] = orig[0];
-  float f2 = *((float *)new);
-  return f2;
+
+  char tmp[4];
+  tmp[0] = ptr[0];
+  tmp[1] = ptr[1];
+  tmp[2] = ptr[2];
+  tmp[3] = ptr[3];
+
+  ptr[0] = tmp[3];
+  ptr[1] = tmp[2];
+  ptr[2] = tmp[1];
+  ptr[3] = tmp[0];
+
+  return f;
 }
 
 int eswap_int( int f )
 {    
   char * ptr = (char *) &f;
-  char orig[4];
-  orig[0] = ptr[0];
-  orig[1] = ptr[1];
-  orig[2] = ptr[2];
-  orig[3] = ptr[3];
-  char new[4];
-  new[0] = orig[3];
-  new[1] = orig[2];
-  new[2] = orig[1];
-  new[3] = orig[0];
-  int f2 = *((int *)new);
-  return f2;
+  
+  char tmp[4];
+  tmp[0] = ptr[0];
+  tmp[1] = ptr[1];
+  tmp[2] = ptr[2];
+  tmp[3] = ptr[3];
+
+  ptr[0] = tmp[3];
+  ptr[1] = tmp[2];
+  ptr[2] = tmp[1];
+  ptr[3] = tmp[0];
+
+  return f;
 }
 
 void plot_3D_vtk(Parameters P, float * scalar_flux_accumulator, int * material_id)
