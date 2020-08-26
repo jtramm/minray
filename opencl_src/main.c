@@ -11,6 +11,12 @@ int main(int argc, char * argv[])
   // Allocate all data required by simulation
   SimulationData SD = initialize_simulation(P);
 
+  // Initialize OpenCL Device
+  OpenCLInfo CL = initialize_device();
+
+  // Allocate and move data to device
+  initialize_device_data(&SD, &CL);
+
   // Populate simulation data with starting guesses
   initialize_rays(P, SD);
   initialize_fluxes(P, SD);
