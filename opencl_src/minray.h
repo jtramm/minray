@@ -23,10 +23,20 @@
 #define BUMP 1.0e-11
 
 typedef struct{
+  cl_kernel ray_trace_kernel;
+  cl_kernel flux_attenuation_kernel;          
+  cl_kernel update_isotropic_sources_kernel;  
+  cl_kernel normalize_scalar_flux_kernel;   
+  cl_kernel add_source_to_scalar_flux_kernel; 
+  cl_kernel compute_cell_fission_rates_kernel;
+} Kernels;
+
+typedef struct{
   cl_platform_id platform_id;
   cl_device_id device_id;
   cl_context context;
   cl_command_queue command_queue;
+  Kernels kernels;
 } OpenCLInfo;
 
 typedef struct{
@@ -203,12 +213,14 @@ void initialize_rays(Parameters P, SimulationData SD);
 void initialize_fluxes(Parameters P, SimulationData SD);
 size_t estimate_memory_usage(Parameters P);
 void initialize_device_data(SimulationData * SD, OpenCLInfo * CL);
+void initialize_kernels(OpenCLInfo * CL);
 
 // utils.c
 double get_time(void);
 void ptr_swap(float ** a, float ** b);
 void compute_statistics(double sum, double sum_of_squares, int n, double * sample_mean, double * std_dev_of_sample_mean);
 int validate_results(int validation_problem_id, double k_eff);
+cl_kernel compile_kernel(OpenCLInfo * CL, char * kernel_name);
 
 // cl_utils.c
 const char *getErrorString(cl_int error);
@@ -218,6 +230,7 @@ void print_single_info( cl_platform_id platform, cl_device_id device);
 void print_opencl_info(void);
 OpenCLInfo initialize_device(void);
 cl_mem copy_array_to_device(OpenCLInfo * CL, cl_mem_flags mem_flags, void * array, size_t sz);
+
 
 // ray_trace_kernel.c
 void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t ray_id);

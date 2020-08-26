@@ -192,22 +192,32 @@ void initialize_device_data(SimulationData * SD, OpenCLInfo * CL)
 
   // Copy Read Write Data
   mem_type = CL_MEM_READ_WRITE;
-  SD->readWriteData.rayData.angular_flux = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.rayData.angular_flux, SD->readWriteData.rayData.sz_angular_flux);
-  SD->readWriteData.rayData.location_x   = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.rayData.location_x,   SD->readWriteData.rayData.sz_location_x);
-  SD->readWriteData.rayData.location_y   = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.rayData.location_y,   SD->readWriteData.rayData.sz_location_y);
-  SD->readWriteData.rayData.direction_x  = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.rayData.direction_x,  SD->readWriteData.rayData.sz_direction_x);
-  SD->readWriteData.rayData.direction_y  = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.rayData.direction_y,  SD->readWriteData.rayData.sz_direction_y);
-  SD->readWriteData.rayData.cell_id      = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.rayData.cell_id,      SD->readWriteData.rayData.sz_cell_id);
+  SD->readWriteData.rayData.d_angular_flux = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.rayData.angular_flux, SD->readWriteData.rayData.sz_angular_flux);
+  SD->readWriteData.rayData.d_location_x   = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.rayData.location_x,   SD->readWriteData.rayData.sz_location_x);
+  SD->readWriteData.rayData.d_location_y   = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.rayData.location_y,   SD->readWriteData.rayData.sz_location_y);
+  SD->readWriteData.rayData.d_direction_x  = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.rayData.direction_x,  SD->readWriteData.rayData.sz_direction_x);
+  SD->readWriteData.rayData.d_direction_y  = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.rayData.direction_y,  SD->readWriteData.rayData.sz_direction_y);
+  SD->readWriteData.rayData.d_cell_id      = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.rayData.cell_id,      SD->readWriteData.rayData.sz_cell_id);
   
-  SD->readWriteData.intersectionData.n_intersections     = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.intersectionData.n_intersections,     SD->readWriteData.intersectionData.sz_n_intersections);
-  SD->readWriteData.intersectionData.cell_ids            = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.intersectionData.cell_ids,            SD->readWriteData.intersectionData.sz_cell_ids);
-  SD->readWriteData.intersectionData.distances           = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.intersectionData.distances,           SD->readWriteData.intersectionData.sz_distances);
-  SD->readWriteData.intersectionData.did_vacuum_reflects = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.intersectionData.did_vacuum_reflects, SD->readWriteData.intersectionData.sz_did_vacuum_reflects);
+  SD->readWriteData.intersectionData.d_n_intersections     = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.intersectionData.n_intersections,     SD->readWriteData.intersectionData.sz_n_intersections);
+  SD->readWriteData.intersectionData.d_cell_ids            = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.intersectionData.cell_ids,            SD->readWriteData.intersectionData.sz_cell_ids);
+  SD->readWriteData.intersectionData.d_distances           = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.intersectionData.distances,           SD->readWriteData.intersectionData.sz_distances);
+  SD->readWriteData.intersectionData.d_did_vacuum_reflects = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.intersectionData.did_vacuum_reflects, SD->readWriteData.intersectionData.sz_did_vacuum_reflects);
   
-  SD->readWriteData.cellData.isotropic_source        = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.isotropic_source,        SD->readWriteData.cellData.sz_isotropic_source);
-  SD->readWriteData.cellData.new_scalar_flux         = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.new_scalar_flux,         SD->readWriteData.cellData.sz_new_scalar_flux);
-  SD->readWriteData.cellData.old_scalar_flux         = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.old_scalar_flux,         SD->readWriteData.cellData.sz_old_scalar_flux);
-  SD->readWriteData.cellData.scalar_flux_accumulator = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.scalar_flux_accumulator, SD->readWriteData.cellData.sz_scalar_flux_accumulator);
-  SD->readWriteData.cellData.hit_count               = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.hit_count,               SD->readWriteData.cellData.sz_hit_count);
-  SD->readWriteData.cellData.fission_rate            = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.fission_rate,            SD->readWriteData.cellData.sz_fission_rate);
+  SD->readWriteData.cellData.d_isotropic_source        = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.isotropic_source,        SD->readWriteData.cellData.sz_isotropic_source);
+  SD->readWriteData.cellData.d_new_scalar_flux         = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.new_scalar_flux,         SD->readWriteData.cellData.sz_new_scalar_flux);
+  SD->readWriteData.cellData.d_old_scalar_flux         = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.old_scalar_flux,         SD->readWriteData.cellData.sz_old_scalar_flux);
+  SD->readWriteData.cellData.d_scalar_flux_accumulator = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.scalar_flux_accumulator, SD->readWriteData.cellData.sz_scalar_flux_accumulator);
+  SD->readWriteData.cellData.d_hit_count               = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.hit_count,               SD->readWriteData.cellData.sz_hit_count);
+  SD->readWriteData.cellData.d_fission_rate            = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.fission_rate,            SD->readWriteData.cellData.sz_fission_rate);
+}
+
+void initialize_kernels(OpenCLInfo * CL)
+{
+  CL->kernels.ray_trace_kernel                  = compile_kernel(CL, "ray_trace_kernel");
+  CL->kernels.flux_attenuation_kernel           = compile_kernel(CL, "flux_attenuation_kernel");
+  CL->kernels.update_isotropic_sources_kernel   = compile_kernel(CL, "update_isotropic_sources_kernel");
+  CL->kernels.normalize_scalar_flux_kernel      = compile_kernel(CL, "normalize_scalar_flux_kernel");
+  CL->kernels.add_source_to_scalar_flux_kernel  = compile_kernel(CL, "add_source_to_scalar_flux_kernel");
+  CL->kernels.compute_cell_fission_rates_kernel = compile_kernel(CL, "compute_cell_fission_rates_kernel");
 }

@@ -1,3 +1,5 @@
+#include "minray.h"
+
 const char *getErrorString(cl_int error)
 {
   switch(error){
@@ -229,9 +231,57 @@ OpenCLInfo initialize_device(void)
 cl_mem copy_array_to_device(OpenCLInfo * CL, cl_mem_flags mem_flags, void * array, size_t sz)
 {
   cl_int ret;
-  cl_mem d_array = clCreateBuffer(CL->context, cl_mem_flags,  sz, NULL, &ret);
+  cl_mem d_array = clCreateBuffer(CL->context, mem_flags,  sz, NULL, &ret);
   check(ret);
   ret = clEnqueueWriteBuffer(CL->command_queue, d_array, CL_TRUE, 0, sz, array, 0, NULL, NULL);
   check(ret);
   return d_array;
 }
+
+void set_kernel_arguments(cl_kernel * kernel, int argc, size_t * arg_sz, void * args)
+{
+  cl_int ret;
+  for( int i = 0; i < argc; i++ )
+  {
+    ret = clSetKernelArg(*kernel, i, arg_sz[i], args[i]);
+	  check(ret);
+  }
+}
+
+cl_kernel compile_kernel(OpenCLInfo * CL, char * kernel_name)
+{
+  printf("Compiling %s...\n", kernel_name);
+
+	// Load the kernel source code into the array source_str
+	FILE *fp;
+	char *source_str;
+	size_t source_size;
+  char kernel_fname[256];
+  strcpy(kernel_fname, kernel_name);
+  strcat(kernel_fname, ".cl");
+
+	fp = fopen(kernel_fname, "r");
+	if (!fp) {
+		fprintf(stderr, "Failed to load kernel.\n");
+		exit(1);
+	}
+	source_str = (char*) malloc(MAX_SOURCE_SIZE);
+	source_size = fread( source_str, 1, MAX_SOURCE_SIZE, fp);
+  assert(source_size > 0 );
+	fclose( fp );
+
+  // Create a program from the kernel source
+  cl_int ret;
+	cl_program program = clCreateProgramWithSource(CL->context, 1, (const char **)&source_str, (const size_t *)&source_size, &ret);
+	check(ret);
+
+  // Build the program
+	ret = clBuildProgram(program, 1, &CL->device_id, NULL, NULL, NULL);
+	check(ret);
+
+	printCompilerError( program, CL->device_id );
+
+	// Create the OpenCL kernel
+	cl_kernel kernel = clCreateKernel(program, kernel_name, &ret);
+	check(ret);
+} 

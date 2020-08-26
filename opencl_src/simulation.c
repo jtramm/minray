@@ -81,41 +81,43 @@ void update_isotropic_sources(Parameters P, SimulationData SD, double k_eff)
 {
   double inv_k_eff = 1.0/k_eff;
 
-  #pragma omp parallel for
   for( int cell = 0; cell < P.n_cells; cell++ )
     for( int energy_group = 0; energy_group < P.n_energy_groups; energy_group++ )
-      update_isotropic_sources_kernel(P, SD, cell, energy_group, inv_k_eff);
+      ;
+      //update_isotropic_sources_kernel(P, SD, cell, energy_group, inv_k_eff);
 }
 
 void transport_sweep(Parameters P, SimulationData SD)
 {
   // Ray Trace Kernel
-  #pragma omp parallel for
   for( int ray = 0; ray < P.n_rays; ray++ )
-    ray_trace_kernel(P, SD, SD.readWriteData.rayData, ray);
+  {
+    //ray_trace_kernel(P, SD, SD.readWriteData.rayData, ray);
+    ;
+  }
 
   // Flux Attenuate Kernel
-  #pragma omp parallel for
   for( int ray = 0; ray < P.n_rays; ray++ )
     for( int energy_group = 0; energy_group < P.n_energy_groups; energy_group++ )
-      flux_attenuation_kernel(P, SD, ray, energy_group);
+      ;
+      //flux_attenuation_kernel(P, SD, ray, energy_group);
 }
 
 
 void normalize_scalar_flux(Parameters P, SimulationData SD)
 {
-  #pragma omp parallel for
   for( int cell = 0; cell < P.n_cells; cell++ )
     for( int energy_group = 0; energy_group < P.n_energy_groups; energy_group++ )
-      normalize_scalar_flux_kernel(P, SD.readWriteData.cellData.new_scalar_flux, cell, energy_group);
+      ;
+      //normalize_scalar_flux_kernel(P, SD.readWriteData.cellData.new_scalar_flux, cell, energy_group);
 }
 
 void add_source_to_scalar_flux(Parameters P, SimulationData SD)
 {
-  #pragma omp parallel for
   for( int cell = 0; cell < P.n_cells; cell++ )
     for( int energy_group = 0; energy_group < P.n_energy_groups; energy_group++ )
-      add_source_to_scalar_flux_kernel(P, SD, cell, energy_group);
+      ;
+      //add_source_to_scalar_flux_kernel(P, SD, cell, energy_group);
 }
 
 double compute_k_eff(Parameters P, SimulationData SD, double old_k_eff)
@@ -140,9 +142,9 @@ double compute_k_eff(Parameters P, SimulationData SD, double old_k_eff)
 
 void compute_cell_fission_rates(Parameters P, SimulationData SD, float * scalar_flux)
 {
-  #pragma omp parallel for
   for( int cell = 0; cell < P.n_cells; cell++ )
-    compute_cell_fission_rates_kernel(P, SD, scalar_flux, cell);
+    ;
+    //compute_cell_fission_rates_kernel(P, SD, scalar_flux, cell);
 }
 
 // May need to be a pairwise reduction
@@ -150,7 +152,6 @@ double reduce_sum_float(float * a, int size)
 {
   double sum = 0.0;
 
-  #pragma omp parallel for reduction(+:sum)
   for( int i = 0; i < size; i++ )
     sum += a[i];
 
@@ -161,7 +162,6 @@ int reduce_sum_int(int * a, int size)
 {
   int sum = 0.0;
 
-  #pragma omp parallel for reduction(+:sum)
   for( int i = 0; i < size; i++ )
     sum += a[i];
 
@@ -182,5 +182,3 @@ double check_hit_rate(int * hit_count, int n_cells)
 
   return percent_missed;
 }
-
-
