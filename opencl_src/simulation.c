@@ -145,13 +145,14 @@ double compute_k_eff(OpenCLInfo * CL, Parameters P, SimulationData SD, double ol
 
   // Reduce total old fission rate
   //double old_total_fission_rate = reduce_sum_float(SD.readWriteData.cellData.fission_rate, P.n_cells * P.n_energy_groups);
-  double old_total_fission_rate = reduce_fission_rates
+  double old_total_fission_rate = reduce_fission_rates(CL, SD, P.n_cells);
 
   // Compute new fission rates
   compute_cell_fission_rates(CL, P, SD, 1.0);
 
   // Reduce total new fission rate
-  double new_total_fission_rate = reduce_sum_float(SD.readWriteData.cellData.fission_rate, P.n_cells * P.n_energy_groups);
+  //double new_total_fission_rate = reduce_sum_float(SD.readWriteData.cellData.fission_rate, P.n_cells * P.n_energy_groups);
+  double new_total_fission_rate = reduce_fission_rates(CL, SD, P.n_cells);
 
   // Update estimate of k-eff
   double new_k_eff = old_k_eff * (new_total_fission_rate / old_total_fission_rate);
@@ -167,7 +168,7 @@ void compute_cell_fission_rates(OpenCLInfo * CL, Parameters P, SimulationData SD
   printf("Launching cell fission rates kernel...\n");
   size_t local_item_size = 64;
   size_t global_item_size = ceil(P.n_cells/64.0) * 64.0;
-  cl_int ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.compute_cell_fission_rates_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
+  ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.compute_cell_fission_rates_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
   check(ret);
 }
 
