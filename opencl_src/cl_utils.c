@@ -102,7 +102,8 @@ void printCompilerError( cl_program program, cl_device_id device )
   status = clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, logSize, log, NULL);
   check(status);
 
-  printf("%s\n", log);
+  if( strlen(log) > 0 )
+    printf("%s\n", log);
 }
 
 void print_single_info( cl_platform_id platform, cl_device_id device)
@@ -238,7 +239,7 @@ cl_mem copy_array_to_device(OpenCLInfo * CL, cl_mem_flags mem_flags, void * arra
   return d_array;
 }
 
-void set_kernel_arguments(cl_kernel * kernel, int argc, size_t * arg_sz, void * args)
+void set_kernel_arguments(cl_kernel * kernel, int argc, size_t * arg_sz, void ** args)
 {
   cl_int ret;
   for( int i = 0; i < argc; i++ )
@@ -284,4 +285,6 @@ cl_kernel compile_kernel(OpenCLInfo * CL, char * kernel_name)
 	// Create the OpenCL kernel
 	cl_kernel kernel = clCreateKernel(program, kernel_name, &ret);
 	check(ret);
+
+  return kernel;
 } 

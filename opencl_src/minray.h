@@ -220,7 +220,6 @@ double get_time(void);
 void ptr_swap(float ** a, float ** b);
 void compute_statistics(double sum, double sum_of_squares, int n, double * sample_mean, double * std_dev_of_sample_mean);
 int validate_results(int validation_problem_id, double k_eff);
-cl_kernel compile_kernel(OpenCLInfo * CL, char * kernel_name);
 
 // cl_utils.c
 const char *getErrorString(cl_int error);
@@ -230,6 +229,8 @@ void print_single_info( cl_platform_id platform, cl_device_id device);
 void print_opencl_info(void);
 OpenCLInfo initialize_device(void);
 cl_mem copy_array_to_device(OpenCLInfo * CL, cl_mem_flags mem_flags, void * array, size_t sz);
+cl_kernel compile_kernel(OpenCLInfo * CL, char * kernel_name);
+void set_kernel_arguments(cl_kernel * kernel, int argc, size_t * arg_sz, void ** args);
 
 
 // ray_trace_kernel.c

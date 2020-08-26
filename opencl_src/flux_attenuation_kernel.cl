@@ -1,11 +1,10 @@
 #include "minray.h"
 
-void flux_attenuation_kernel(Parameters P, SimulationData SD, uint64_t ray_id, int energy_group)
+__kernel void flux_attenuation_kernel(ulong size, Parameters P, SimulationData SD)
 {
-  // Cull threads in case of oversubscription
-  if( ray_id >= P.n_rays )
-    return;
-  if( energy_group >= P.n_energy_groups)
+  // Get the index of the current element to be processed
+	ulong i = get_global_id(0);
+  if( i >= size)
     return;
 
   // Indexing

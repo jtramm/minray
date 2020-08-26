@@ -214,10 +214,10 @@ void initialize_device_data(SimulationData * SD, OpenCLInfo * CL)
 
 void initialize_kernels(OpenCLInfo * CL)
 {
+  CL->kernels.normalize_scalar_flux_kernel      = compile_kernel(CL, "normalize_scalar_flux_kernel");
   CL->kernels.ray_trace_kernel                  = compile_kernel(CL, "ray_trace_kernel");
   CL->kernels.flux_attenuation_kernel           = compile_kernel(CL, "flux_attenuation_kernel");
   CL->kernels.update_isotropic_sources_kernel   = compile_kernel(CL, "update_isotropic_sources_kernel");
-  CL->kernels.normalize_scalar_flux_kernel      = compile_kernel(CL, "normalize_scalar_flux_kernel");
   CL->kernels.add_source_to_scalar_flux_kernel  = compile_kernel(CL, "add_source_to_scalar_flux_kernel");
   CL->kernels.compute_cell_fission_rates_kernel = compile_kernel(CL, "compute_cell_fission_rates_kernel");
 }

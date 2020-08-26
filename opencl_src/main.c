@@ -17,6 +17,9 @@ int main(int argc, char * argv[])
   // Allocate and move data to device
   initialize_device_data(&SD, &CL);
 
+  // Load and compile OpenCL kernels
+  initialize_kernels(&CL);
+
   // Populate simulation data with starting guesses
   initialize_rays(P, SD);
   initialize_fluxes(P, SD);
