@@ -23,6 +23,13 @@
 #define BUMP 1.0e-11
 
 typedef struct{
+  cl_platform_id platform_id;
+  cl_device_id device_id;
+  cl_context context;
+  cl_command_queue command_queue;
+} OpenCLInfo;
+
+typedef struct{
   double distance_to_surface;
   double surface_normal_x;
   double surface_normal_y;
@@ -195,6 +202,7 @@ SimulationData initialize_simulation(Parameters P);
 void initialize_rays(Parameters P, SimulationData SD);
 void initialize_fluxes(Parameters P, SimulationData SD);
 size_t estimate_memory_usage(Parameters P);
+void initialize_device_data(Parameters P, SimulationData * SD, OpenCLInfo * CL);
 
 // utils.c
 double get_time(void);
@@ -208,6 +216,8 @@ void check(cl_int error);
 void printCompilerError( cl_program program, cl_device_id device );
 void print_single_info( cl_platform_id platform, cl_device_id device);
 void print_opencl_info(void);
+OpenCLInfo initialize_device(void);
+cl_mem copy_array_to_device(OpenCLInfo * CL, cl_mem_flags mem_flags, void * array, size_t sz);
 
 // ray_trace_kernel.c
 void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t ray_id);

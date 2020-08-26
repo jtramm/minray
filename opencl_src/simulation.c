@@ -1,47 +1,36 @@
 #include "minray.h"
 
-typedef struct{
-  cl_platform_id platform_id;
-  cl_device_id device_id;
-  cl_context context;
-  cl_command_queue command_queue;
-} OpenCLInfo;
-
-OpenCLInfo initialize_device(void)
+void initialize_device_data(Parameters P, SimulationData * SD, OpenCLInfo * CL)
 {
-  // Get platform and device information
-  cl_platform_id platform_id = NULL;
-  cl_device_id device_id = NULL;   
-  cl_uint ret_num_devices;
-  cl_uint ret_num_platforms;
-  cl_int ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
-  check(ret);
-  ret = clGetDeviceIDs( platform_id, CL_DEVICE_TYPE_DEFAULT, 1, &device_id, &ret_num_devices);
-  //ret = clGetDeviceIDs( platform_id, CL_DEVICE_TYPE_CPU, 1, &device_id, &ret_num_devices);
-  //ret = clGetDeviceIDs( platform_id, CL_DEVICE_TYPE_GPU, 1, &device_id, &ret_num_devices);
-  check(ret);
+  // Copy Read Only Data
+  cl_mem_flags mem_type = CL_MEM_READ_ONLY;
+  SD->readOnlyData.d_material_id = copy_array_to_device(CL, mem_type, (void *) SD->readOnlyData.material_id, SD->readOnlyData.sz_material_id);
+  SD->readOnlyData.d_nu_Sigma_f  = copy_array_to_device(CL, mem_type, (void *) SD->readOnlyData.nu_Sigma_f,  SD->readOnlyData.sz_nu_Sigma_f);
+  SD->readOnlyData.d_Sigma_f     = copy_array_to_device(CL, mem_type, (void *) SD->readOnlyData.Sigma_f,     SD->readOnlyData.sz_Sigma_f);
+  SD->readOnlyData.d_Sigma_t     = copy_array_to_device(CL, mem_type, (void *) SD->readOnlyData.Sigma_t,     SD->readOnlyData.sz_Sigma_t);
+  SD->readOnlyData.d_Sigma_s     = copy_array_to_device(CL, mem_type, (void *) SD->readOnlyData.Sigma_s,     SD->readOnlyData.sz_Sigma_s);
+  SD->readOnlyData.d_Chi         = copy_array_to_device(CL, mem_type, (void *) SD->readOnlyData.Chi,         SD->readOnlyData.sz_Chi);
 
-  // Print info about where we are running
-  print_single_info(platform_id, device_id);
-
-  // Create an OpenCL context
-  cl_context context = clCreateContext( NULL, 1, &device_id, NULL, NULL, &ret);
-  check(ret);
-
-  // Create a command queue
-  cl_command_queue command_queue = clCreateCommandQueueWithProperties(context, device_id, 0, &ret);
-  check(ret);
-
-  OpenCLInfo CL;
-  CL.platform_id = platform_id;
-  CL.device_id = device_id;
-  CL.context = context;
-  CL.command_queue = command_queue;
-  return CL;
-}
-
-void initialize_device_data(Parameters P, SimulationData SD, OpenCLInfo CL)
-{
+  // Copy Read Write Data
+  mem_type = CL_MEM_READ_WRITE;
+  SD->readWriteData.rayData.angular_flux = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.rayData.angular_flux, SD->readWriteData.rayData.sz_angular_flux);
+  SD->readWriteData.rayData.location_x   = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.rayData.location_x,   SD->readWriteData.rayData.sz_location_x);
+  SD->readWriteData.rayData.location_y   = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.rayData.location_y,   SD->readWriteData.rayData.sz_location_y);
+  SD->readWriteData.rayData.direction_x  = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.rayData.direction_x,  SD->readWriteData.rayData.sz_direction_x);
+  SD->readWriteData.rayData.direction_y  = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.rayData.direction_y,  SD->readWriteData.rayData.sz_direction_y);
+  SD->readWriteData.rayData.cell_id      = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.rayData.cell_id,      SD->readWriteData.rayData.sz_cell_id);
+  
+  SD->readWriteData.intersectionData.n_intersections     = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.intersectionData.n_intersections,     SD->readWriteData.intersectionData.sz_n_intersections);
+  SD->readWriteData.intersectionData.cell_ids            = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.intersectionData.cell_ids,            SD->readWriteData.intersectionData.sz_cell_ids);
+  SD->readWriteData.intersectionData.distances           = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.intersectionData.distances,           SD->readWriteData.intersectionData.sz_distances);
+  SD->readWriteData.intersectionData.did_vacuum_reflects = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.intersectionData.did_vacuum_reflects, SD->readWriteData.intersectionData.sz_did_vacuum_reflects);
+  
+  SD->readWriteData.cellData.isotropic_source        = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.isotropic_source,        SD->readWriteData.cellData.sz_isotropic_source);
+  SD->readWriteData.cellData.new_scalar_flux         = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.new_scalar_flux,         SD->readWriteData.cellData.sz_new_scalar_flux);
+  SD->readWriteData.cellData.old_scalar_flux         = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.old_scalar_flux,         SD->readWriteData.cellData.sz_old_scalar_flux);
+  SD->readWriteData.cellData.scalar_flux_accumulator = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.scalar_flux_accumulator, SD->readWriteData.cellData.sz_scalar_flux_accumulator);
+  SD->readWriteData.cellData.hit_count               = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.hit_count,               SD->readWriteData.cellData.sz_hit_count);
+  SD->readWriteData.cellData.fission_rate            = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.fission_rate,            SD->readWriteData.cellData.sz_fission_rate);
 }
 
 SimulationResult run_simulation(Parameters P, SimulationData SD)

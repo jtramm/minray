@@ -192,3 +192,46 @@ void print_opencl_info(void)
   }
   free(platforms);  
 }
+
+OpenCLInfo initialize_device(void)
+{
+  // Get platform and device information
+  cl_platform_id platform_id = NULL;
+  cl_device_id device_id = NULL;   
+  cl_uint ret_num_devices;
+  cl_uint ret_num_platforms;
+  cl_int ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
+  check(ret);
+  ret = clGetDeviceIDs( platform_id, CL_DEVICE_TYPE_DEFAULT, 1, &device_id, &ret_num_devices);
+  //ret = clGetDeviceIDs( platform_id, CL_DEVICE_TYPE_CPU, 1, &device_id, &ret_num_devices);
+  //ret = clGetDeviceIDs( platform_id, CL_DEVICE_TYPE_GPU, 1, &device_id, &ret_num_devices);
+  check(ret);
+
+  // Print info about where we are running
+  print_single_info(platform_id, device_id);
+
+  // Create an OpenCL context
+  cl_context context = clCreateContext( NULL, 1, &device_id, NULL, NULL, &ret);
+  check(ret);
+
+  // Create a command queue
+  cl_command_queue command_queue = clCreateCommandQueueWithProperties(context, device_id, 0, &ret);
+  check(ret);
+
+  OpenCLInfo CL;
+  CL.platform_id = platform_id;
+  CL.device_id = device_id;
+  CL.context = context;
+  CL.command_queue = command_queue;
+  return CL;
+}
+
+cl_mem copy_array_to_device(OpenCLInfo * CL, cl_mem_flags mem_flags, void * array, size_t sz)
+{
+  cl_int ret;
+  cl_mem d_array = clCreateBuffer(CL->context, cl_mem_flags,  sz, NULL, &ret);
+  check(ret);
+  ret = clEnqueueWriteBuffer(CL->command_queue, d_array, CL_TRUE, 0, sz, array, 0, NULL, NULL);
+  check(ret);
+  return d_array;
+}
