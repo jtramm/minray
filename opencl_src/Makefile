@@ -65,17 +65,17 @@ endif
 # Targets to Build
 #===============================================================================
 
-$(program): $(obj) minray.h Makefile
+$(program): $(obj) minray.h parameters.h Makefile
 	$(CC) $(CFLAGS) $(obj) -o $@ $(LDFLAGS)
 
-%.o: %.c minray.h Makefile
+%.o: %.c minray.h parameters.h Makefile
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	rm -rf $(program) $(obj)
 
 edit:
-	vim -p $(source) *.cl minray.h
+	vim -p $(source) *.cl minray.h parameters.h
 
 run:
 	./$(program)

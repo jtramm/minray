@@ -5,6 +5,7 @@
 #include<string.h>
 #include<assert.h>
 #include<time.h>
+#include "parameters.h"
 
 #define CL_TARGET_OPENCL_VERSION 200
 #include <CL/cl.h>
@@ -12,15 +13,10 @@
 
 #define VERSION "0"
 
-#define NONE 0
-#define VACUUM 1
-#define REFLECTIVE 2
-
 #define SMALL 1
 #define MEDIUM 2
 #define LARGE 3
 
-#define BUMP 1.0e-11
 
 typedef struct{
   cl_kernel ray_trace_kernel;
@@ -38,19 +34,6 @@ typedef struct{
   cl_command_queue command_queue;
   Kernels kernels;
 } OpenCLInfo;
-
-typedef struct{
-  double distance_to_surface;
-  double surface_normal_x;
-  double surface_normal_y;
-} TraceResult;
-
-typedef struct{
-  int cell_id;
-  int cartesian_cell_idx_x;
-  int cartesian_cell_idx_y;
-  int boundary_condition;
-} CellLookup;
 
 typedef struct{
   int * material_id;
@@ -73,35 +56,6 @@ typedef struct{
   size_t sz_Chi;
 } ReadOnlyData;
 
-typedef struct{
-  // User Inputs
-  int n_cells_per_dimension;
-  double length_per_dimension;
-  uint64_t n_rays;
-  double distance_per_ray;
-  int n_inactive_iterations;
-  int n_active_iterations;
-  uint64_t seed;
-  int n_materials;
-  int n_energy_groups;
-  int max_intersections_per_ray;
-  int boundary_conditions[3][3];
-  int boundary_condition_x_positive;
-  int boundary_condition_x_negative;
-  int boundary_condition_y_positive;
-  int boundary_condition_y_negative;
-  // Derived
-  double cell_expected_track_length;
-  double inverse_total_track_length;
-  double cell_width;
-  double inverse_length_per_dimension;
-  double inverse_cell_width;
-  uint64_t n_cells;
-  int n_iterations;
-  int plotting_enabled;
-  double cell_volume;
-  int validation_problem_id;
-} Parameters;
 
 typedef struct{
   float  * angular_flux;
@@ -235,8 +189,6 @@ void set_kernel_arguments(cl_kernel * kernel, int argc, size_t * arg_sz, void **
 
 // ray_trace_kernel.c
 void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t ray_id);
-CellLookup find_cell_id(Parameters P, double x, double y);
-TraceResult cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir);
 
 // Other kernel files
 void update_isotropic_sources_kernel(Parameters P, SimulationData SD, int cell, int energy_group_in, double inverse_k_eff);
