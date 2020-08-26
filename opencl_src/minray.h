@@ -186,6 +186,7 @@ OpenCLInfo initialize_device(void);
 cl_mem copy_array_to_device(OpenCLInfo * CL, cl_mem_flags mem_flags, void * array, size_t sz);
 cl_kernel compile_kernel(OpenCLInfo * CL, char * kernel_name);
 void set_kernel_arguments(cl_kernel * kernel, int argc, size_t * arg_sz, void ** args);
+void clear_array(OpenCLInfo * CL, cl_mem * buffer, size_t sz);
 
 
 // ray_trace_kernel.c

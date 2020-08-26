@@ -24,20 +24,9 @@ SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD
     if( iter >= P.n_inactive_iterations && !is_active_region )
     {
       is_active_region = 1;
-      //memset(SD.readWriteData.cellData.scalar_flux_accumulator, 0, P.n_cells * P.n_energy_groups * sizeof(float));
-      float fill = 0.0;
       printf("resetting scalar flux accumulators...\n");
-      cl_int ret = clEnqueueFillBuffer(
-          CL->command_queue,
-          SD.readWriteData.cellData.d_scalar_flux_accumulator,
-          (void *) &fill,
-          sizeof(float),
-          0,
-          SD.readWriteData.cellData.sz_scalar_flux_accumulator,
-          0,
-          NULL,
-          NULL);
-      check(ret);
+      clear_array(CL, &SD.readWriteData.cellData.d_scalar_flux_accumulator, P.n_cells * P.n_energy_groups * sizeof(float));
+      //memset(SD.readWriteData.cellData.scalar_flux_accumulator, 0, P.n_cells * P.n_energy_groups * sizeof(float));
       k_eff_total_accumulator = 0.0;
       k_eff_sum_of_squares_accumulator = 0.0;
     }

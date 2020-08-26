@@ -288,3 +288,19 @@ cl_kernel compile_kernel(OpenCLInfo * CL, char * kernel_name)
 
   return kernel;
 } 
+
+void clear_array(OpenCLInfo * CL, cl_mem * buffer, size_t sz)
+{
+  float fill = 0.0;
+  cl_int ret = clEnqueueFillBuffer(
+      CL->command_queue,
+      *buffer,
+      (void *) &fill,
+      sizeof(float),
+      0,
+      sz,
+      0,
+      NULL,
+      NULL);
+  check(ret);
+}
