@@ -24,7 +24,20 @@ SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD
     if( iter >= P.n_inactive_iterations && !is_active_region )
     {
       is_active_region = 1;
-      memset(SD.readWriteData.cellData.scalar_flux_accumulator, 0, P.n_cells * P.n_energy_groups * sizeof(float));
+      //memset(SD.readWriteData.cellData.scalar_flux_accumulator, 0, P.n_cells * P.n_energy_groups * sizeof(float));
+      float fill = 0.0;
+      printf("resetting scalar flux accumulators...\n");
+      cl_int ret = clEnqueueFillBuffer(
+          CL->command_queue,
+          SD.readWriteData.cellData.d_scalar_flux_accumulator,
+          (void *) &fill,
+          sizeof(float),
+          0,
+          SD.readWriteData.cellData.sz_scalar_flux_accumulator,
+          0,
+          NULL,
+          NULL);
+      check(ret);
       k_eff_total_accumulator = 0.0;
       k_eff_sum_of_squares_accumulator = 0.0;
     }
@@ -83,14 +96,14 @@ void update_isotropic_sources(OpenCLInfo * CL, Parameters P, SimulationData SD, 
 
   // Update argument
   cl_int ret = clSetKernelArg(CL->kernels.update_isotropic_sources_kernel, 0, sizeof(double), (void *)&inv_k_eff);
-	check(ret);
+  check(ret);
 
   // Launch kernel
   printf("Launching update_isotropic_sources kernel...\n");
   size_t global_item_size = P.n_cells * P.n_energy_groups; // Process the entire lists
-	size_t local_item_size = P.n_energy_groups; // Divide work items into groups of 64
-	ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.update_isotropic_sources_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
-	check(ret);
+  size_t local_item_size = P.n_energy_groups; // Divide work items into groups of 64
+  ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.update_isotropic_sources_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
+  check(ret);
 }
 
 void transport_sweep(Parameters P, SimulationData SD)
@@ -106,7 +119,7 @@ void transport_sweep(Parameters P, SimulationData SD)
   for( int ray = 0; ray < P.n_rays; ray++ )
     for( int energy_group = 0; energy_group < P.n_energy_groups; energy_group++ )
       ;
-      //flux_attenuation_kernel(P, SD, ray, energy_group);
+  //flux_attenuation_kernel(P, SD, ray, energy_group);
 }
 
 
@@ -115,7 +128,7 @@ void normalize_scalar_flux(Parameters P, SimulationData SD)
   for( int cell = 0; cell < P.n_cells; cell++ )
     for( int energy_group = 0; energy_group < P.n_energy_groups; energy_group++ )
       ;
-      //normalize_scalar_flux_kernel(P, SD.readWriteData.cellData.new_scalar_flux, cell, energy_group);
+  //normalize_scalar_flux_kernel(P, SD.readWriteData.cellData.new_scalar_flux, cell, energy_group);
 }
 
 void add_source_to_scalar_flux(Parameters P, SimulationData SD)
@@ -123,7 +136,7 @@ void add_source_to_scalar_flux(Parameters P, SimulationData SD)
   for( int cell = 0; cell < P.n_cells; cell++ )
     for( int energy_group = 0; energy_group < P.n_energy_groups; energy_group++ )
       ;
-      //add_source_to_scalar_flux_kernel(P, SD, cell, energy_group);
+  //add_source_to_scalar_flux_kernel(P, SD, cell, energy_group);
 }
 
 double compute_k_eff(Parameters P, SimulationData SD, double old_k_eff)
@@ -150,7 +163,7 @@ void compute_cell_fission_rates(Parameters P, SimulationData SD, float * scalar_
 {
   for( int cell = 0; cell < P.n_cells; cell++ )
     ;
-    //compute_cell_fission_rates_kernel(P, SD, scalar_flux, cell);
+  //compute_cell_fission_rates_kernel(P, SD, scalar_flux, cell);
 }
 
 // May need to be a pairwise reduction
