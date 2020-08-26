@@ -11,6 +11,8 @@ int main(int argc, char * argv[])
   // Allocate all data required by simulation
   SimulationData SD = initialize_simulation(P);
 
+  center_print("DEVICE INITIALIZATION", 79);
+  border_print();
   // Initialize OpenCL Device
   OpenCLInfo CL = initialize_device();
 
@@ -28,7 +30,7 @@ int main(int argc, char * argv[])
   initialize_fluxes(P, SD);
 
   // Run Random Ray Simulation
-  SimulationResult SR = run_simulation(P, SD);
+  SimulationResult SR = run_simulation(&CL, P, SD);
 
   // Display Results
   int is_valid_result = print_results(P, SR);

@@ -90,7 +90,7 @@ CellData initialize_cell_data(Parameters P)
 SimulationData initialize_simulation(Parameters P)
 {
   border_print();
-  center_print("INITIALIZATION", 79);
+  center_print("HOST INITIALIZATION", 79);
   border_print();
 
   printf("Initializing read only data...\n");
@@ -222,29 +222,58 @@ void initialize_kernels(OpenCLInfo * CL)
   CL->kernels.compute_cell_fission_rates_kernel = compile_kernel(CL, "compute_cell_fission_rates_kernel");
 }
 
-#define MAX_ARGS 64
+#define NUM_ARGS 24
 void load_kernel_arguments(Parameters * P, SimulationData * SD, OpenCLInfo * CL)
 {
   printf("Loading static kernel arguments...\n");
   int argc;
-  size_t arg_sz[MAX_ARGS];
-  void * args[MAX_ARGS];
+  size_t arg_sz[NUM_ARGS];
+  void * args[NUM_ARGS];
 
-  // Normalize Scalar Flux Kernel
-  argc = 3;
-  arg_sz[0] = sizeof(ulong);
-  arg_sz[1] = sizeof(double);
-  arg_sz[2] = sizeof(cl_mem);
-  args[0]   = (void*) &(SD->readWriteData.cellData.sz_new_scalar_flux);
-  args[1]   = (void*) &(P->inverse_total_track_length);
-  args[2]   = (void*) &(SD->readWriteData.cellData.d_new_scalar_flux);
-  set_kernel_arguments(&CL->kernels.normalize_scalar_flux_kernel, argc, arg_sz, args);
+  argc = NUM_ARGS;
 
-  /*
-  CL->kernels.ray_trace_kernel                  = compile_kernel(CL, "ray_trace_kernel");
-  CL->kernels.flux_attenuation_kernel           = compile_kernel(CL, "flux_attenuation_kernel");
-  CL->kernels.update_isotropic_sources_kernel   = compile_kernel(CL, "update_isotropic_sources_kernel");
-  CL->kernels.add_source_to_scalar_flux_kernel  = compile_kernel(CL, "add_source_to_scalar_flux_kernel");
-  CL->kernels.compute_cell_fission_rates_kernel = compile_kernel(CL, "compute_cell_fission_rates_kernel");
-  */
+  // Set argument sizes
+  arg_sz[0] = sizeof(double);
+  arg_sz[1] = sizeof(Parameters);
+  for( int i = 2; i < argc; i++ )
+    arg_sz[i] = sizeof(cl_mem);
+
+  double utility_variable = 0.0;
+
+  // Set arguments
+  args[ 0] = (void *) &utility_variable; 
+  args[ 1] = (void *) P;
+
+  args[ 2] = (void *) &SD->readOnlyData.d_material_id;
+  args[ 3] = (void *) &SD->readOnlyData.d_nu_Sigma_f;
+  args[ 4] = (void *) &SD->readOnlyData.d_Sigma_f;
+  args[ 5] = (void *) &SD->readOnlyData.d_Sigma_t;
+  args[ 6] = (void *) &SD->readOnlyData.d_Sigma_s;
+  args[ 7] = (void *) &SD->readOnlyData.d_Chi;
+
+  args[ 8] = (void *) &SD->readWriteData.rayData.d_angular_flux;
+  args[ 9] = (void *) &SD->readWriteData.rayData.d_location_x;
+  args[10] = (void *) &SD->readWriteData.rayData.d_location_y;
+  args[11] = (void *) &SD->readWriteData.rayData.d_direction_x;
+  args[12] = (void *) &SD->readWriteData.rayData.d_direction_y;
+  args[13] = (void *) &SD->readWriteData.rayData.d_cell_id;
+
+  args[14] = (void *) &SD->readWriteData.intersectionData.d_n_intersections;
+  args[15] = (void *) &SD->readWriteData.intersectionData.d_cell_ids;
+  args[16] = (void *) &SD->readWriteData.intersectionData.d_distances;
+  args[17] = (void *) &SD->readWriteData.intersectionData.d_did_vacuum_reflects;
+
+  args[18] = (void *) &SD->readWriteData.cellData.d_isotropic_source;
+  args[19] = (void *) &SD->readWriteData.cellData.d_new_scalar_flux;
+  args[20] = (void *) &SD->readWriteData.cellData.d_old_scalar_flux;
+  args[21] = (void *) &SD->readWriteData.cellData.d_scalar_flux_accumulator;
+  args[22] = (void *) &SD->readWriteData.cellData.d_hit_count;
+  args[23] = (void *) &SD->readWriteData.cellData.d_fission_rate;
+
+  set_kernel_arguments(&CL->kernels.normalize_scalar_flux_kernel     , argc, arg_sz, args);
+  set_kernel_arguments(&CL->kernels.ray_trace_kernel                 , argc, arg_sz, args); 
+  set_kernel_arguments(&CL->kernels.flux_attenuation_kernel          , argc, arg_sz, args); 
+  set_kernel_arguments(&CL->kernels.update_isotropic_sources_kernel  , argc, arg_sz, args); 
+  set_kernel_arguments(&CL->kernels.add_source_to_scalar_flux_kernel , argc, arg_sz, args); 
+  set_kernel_arguments(&CL->kernels.compute_cell_fission_rates_kernel, argc, arg_sz, args); 
 }

@@ -1,7 +1,8 @@
 #include "minray.h"
 
-SimulationResult run_simulation(Parameters P, SimulationData SD)
+SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD)
 {
+  border_print();
   center_print("SIMULATION", 79);
   border_print();
 
@@ -29,7 +30,7 @@ SimulationResult run_simulation(Parameters P, SimulationData SD)
     }
 
     // Recompute the isotropic neutron source based on the last iteration's estimate of the scalar flux
-    update_isotropic_sources(P, SD, k_eff);
+    update_isotropic_sources(CL, P, SD, k_eff);
 
     // Reset this iteration's scalar flux tallies to zero
     memset(SD.readWriteData.cellData.new_scalar_flux, 0, P.n_cells * P.n_energy_groups * sizeof(float));
@@ -76,14 +77,20 @@ SimulationResult run_simulation(Parameters P, SimulationData SD)
   return SR;
 }
 
-void update_isotropic_sources(Parameters P, SimulationData SD, double k_eff)
+void update_isotropic_sources(OpenCLInfo * CL, Parameters P, SimulationData SD, double k_eff)
 {
   double inv_k_eff = 1.0/k_eff;
 
-  for( int cell = 0; cell < P.n_cells; cell++ )
-    for( int energy_group = 0; energy_group < P.n_energy_groups; energy_group++ )
-      ;
-      //update_isotropic_sources_kernel(P, SD, cell, energy_group, inv_k_eff);
+  // Update argument
+  cl_int ret = clSetKernelArg(CL->kernels.update_isotropic_sources_kernel, 0, sizeof(double), (void *)&inv_k_eff);
+	check(ret);
+
+  // Launch kernel
+  printf("Launching update_isotropic_sources kernel...\n");
+  size_t global_item_size = P.n_cells * P.n_energy_groups; // Process the entire lists
+	size_t local_item_size = P.n_energy_groups; // Divide work items into groups of 64
+	ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.update_isotropic_sources_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
+	check(ret);
 }
 
 void transport_sweep(Parameters P, SimulationData SD)
