@@ -221,3 +221,30 @@ void initialize_kernels(OpenCLInfo * CL)
   CL->kernels.add_source_to_scalar_flux_kernel  = compile_kernel(CL, "add_source_to_scalar_flux_kernel");
   CL->kernels.compute_cell_fission_rates_kernel = compile_kernel(CL, "compute_cell_fission_rates_kernel");
 }
+
+#define MAX_ARGS 64
+void load_kernel_arguments(Parameters * P, SimulationData * SD, OpenCLInfo * CL)
+{
+  printf("Loading static kernel arguments...\n");
+  int argc;
+  size_t arg_sz[MAX_ARGS];
+  void * args[MAX_ARGS];
+
+  // Normalize Scalar Flux Kernel
+  argc = 3;
+  arg_sz[0] = sizeof(ulong);
+  arg_sz[1] = sizeof(double);
+  arg_sz[2] = sizeof(cl_mem);
+  args[0]   = (void*) &(SD->readWriteData.cellData.sz_new_scalar_flux);
+  args[1]   = (void*) &(P->inverse_total_track_length);
+  args[2]   = (void*) &(SD->readWriteData.cellData.d_new_scalar_flux);
+  set_kernel_arguments(&CL->kernels.normalize_scalar_flux_kernel, argc, arg_sz, args);
+
+  /*
+  CL->kernels.ray_trace_kernel                  = compile_kernel(CL, "ray_trace_kernel");
+  CL->kernels.flux_attenuation_kernel           = compile_kernel(CL, "flux_attenuation_kernel");
+  CL->kernels.update_isotropic_sources_kernel   = compile_kernel(CL, "update_isotropic_sources_kernel");
+  CL->kernels.add_source_to_scalar_flux_kernel  = compile_kernel(CL, "add_source_to_scalar_flux_kernel");
+  CL->kernels.compute_cell_fission_rates_kernel = compile_kernel(CL, "compute_cell_fission_rates_kernel");
+  */
+}

@@ -168,6 +168,7 @@ void initialize_fluxes(Parameters P, SimulationData SD);
 size_t estimate_memory_usage(Parameters P);
 void initialize_device_data(SimulationData * SD, OpenCLInfo * CL);
 void initialize_kernels(OpenCLInfo * CL);
+void load_kernel_arguments(Parameters * P, SimulationData * SD, OpenCLInfo * CL);
 
 // utils.c
 double get_time(void);

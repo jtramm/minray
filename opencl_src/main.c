@@ -20,6 +20,9 @@ int main(int argc, char * argv[])
   // Load and compile OpenCL kernels
   initialize_kernels(&CL);
 
+  // Load static kernel arguments into kernel
+  load_kernel_arguments(&P, &SD, &CL);
+
   // Populate simulation data with starting guesses
   initialize_rays(P, SD);
   initialize_fluxes(P, SD);

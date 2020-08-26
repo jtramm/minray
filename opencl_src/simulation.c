@@ -1,6 +1,5 @@
 #include "minray.h"
 
-
 SimulationResult run_simulation(Parameters P, SimulationData SD)
 {
   center_print("SIMULATION", 79);
