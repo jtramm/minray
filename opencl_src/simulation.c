@@ -60,7 +60,18 @@ SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD
     k_eff_sum_of_squares_accumulator += k_eff * k_eff;
 
     // Set old scalar flux to equal the new scalar flux. To optimize, we simply swap the old and new scalar flux pointers
-    ptr_swap(&SD.readWriteData.cellData.new_scalar_flux, &SD.readWriteData.cellData.old_scalar_flux);
+    //ptr_swap(&SD.readWriteData.cellData.new_scalar_flux, &SD.readWriteData.cellData.old_scalar_flux);
+    cl_int ret = clEnqueueCopyBuffer(
+        CL->command_queue,
+        SD.readWriteData.cellData.d_new_scalar_flux,
+        SD.readWriteData.cellData.d_old_scalar_flux,
+        0,
+        0,
+        flux_bytes,
+        0,
+        NULL,
+        NULL);
+    check(ret);
 
     // Compute the total number of intersections performed this iteration
     //n_total_geometric_intersections += reduce_sum_int(SD.readWriteData.intersectionData.n_intersections, P.n_rays);
@@ -103,14 +114,14 @@ void transport_sweep(OpenCLInfo * CL, Parameters P, SimulationData SD)
   size_t global_item_size;
   size_t local_item_size;
   cl_int ret;
-  
+
   // Launch Ray Tracing kernel
   printf("Launching ray tracing kernel...\n");
   global_item_size = P.n_rays;
   local_item_size = 8; 
   ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.ray_trace_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
   check(ret);
-  
+
   // Launch Ray Tracing kernel
   printf("Launching flux attenuation kernel...\n");
   global_item_size = P.n_rays * P.n_energy_groups;
@@ -164,7 +175,7 @@ void compute_cell_fission_rates(OpenCLInfo * CL, Parameters P, SimulationData SD
 {
   cl_int ret = clSetKernelArg(CL->kernels.compute_cell_fission_rates_kernel, 0, sizeof(double), (void *)&utility_variable);
   check(ret);
-  
+
   printf("Launching cell fission rates kernel...\n");
   size_t local_item_size = 64;
   size_t global_item_size = ceil(P.n_cells/64.0) * 64.0;
@@ -187,7 +198,7 @@ float reduce_fission_rates(OpenCLInfo *CL, SimulationData SD, int n_cells)
 {
   float sum = 0;
   cl_mem d_sum = copy_array_to_device(CL, CL_MEM_READ_WRITE, (void *) &sum, sizeof(float));
-  
+
   int argc = 3;
   size_t arg_sz[3];
   void * args[3];
@@ -200,9 +211,9 @@ float reduce_fission_rates(OpenCLInfo *CL, SimulationData SD, int n_cells)
   args[0] = (void *) &SD.readWriteData.cellData.d_fission_rate;
   args[1] = (void *) &d_sum;
   args[2] = (void *) &n_cells;
-  
+
   set_kernel_arguments(&CL->kernels.reduce_float_kernel, argc, arg_sz, args);
-  
+
   size_t local_item_size = 64;
   size_t global_item_size = ceil(n_cells/64.0) * 64.0;
   cl_int ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.reduce_float_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
@@ -211,7 +222,7 @@ float reduce_fission_rates(OpenCLInfo *CL, SimulationData SD, int n_cells)
   copy_array_from_device(CL, &d_sum, (void *) &sum, sizeof(float));
 
   ret = clReleaseMemObject(d_sum);
-	check(ret);
+  check(ret);
 
   return sum;
 }
@@ -220,7 +231,7 @@ int reduce_hit_count(OpenCLInfo *CL, SimulationData SD, int n_cells)
 {
   int sum = 0;
   cl_mem d_sum = copy_array_to_device(CL, CL_MEM_READ_WRITE, (void *) &sum, sizeof(int));
-  
+
   int argc = 3;
   size_t arg_sz[3];
   void * args[3];
@@ -233,9 +244,9 @@ int reduce_hit_count(OpenCLInfo *CL, SimulationData SD, int n_cells)
   args[0] = (void *) &SD.readWriteData.cellData.d_hit_count;
   args[1] = (void *) &d_sum;
   args[2] = (void *) &n_cells;
-  
+
   set_kernel_arguments(&CL->kernels.reduce_int_kernel, argc, arg_sz, args);
-  
+
   size_t local_item_size = 64;
   size_t global_item_size = ceil(n_cells/64.0) * 64.0;
   cl_int ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.reduce_int_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
@@ -244,7 +255,7 @@ int reduce_hit_count(OpenCLInfo *CL, SimulationData SD, int n_cells)
   copy_array_from_device(CL, &d_sum, (void *) &sum, sizeof(int));
 
   ret = clReleaseMemObject(d_sum);
-	check(ret);
+  check(ret);
 
   return sum;
 }

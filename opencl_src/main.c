@@ -11,6 +11,10 @@ int main(int argc, char * argv[])
   // Allocate all data required by simulation
   SimulationData SD = initialize_simulation(P);
 
+  // Populate simulation data with starting guesses
+  initialize_rays(P, SD);
+  initialize_fluxes(P, SD);
+  
   center_print("DEVICE INITIALIZATION", 79);
   border_print();
   // Initialize OpenCL Device
@@ -24,10 +28,6 @@ int main(int argc, char * argv[])
 
   // Load static kernel arguments into kernel
   load_kernel_arguments(&P, &SD, &CL);
-
-  // Populate simulation data with starting guesses
-  initialize_rays(P, SD);
-  initialize_fluxes(P, SD);
 
   // Run Random Ray Simulation
   SimulationResult SR = run_simulation(&CL, P, SD);
