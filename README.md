@@ -55,7 +55,7 @@ By default, the number of inactive and active iterations used is only 10 so as t
 
 By default, unless running a validation problem, the seed used to sample the random rays is based on the time of program launch. A seed can manually be set using the `-s <seed>` argument, which may be useful for debugging when reproducibility is desired.
 
-To plot material/geometry data and several flux spectrums, the `-p` argument can be given. Plots are output in binary .vtk format, which can be directly loaded into plotting programs like [Paraview](https://www.paraview.org).
+To plot material/geometry data and several flux spectrums, the `-p` argument can be given. Plots are output in binary .vtk format, which can be directly loaded into plotting programs like [Paraview](https://www.paraview.org). If generating plots, it is highly advised that you converge the simulation by increasing the number of inactive and active iterations, e.g.: `./minray -i 1000 -a 1000 -p`, and you may also wish to increase the mesh resolution.
 
 ## Citing minray
 
