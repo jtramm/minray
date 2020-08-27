@@ -57,6 +57,12 @@ By default, unless running a validation problem, the seed used to sample the ran
 
 To plot material/geometry data and several flux spectrums, the `-p` argument can be given. Plots are output in binary .vtk format, which can be directly loaded into plotting programs like [Paraview](https://www.paraview.org). If generating plots, it is highly advised that you converge the simulation by increasing the number of inactive and active iterations, e.g.: `./minray -i 1000 -a 1000 -p`, and you may also wish to increase the mesh resolution.
 
+## Background Information on The Random Ray Method
+
+The random ray method of neutral particle transport is a recently developed stochastic method derived from the traditionally deterministic Method of Characteristics (MOC). There are a variety of major differences compared to traditional MOC that allow random ray to make full scale 3D reactor simulation practical. Compared to traditional deterministic MOC, random ray is able to converge solutions to large problems in competitive or faster runtimes using far less memory and not requiring non-linear acceleration techniques like CMFD.
+
+More background information on the derivation of the method and how it works in practice can be found in [John Tramm's Thesis](https://dspace.mit.edu/handle/1721.1/119038).
+
 ## Known Limitations
 
 While full random ray applications like ARRC are capable of simulating arbitrary 3D geometries using a constructive solid geometry treatment capable of representing arbitrary second order surfaces (e.g., cylinders, spheres, cones, etc), Minray is only capable of simulating strictly Cartesian geometries in 2D. This simplification is made to keep the source code as compact as possible so as to allow running on a variety of HPC architectures such as FPGAs. In the future, we may add in a more complex (and accurate) geometry treatment.
