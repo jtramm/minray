@@ -2,11 +2,11 @@
 
 ## Overview
 
-A minimal implementation of the random ray method for neutral particle transport. This purpose of this code is to serve as an open source performance benchmark for random ray, while still being able to perform the real neutronics and produce real solutions.
+A minimal implementation of the random ray method for neutral particle transport. This purpose of this code is to serve as an open source performance benchmark for random ray, while still being able to perform the real neutronics and produce solutions.
 
 Key Features:
   - Much simpler than the full application (ARRC) -- allowing it to act as a reference implementation
-  - Complex enough to converge real solutions to neutron transport problems (see picture below generated with minray)
+  - Complex enough to converge eiganvalues and power distributions fir neutron transport problems (see picture below generated with minray)
   - Simplified geometry treatment limits complexity (can only simulate 2D heterogeneous Cartesian geometries)
   - Hard coded reactor simulation problem of interest: 2D C5G7
   - Kernelized for easy porting to accelerator languages
@@ -56,6 +56,12 @@ By default, the number of inactive and active iterations used is only 10 so as t
 By default, unless running a validation problem, the seed used to sample the random rays is based on the time of program launch. A seed can manually be set using the `-s <seed>` argument, which may be useful for debugging when reproducibility is desired.
 
 To plot material/geometry data and several flux spectrums, the `-p` argument can be given. Plots are output in binary .vtk format, which can be directly loaded into plotting programs like [Paraview](https://www.paraview.org). If generating plots, it is highly advised that you converge the simulation by increasing the number of inactive and active iterations, e.g.: `./minray -i 1000 -a 1000 -p`, and you may also wish to increase the mesh resolution.
+
+## Known Limitations
+
+While full random ray applications like ARRC are capable of simulating arbitrary 3D geometries using a constructive solid geometry treatment capable of representing arbitrary second order surfaces (e.g., cylinders, spheres, cones, etc), Minray is only capable of simulating strictly Cartesian geometries in 2D. This simplification is made to keep the source code as compact as possible so as to allow running on a variety of HPC architectures such as FPGAs. In the future, we may add in a more complex (and accurate) geometry treatment.
+
+The result of this simplification is that only crude approximations to real reactor geometries can be simulated. For the target problem of interest, 2D C5G7, since we are using a Cartesian mesh we are not accurately representing the curves of the fuel pins, so our solutions will have some error (compared to the problem reference) even for a very fine mesh. With that in mind, the particular mesh type and resolution required for most problems is already well known and studied, so we are not concerned with that problem in this application where we are focused on testing the basic algorithm on FPGAs and other HPC architectures.
 
 ## Citing minray
 
