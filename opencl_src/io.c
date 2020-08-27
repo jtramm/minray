@@ -513,13 +513,13 @@ ReadOnlyData load_2D_C5G7_XS(Parameters P)
   ROD.Sigma_s     = Sigma_s;
   ROD.material_id = material_id;
 
-  sz = P.n_materials * P.n_energy_groups;
+  sz = P.n_materials * P.n_energy_groups * sizeof(float);
   ROD.sz_Sigma_f    = sz;
   ROD.sz_Sigma_t    = sz;
   ROD.sz_nu_Sigma_f = sz;
   ROD.sz_Chi        = sz;
 
-  sz = P.n_materials * P.n_energy_groups * P.n_energy_groups;
+  sz = P.n_materials * P.n_energy_groups * P.n_energy_groups * sizeof(float);
   ROD.sz_Sigma_s = sz;
 
   sz = P.n_cells * sizeof(int);

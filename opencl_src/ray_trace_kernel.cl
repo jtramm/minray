@@ -32,8 +32,8 @@ __kernel void ray_trace_kernel(ARGUMENTS)
   int x_idx = ray_cell_id % P.n_cells_per_dimension;
   int y_idx = ray_cell_id / P.n_cells_per_dimension;
     
-  if( ray_id == 0 )
-    printf("loc [%f, %f] dir [%f, %f]\n", x, y, x_dir, y_dir);
+  //if( ray_id == 0 )
+    //printf("loc [%f, %f] dir [%f, %f]\n", x, y, x_dir, y_dir);
 
   int just_hit_vacuum = 0;
   int is_terminal = 0;
@@ -106,8 +106,8 @@ __kernel void ray_trace_kernel(ARGUMENTS)
     // Add this intersection's distance to the total for the ray
     distance_travelled += trace.distance_to_surface;
 
-    if( ray_id == 0 )
-printf("distance = %lf\n", trace.distance_to_surface);
+    //if( ray_id == 0 )
+//printf("distance = %lf\n", trace.distance_to_surface);
     // Some sanity checks (can be disabled if desired)
     //assert(cell_id >= 0 && cell_id < P.n_cells);
     //assert(x > 0.0 && y > 0.0 && x < P.length_per_dimension && y < P.length_per_dimension);
