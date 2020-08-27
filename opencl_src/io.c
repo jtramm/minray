@@ -109,8 +109,8 @@ int print_results(Parameters P, SimulationResult SR)
   printf("k-effective                       = %.5f\n", SR.k_eff);
   printf("k-effective std. dev.             = %.5f\n", SR.k_eff_std_dev);
   printf("Simulation Runtime                = %.3le [s]\n", SR.runtime_total);
-  printf("    Transport Sweep Time          = %.3le [s] (%.2lf%%)\n", SR.runtime_transport_sweep, 100.0 * SR.runtime_transport_sweep / SR.runtime_total);
-  printf("    Iteration Time                = %.3le [s] (%.2lf%%)\n", SR.runtime_total - SR.runtime_transport_sweep, 100.0* (1.0 - SR.runtime_transport_sweep / SR.runtime_total));
+  //printf("    Transport Sweep Time          = %.3le [s] (%.2lf%%)\n", SR.runtime_transport_sweep, 100.0 * SR.runtime_transport_sweep / SR.runtime_total);
+  //printf("    Iteration Time                = %.3le [s] (%.2lf%%)\n", SR.runtime_total - SR.runtime_transport_sweep, 100.0* (1.0 - SR.runtime_transport_sweep / SR.runtime_total));
   printf("Number of Geometric Intersections = %.3le\n", (double) SR.n_geometric_intersections);
   printf("Avg. Geom. Intersections per Ray  = %.1lf\n", SR.n_geometric_intersections / ((double)P.n_rays * P.n_iterations));
   printf("Number of Integrations            = %.3le\n", (double) SR.n_geometric_intersections * P.n_energy_groups);

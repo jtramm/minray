@@ -192,14 +192,3 @@ cl_kernel compile_kernel(OpenCLInfo * CL, char * kernel_name);
 void set_kernel_arguments(cl_kernel * kernel, int argc, size_t * arg_sz, void ** args);
 void clear_array(OpenCLInfo * CL, cl_mem * buffer, size_t sz);
 void copy_array_from_device(OpenCLInfo * CL, cl_mem * d_array, void * h_array, size_t sz);
-
-
-// ray_trace_kernel.c
-void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t ray_id);
-
-// Other kernel files
-void update_isotropic_sources_kernel(Parameters P, SimulationData SD, int cell, int energy_group_in, double inverse_k_eff);
-void flux_attenuation_kernel(Parameters P, SimulationData SD, uint64_t ray_id, int energy_group);
-void normalize_scalar_flux_kernel(Parameters P, float * new_scalar_flux, int cell, int energy_group);
-void add_source_to_scalar_flux_kernel(Parameters P, SimulationData SD, int cell, int energy_group);
-void compute_cell_fission_rates_kernel(Parameters P, SimulationData SD, float * scalar_flux, int cell);

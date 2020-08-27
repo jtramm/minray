@@ -26,9 +26,7 @@ SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD
     if( iter >= P.n_inactive_iterations && !is_active_region )
     {
       is_active_region = 1;
-      //printf("resetting scalar flux accumulators...\n");
       clear_array(CL, &SD.readWriteData.cellData.d_scalar_flux_accumulator, flux_bytes);
-      //memset(SD.readWriteData.cellData.scalar_flux_accumulator, 0, P.n_cells * P.n_energy_groups * sizeof(float));
       k_eff_total_accumulator = 0.0;
       k_eff_sum_of_squares_accumulator = 0.0;
     }
@@ -37,7 +35,6 @@ SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD
     update_isotropic_sources(CL, P, SD, k_eff);
 
     // Reset this iteration's scalar flux tallies to zero
-    //memset(SD.readWriteData.cellData.new_scalar_flux, 0, P.n_cells * P.n_energy_groups * sizeof(float));
     clear_array(CL, &SD.readWriteData.cellData.d_new_scalar_flux, flux_bytes);
 
     // Run the transport sweep
@@ -60,21 +57,10 @@ SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD
     k_eff_sum_of_squares_accumulator += k_eff * k_eff;
 
     // Set old scalar flux to equal the new scalar flux. To optimize, we simply swap the old and new scalar flux pointers
-    //ptr_swap(&SD.readWriteData.cellData.new_scalar_flux, &SD.readWriteData.cellData.old_scalar_flux);
-    cl_int ret = clEnqueueCopyBuffer(
-        CL->command_queue,
-        SD.readWriteData.cellData.d_new_scalar_flux,
-        SD.readWriteData.cellData.d_old_scalar_flux,
-        0,
-        0,
-        flux_bytes,
-        0,
-        NULL,
-        NULL);
+    cl_int ret = clEnqueueCopyBuffer(CL->command_queue, SD.readWriteData.cellData.d_new_scalar_flux, SD.readWriteData.cellData.d_old_scalar_flux, 0, 0, flux_bytes, 0, NULL, NULL);
     check(ret);
 
     // Compute the total number of intersections performed this iteration
-    //n_total_geometric_intersections += reduce_sum_int(SD.readWriteData.intersectionData.n_intersections, P.n_rays);
     n_total_geometric_intersections += reduce_intersections(CL, SD, P.n_rays);
 
     // Output some status data on the results of the power iteration
@@ -106,7 +92,6 @@ void update_isotropic_sources(OpenCLInfo * CL, Parameters P, SimulationData SD, 
   check(ret);
 
   // Launch kernel
-  //printf("Launching update_isotropic_sources kernel...\n");
   size_t global_item_size = P.n_cells * P.n_energy_groups;
   size_t local_item_size = P.n_energy_groups;
   ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.update_isotropic_sources_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
@@ -120,14 +105,12 @@ void transport_sweep(OpenCLInfo * CL, Parameters P, SimulationData SD)
   cl_int ret;
 
   // Launch Ray Tracing kernel
-  //printf("Launching ray tracing kernel...\n");
   global_item_size = P.n_rays;
   local_item_size = 8; 
   ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.ray_trace_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
   check(ret);
 
   // Launch Ray Tracing kernel
-  //printf("Launching flux attenuation kernel...\n");
   global_item_size = P.n_rays * P.n_energy_groups;
   local_item_size = P.n_energy_groups;
   ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.flux_attenuation_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
@@ -137,7 +120,6 @@ void transport_sweep(OpenCLInfo * CL, Parameters P, SimulationData SD)
 
 void normalize_scalar_flux(OpenCLInfo * CL, Parameters P, SimulationData SD)
 {
-  //printf("Launching flux scalar flux normalization kernel...\n");
   size_t global_item_size = P.n_cells * P.n_energy_groups;
   size_t local_item_size = P.n_energy_groups;
   cl_int ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.normalize_scalar_flux_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
@@ -146,7 +128,6 @@ void normalize_scalar_flux(OpenCLInfo * CL, Parameters P, SimulationData SD)
 
 void add_source_to_scalar_flux(OpenCLInfo * CL, Parameters P, SimulationData SD)
 {
-  //printf("Launching add source to scalar flux normalization kernel...\n");
   size_t global_item_size = P.n_cells * P.n_energy_groups;
   size_t local_item_size = P.n_energy_groups;
   cl_int ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.add_source_to_scalar_flux_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
@@ -159,14 +140,12 @@ double compute_k_eff(OpenCLInfo * CL, Parameters P, SimulationData SD, double ol
   compute_cell_fission_rates(CL, P, SD, 0.0);
 
   // Reduce total old fission rate
-  //double old_total_fission_rate = reduce_sum_float(SD.readWriteData.cellData.fission_rate, P.n_cells * P.n_energy_groups);
   double old_total_fission_rate = reduce_fission_rates(CL, SD, P.n_cells);
 
   // Compute new fission rates
   compute_cell_fission_rates(CL, P, SD, 1.0);
 
   // Reduce total new fission rate
-  //double new_total_fission_rate = reduce_sum_float(SD.readWriteData.cellData.fission_rate, P.n_cells * P.n_energy_groups);
   double new_total_fission_rate = reduce_fission_rates(CL, SD, P.n_cells);
 
   // Update estimate of k-eff
@@ -180,22 +159,10 @@ void compute_cell_fission_rates(OpenCLInfo * CL, Parameters P, SimulationData SD
   cl_int ret = clSetKernelArg(CL->kernels.compute_cell_fission_rates_kernel, 0, sizeof(double), (void *)&utility_variable);
   check(ret);
 
-  //printf("Launching cell fission rates kernel...\n");
   size_t local_item_size = 64;
   size_t global_item_size = ceil(P.n_cells/64.0) * 64.0;
   ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.compute_cell_fission_rates_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
   check(ret);
-}
-
-// May need to be a pairwise reduction
-double reduce_sum_float(float * a, int size)
-{
-  double sum = 0.0;
-
-  for( int i = 0; i < size; i++ )
-    sum += a[i];
-
-  return sum;
 }
 
 float reduce_fission_rates(OpenCLInfo *CL, SimulationData SD, int n_cells)
@@ -303,7 +270,6 @@ double check_hit_rate(OpenCLInfo * CL, SimulationData SD, int n_cells)
   int n_cells_hit = reduce_hit_count(CL, SD, n_cells);
 
   // Reset cell hit counters
-  //memset(hit_count, 0, n_cells * sizeof(int));
   clear_array(CL, &SD.readWriteData.cellData.d_hit_count, n_cells * sizeof(int));
 
   // Compute percentage of cells missed

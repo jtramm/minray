@@ -15,8 +15,6 @@ int main(int argc, char * argv[])
   initialize_rays(P, SD);
   initialize_fluxes(P, SD);
   
-  center_print("DEVICE INITIALIZATION", 79);
-  border_print();
   // Initialize OpenCL Device
   OpenCLInfo CL = initialize_device();
 

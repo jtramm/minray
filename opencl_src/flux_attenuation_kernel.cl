@@ -26,16 +26,11 @@ __kernel void flux_attenuation_kernel(ARGUMENTS)
     // The cell ID for the FSR the ray starts life in
     ulong cell_id = cell_ids[i];
 
-    //if( ray_group_idx == 0)
-    //  printf("flux = %f  cell_id = %d\n", ray_angular_flux, cell_id);
-
     if( did_vacuum_reflects[i] )
       ray_angular_flux = 0.0f;
 
     // tau calculation ( tau = Sigma_t * distance )
     float tau = Sigma_t[material_id[cell_id] * P.n_energy_groups + energy_group] * distances[i];
-    //if( ray_group_idx == 0)
-    //  printf("tau = %f  distances[i] = %f  material_id = %d Sigma_t = %f\n", tau, distances[i], material_id[cell_id], Sigma_t[material_id[cell_id] * P.n_energy_groups + energy_group]);
 
     /////////////////////////////////////////////////////////////////////
     // Exponential Computation ( exponential = 1 - exp( -tau ) )
@@ -93,8 +88,6 @@ __kernel void flux_attenuation_kernel(ARGUMENTS)
 
     float delta_psi = (ray_angular_flux - isotropic_source[flux_idx]) * exponential;
 
-    //#pragma omp atomic
-    //new_scalar_flux[flux_idx] += delta_psi;
     atomicAdd_g_f(new_scalar_flux + flux_idx, delta_psi);
 
     ray_angular_flux -= delta_psi;

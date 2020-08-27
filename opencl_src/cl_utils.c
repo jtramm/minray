@@ -198,6 +198,9 @@ void print_opencl_info(void)
 
 OpenCLInfo initialize_device(void)
 {
+  center_print("DEVICE INITIALIZATION", 79);
+  border_print();
+
   // Get platform and device information
   cl_platform_id platform_id = NULL;
   cl_device_id device_id = NULL;   
