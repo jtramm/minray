@@ -78,7 +78,7 @@ void print_user_inputs(Parameters P)
   printf("Number of Cells per Dimension     = %d\n",    P.n_cells_per_dimension);
   printf("Total Number of Cells (FSRs)      = %lu\n",   P.n_cells);
   printf("Number of Rays per Iteration      = %lu\n",   P.n_rays);
-  printf("Length of each ray [cm]           = %.2lf\n", P.distance_per_ray);
+  printf("Length of Each Ray                = %.2lf [cm]\n", P.distance_per_ray);
   printf("Energy Groups                     = %d\n",    P.n_energy_groups);
   printf("Number of Inactive Iterations     = %d\n",    P.n_inactive_iterations);
   printf("Number of Active Iterations       = %d\n",    P.n_active_iterations);
@@ -94,7 +94,7 @@ void print_user_inputs(Parameters P)
   
   char * validation_strings[3] = {"small", "medium", "large"};
   if( P.validation_problem_id )
-    printf("Validation problem                = %s\n", validation_strings[P.validation_problem_id-1]);
+    printf("Validation Problem                = %s\n", validation_strings[P.validation_problem_id-1]);
 
   #ifdef OPENMP
   printf("Number of Threads                 = %d\n", omp_get_max_threads());

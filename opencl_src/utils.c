@@ -33,7 +33,7 @@ int validate_results(int validation_problem_id, double k_eff)
     double expected_results[3] = {0.31918, 1.19311, 1.18600};
     double k_eff_expected = expected_results[validation_problem_id - 1];
     double delta = fabs(k_eff - k_eff_expected);
-    if( delta < 1.0e-5 )
+    if( delta < 5.0e-5 )
     {
       printf("Validation Test                   = Passed\n");
       return 0;

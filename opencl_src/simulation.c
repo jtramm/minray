@@ -73,7 +73,7 @@ SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD
         NULL);
     check(ret);
 
-    // TODO: Compute the total number of intersections performed this iteration
+    // Compute the total number of intersections performed this iteration
     //n_total_geometric_intersections += reduce_sum_int(SD.readWriteData.intersectionData.n_intersections, P.n_rays);
     n_total_geometric_intersections += reduce_intersections(CL, SD, P.n_rays);
 
@@ -90,6 +90,9 @@ SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD
   SR.n_geometric_intersections = n_total_geometric_intersections;
   SR.runtime_total = runtime_total;
   SR.runtime_transport_sweep = time_in_transport_sweep;
+
+  // Copy final flux accumulator vector back to the host 
+  copy_array_from_device(CL, &SD.readWriteData.cellData.d_scalar_flux_accumulator, SD.readWriteData.cellData.scalar_flux_accumulator, SD.readWriteData.cellData.sz_scalar_flux_accumulator);
 
   return SR;
 }
