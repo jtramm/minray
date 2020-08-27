@@ -67,7 +67,9 @@ More background information on the derivation of the method and how it works in 
 
 While full random ray applications like ARRC are capable of simulating arbitrary 3D geometries using a constructive solid geometry treatment capable of representing arbitrary second order surfaces (e.g., cylinders, spheres, cones, etc), Minray is only capable of simulating strictly Cartesian geometries in 2D. This simplification is made to keep the source code as compact as possible so as to allow running on a variety of HPC architectures such as FPGAs. In the future, we may add in a more complex (and accurate) geometry treatment.
 
-The result of this simplification is that only crude approximations to real reactor geometries can be simulated. For the target problem of interest, 2D C5G7, since we are using a Cartesian mesh we are not accurately representing the curves of the fuel pins, so our solutions will have some error (compared to the problem reference) even for a very fine mesh. With that in mind, the particular mesh type and resolution required for most problems is already well known and studied, so we are not concerned with that problem in this application where we are focused on testing the basic algorithm on FPGAs and other HPC architectures.
+The result of this simplification is that only crude approximations to real reactor geometries can be simulated. For the target problem of interest, 2D C5G7, since we are using a Cartesian mesh we are not accurately representing the curves of the fuel pins, so our solutions will have some error (compared to the problem reference) even for a very fine mesh. See the below figure for an example comparing the typical constructive solid geometry mesh used by the full appliation ARRC with the simplified Cartesian mesh used in minray. With that in mind, the particular mesh type and resolution required for most problems is already well known and studied, so we are not concerned with that problem in this application where we are focused on testing the basic algorithm on FPGAs and other HPC architectures.
+
+![minray](doc/img/mesh.png)
 
 ## Citing minray
 
