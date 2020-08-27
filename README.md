@@ -49,7 +49,7 @@ The `-v small` should run within a second or so and is meant as a "smoke test" t
 
 Besides the benchmark and validation modes, there are a number of other options for doing custom simulations. For instance, if one wanted to investigate the effect of the Cartesian mesh resolution on simulation accuracy, you could use the mesh multiplier option `-m <value>` to increase the mesh fineness. At the coarsest setting (`-m 1`) only a single mesh region is assigned to each pin cell in the 2D C5G7 problem. There are input files available for the `-m <1, 2, 4, 8, 16, 32>` settings. If only the `-m` argument is given, minray will automatically increase the number of rays used so as to ensure the mesh is adequately sampled.
 
-The user is also able to manually reset the number of rays used and the distance per ray (10 cm by default).
+The user is also able to manually alter the number of rays used (`-r <# of rays>`) and the distance per ray in cm (`-d <distance>`).
 
 By default, the number of inactive and active iterations used is only 10 so as ti keep the runtime low. However, this is not enough iterations to converge a simulation. For a problem of this scale, it is more likely that 1000 inactive and 1000 active iterations would be required, which can be set as: `-i 1000 -a 1000`.
 
