@@ -6,23 +6,23 @@ SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD
   center_print("SIMULATION", 79);
   border_print();
 
+  // Simulation eigenvalue and eigenvalue statistics variables
   double k_eff = 1.0;
   double k_eff_total_accumulator = 0.0;
   double k_eff_sum_of_squares_accumulator = 0.0;
 
+  // Indicator for if the simulation is in the active region
   int is_active_region = 0;
 
   uint64_t n_total_geometric_intersections = 0;
-
-  double start_time_simulation = get_time();
-  double time_in_transport_sweep = 0.0;
-
   size_t flux_bytes = P.n_cells * P.n_energy_groups * sizeof(float);
+  
+  double start_time_simulation = get_time();
 
   // Power Iteration Loop
   for( int iter = 0; iter < P.n_iterations; iter++ )
   {
-    // Reset scalar flux and k-eff accumulators if we have finished our inactive iterations
+    // Reset scalar flux and k-eff accumulators when entering the active portion of simulation
     if( iter >= P.n_inactive_iterations && !is_active_region )
     {
       is_active_region = 1;
@@ -38,9 +38,7 @@ SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD
     clear_array(CL, &SD.readWriteData.cellData.d_new_scalar_flux, flux_bytes);
 
     // Run the transport sweep
-    double start_time_transport = get_time();
     transport_sweep(CL, P, SD);
-    time_in_transport_sweep += get_time() - start_time_transport;
 
     // Check hit rate to ensure we are running enough rays
     double percent_missed = check_hit_rate(CL, SD, P.n_cells);
@@ -56,7 +54,7 @@ SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD
     k_eff_total_accumulator += k_eff;
     k_eff_sum_of_squares_accumulator += k_eff * k_eff;
 
-    // Set old scalar flux to equal the new scalar flux. To optimize, we simply swap the old and new scalar flux pointers
+    // Set old scalar flux to equal the new scalar flux.
     cl_int ret = clEnqueueCopyBuffer(CL->command_queue, SD.readWriteData.cellData.d_new_scalar_flux, SD.readWriteData.cellData.d_old_scalar_flux, 0, 0, flux_bytes, 0, NULL, NULL);
     check(ret);
 
@@ -75,7 +73,6 @@ SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD
   compute_statistics(k_eff_total_accumulator, k_eff_sum_of_squares_accumulator, P.n_active_iterations, &SR.k_eff, &SR.k_eff_std_dev);
   SR.n_geometric_intersections = n_total_geometric_intersections;
   SR.runtime_total = runtime_total;
-  SR.runtime_transport_sweep = time_in_transport_sweep;
 
   // Copy final flux accumulator vector back to the host 
   copy_array_from_device(CL, &SD.readWriteData.cellData.d_scalar_flux_accumulator, SD.readWriteData.cellData.scalar_flux_accumulator, SD.readWriteData.cellData.sz_scalar_flux_accumulator);

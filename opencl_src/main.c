@@ -24,7 +24,7 @@ int main(int argc, char * argv[])
   // Load and compile OpenCL kernels
   initialize_kernels(&CL);
 
-  // Load static kernel arguments into kernel
+  // Load static kernel arguments into kernels
   load_kernel_arguments(&P, &SD, &CL);
 
   // Run Random Ray Simulation
