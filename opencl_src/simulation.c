@@ -75,6 +75,7 @@ SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD
 
     // TODO: Compute the total number of intersections performed this iteration
     //n_total_geometric_intersections += reduce_sum_int(SD.readWriteData.intersectionData.n_intersections, P.n_rays);
+    n_total_geometric_intersections += reduce_intersections(CL, SD, P.n_rays);
 
     // Output some status data on the results of the power iteration
     print_status_data(iter, k_eff, percent_missed, is_active_region, k_eff_total_accumulator, k_eff_sum_of_squares_accumulator, iter - P.n_inactive_iterations + 1);
@@ -220,6 +221,39 @@ float reduce_fission_rates(OpenCLInfo *CL, SimulationData SD, int n_cells)
   check(ret);
 
   copy_array_from_device(CL, &d_sum, (void *) &sum, sizeof(float));
+
+  ret = clReleaseMemObject(d_sum);
+  check(ret);
+
+  return sum;
+}
+
+int reduce_intersections(OpenCLInfo *CL, SimulationData SD, int n_rays)
+{
+  int sum = 0;
+  cl_mem d_sum = copy_array_to_device(CL, CL_MEM_READ_WRITE, (void *) &sum, sizeof(int));
+
+  int argc = 3;
+  size_t arg_sz[3];
+  void * args[3];
+
+  // Set argument sizes
+  arg_sz[0] = sizeof(int *);
+  arg_sz[1] = sizeof(int *);
+  arg_sz[2] = sizeof(int);
+
+  args[0] = (void *) &SD.readWriteData.intersectionData.d_n_intersections;
+  args[1] = (void *) &d_sum;
+  args[2] = (void *) &n_rays;
+
+  set_kernel_arguments(&CL->kernels.reduce_int_kernel, argc, arg_sz, args);
+
+  size_t local_item_size = 64;
+  size_t global_item_size = ceil(n_rays/64.0) * 64.0;
+  cl_int ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.reduce_int_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
+  check(ret);
+
+  copy_array_from_device(CL, &d_sum, (void *) &sum, sizeof(int));
 
   ret = clReleaseMemObject(d_sum);
   check(ret);

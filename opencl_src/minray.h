@@ -159,6 +159,7 @@ double compute_k_eff(OpenCLInfo * CL, Parameters P, SimulationData SD, double ol
 void compute_cell_fission_rates(OpenCLInfo * CL, Parameters P, SimulationData SD, double utility_variable);
 double check_hit_rate(OpenCLInfo * CL, SimulationData SD, int n_cells);
 float reduce_fission_rates(OpenCLInfo *CL, SimulationData SD, int n_cells);
+int reduce_intersections(OpenCLInfo *CL, SimulationData SD, int n_rays);
 
 // rand.c
 double LCG_random_double(uint64_t * seed);

@@ -11,6 +11,5 @@ __kernel void reduce_float_kernel(__global float * in, __global float * result, 
   float res = work_group_reduce_add(val);
 
   if(lid == 0 )
-    //atomicAdd_g_f(result, res);
-    atomic_add(result, res);
+    atomicAdd_g_f(result, res);
 }
