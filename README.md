@@ -6,7 +6,7 @@ A minimal implementation of the random ray method for neutral particle transport
 
 Key Features:
   - Much simpler than the full application (ARRC) -- allowing it to act as a reference implementation
-  - Complex enough to converge eiganvalues and power distributions for neutron transport problems (see picture below generated with minray)
+  - Complex enough to converge eigenvalues and power distributions for neutron transport problems (see picture below generated with minray)
   - Simplified geometry treatment limits complexity (can only simulate 2D heterogeneous Cartesian geometries)
   - Hard coded reactor simulation problem of interest: 2D C5G7
   - Kernelized for easy porting to accelerator languages
