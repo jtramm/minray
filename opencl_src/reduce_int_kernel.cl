@@ -11,7 +11,9 @@ __kernel void reduce_int_kernel(__global int * in, __global int * result, int si
 
   // Each thread loads its data into the shared buffer
   __local int localBuffer[WG_SIZE];
-  int res = in[gid];
+  int res = 0;
+  if( gid < size)
+    res = in[gid];
   localBuffer[lid] = res;
   barrier(CLK_LOCAL_MEM_FENCE);
 

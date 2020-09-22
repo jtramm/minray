@@ -14,7 +14,9 @@ __kernel void reduce_float_kernel(__global float * in, __global float * result, 
 
   // Each thread loads its data into the shared buffer
   __local float localBuffer[WG_SIZE];
-  float res = in[gid];
+  float res = 0;
+  if( gid < size)
+    res = in[gid];
   localBuffer[lid] = res;
   barrier(CLK_LOCAL_MEM_FENCE);
 
