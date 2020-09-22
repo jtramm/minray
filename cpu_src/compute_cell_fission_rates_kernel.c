@@ -12,7 +12,7 @@ void compute_cell_fission_rates_kernel(Parameters P, SimulationData SD, float * 
   uint64_t flux_idx = (uint64_t) cell * P.n_energy_groups;
   scalar_flux += flux_idx;
 
-  double fission_rate = 0.0;
+  RT_FLOAT fission_rate = 0.0;
   for( int energy_group = 0; energy_group < P.n_energy_groups; energy_group++ )
   {
     fission_rate += nu_Sigma_f[energy_group] * scalar_flux[energy_group];

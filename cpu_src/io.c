@@ -85,7 +85,7 @@ void print_user_inputs(Parameters P)
   printf("Pseudorandom Seed                 = %lu\n",   P.seed);
   printf("Maximum Intersections per Ray     = %d\n",    P.max_intersections_per_ray);
   size_t bytes = estimate_memory_usage(P);
-  double MB = (double) bytes / 1024.0 /1024.0;
+  RT_FLOAT MB = (RT_FLOAT) bytes / 1024.0 /1024.0;
   printf("Estimated Memory Usage            = %.2lf [MB]\n", MB);
   if( P.plotting_enabled )
     printf("Plotting                          = Enabled\n");
@@ -111,10 +111,10 @@ int print_results(Parameters P, SimulationResult SR)
   printf("Simulation Runtime                = %.3le [s]\n", SR.runtime_total);
   printf("    Transport Sweep Time          = %.3le [s] (%.2lf%%)\n", SR.runtime_transport_sweep, 100.0 * SR.runtime_transport_sweep / SR.runtime_total);
   printf("    Iteration Time                = %.3le [s] (%.2lf%%)\n", SR.runtime_total - SR.runtime_transport_sweep, 100.0* (1.0 - SR.runtime_transport_sweep / SR.runtime_total));
-  printf("Number of Geometric Intersections = %.3le\n", (double) SR.n_geometric_intersections);
-  printf("Avg. Geom. Intersections per Ray  = %.1lf\n", SR.n_geometric_intersections / ((double)P.n_rays * P.n_iterations));
-  printf("Number of Integrations            = %.3le\n", (double) SR.n_geometric_intersections * P.n_energy_groups);
-  double time_per_integration = SR.runtime_total * 1.0e9 / ( SR.n_geometric_intersections * P.n_energy_groups);
+  printf("Number of Geometric Intersections = %.3le\n", (RT_FLOAT) SR.n_geometric_intersections);
+  printf("Avg. Geom. Intersections per Ray  = %.1lf\n", SR.n_geometric_intersections / ((RT_FLOAT)P.n_rays * P.n_iterations));
+  printf("Number of Integrations            = %.3le\n", (RT_FLOAT) SR.n_geometric_intersections * P.n_energy_groups);
+  RT_FLOAT time_per_integration = SR.runtime_total * 1.0e9 / ( SR.n_geometric_intersections * P.n_energy_groups);
   printf("Time per Integration (TPI)        = %.3lf [ns]\n", time_per_integration);
   printf("Est. Total Time Req. to Converge  = %.3le [s]\n", (SR.runtime_total / P.n_iterations) * 2000.0);
   int is_valid_result = validate_results(P.validation_problem_id, SR.k_eff);
@@ -122,7 +122,7 @@ int print_results(Parameters P, SimulationResult SR)
   return is_valid_result;
 }
 
-void print_status_data(int iter, double k_eff, double percent_missed, int is_active_region, double k_eff_total_accumulator, double k_eff_sum_of_squares_accumulator, int n_active_iterations)
+void print_status_data(int iter, RT_FLOAT k_eff, RT_FLOAT percent_missed, int is_active_region, RT_FLOAT k_eff_total_accumulator, RT_FLOAT k_eff_sum_of_squares_accumulator, int n_active_iterations)
 {
   char color[64] = "";
   char color_reset[64] = "";
@@ -137,7 +137,7 @@ void print_status_data(int iter, double k_eff, double percent_missed, int is_act
    // sprintf(color_reset, "");
   }
 
-  double k_eff_avg, k_eff_std_dev;
+  RT_FLOAT k_eff_avg, k_eff_std_dev;
   compute_statistics(k_eff_total_accumulator, k_eff_sum_of_squares_accumulator, n_active_iterations, &k_eff_avg, &k_eff_std_dev);
 
   char active_info[256];
@@ -575,9 +575,9 @@ void plot_3D_vtk(Parameters P, float * scalar_flux_accumulator, int * material_i
   G.box.max.y = G.box.min.y + 4 * 1.26;
   */
 
-  double x_delta = P.cell_width;
-  double y_delta = P.cell_width;
-  double z_delta = P.cell_width;
+  RT_FLOAT x_delta = P.cell_width;
+  RT_FLOAT y_delta = P.cell_width;
+  RT_FLOAT z_delta = P.cell_width;
 
   printf("Plotting 2D Data X x Y = %d x %d to file %s...\n", N, N, fname);
 
@@ -677,7 +677,7 @@ void output_thermal_fluxes(Parameters P, SimulationData SD)
   }
 }
 
-void print_ray(double x, double y, double x_dir, double y_dir, int cell_id)
+void print_ray(RT_FLOAT x, RT_FLOAT y, RT_FLOAT x_dir, RT_FLOAT y_dir, int cell_id)
 {
   printf("Location[%.3lf, %.3lf] Direction[%.3lf, %.3lf] Cell ID %d\n", x, y, x_dir, y_dir, cell_id);
 }

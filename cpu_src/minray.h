@@ -19,12 +19,19 @@
 #define MEDIUM 2
 #define LARGE 3
 
-#define BUMP 1.0e-11
+//#define BUMP 1.0e-11
+//#define BUMP 1.0e-11
+//#define BUMP 5.0e-6
+#define BUMP 1.0e-6
+//#define BUMP 1.0e-4
+
+#define RT_FLOAT float
 
 typedef struct{
-  double distance_to_surface;
-  double surface_normal_x;
-  double surface_normal_y;
+  RT_FLOAT distance_to_surface;
+  RT_FLOAT surface_normal_x;
+  RT_FLOAT surface_normal_y;
+  int last_surface;
 } TraceResult;
 
 typedef struct{
@@ -46,9 +53,9 @@ typedef struct{
 typedef struct{
   // User Inputs
   int n_cells_per_dimension;
-  double length_per_dimension;
+  RT_FLOAT length_per_dimension;
   uint64_t n_rays;
-  double distance_per_ray;
+  RT_FLOAT distance_per_ray;
   int n_inactive_iterations;
   int n_active_iterations;
   uint64_t seed;
@@ -61,31 +68,32 @@ typedef struct{
   int boundary_condition_y_positive;
   int boundary_condition_y_negative;
   // Derived
-  double cell_expected_track_length;
-  double inverse_total_track_length;
-  double cell_width;
-  double inverse_length_per_dimension;
-  double inverse_cell_width;
+  RT_FLOAT cell_expected_track_length;
+  RT_FLOAT inverse_total_track_length;
+  RT_FLOAT cell_width;
+  RT_FLOAT inverse_length_per_dimension;
+  RT_FLOAT inverse_cell_width;
   uint64_t n_cells;
   int n_iterations;
   int plotting_enabled;
-  double cell_volume;
+  RT_FLOAT cell_volume;
   int validation_problem_id;
 } Parameters;
 
 typedef struct{
   float * angular_flux;
-  double * location_x;
-  double * location_y;
-  double * direction_x;
-  double * direction_y;
+  RT_FLOAT * location_x;
+  RT_FLOAT * location_y;
+  RT_FLOAT * direction_x;
+  RT_FLOAT * direction_y;
   int * cell_id;
+  int * last_surface;
 } RayData;
 
 typedef struct{
   int * n_intersections;
   int * cell_ids;
-  double * distances;
+  RT_FLOAT * distances;
   int * did_vacuum_reflects;
 } IntersectionData;
 
@@ -111,10 +119,10 @@ typedef struct{
 
 typedef struct{
   uint64_t n_geometric_intersections;
-  double runtime_total;
-  double runtime_transport_sweep;
-  double k_eff;
-  double k_eff_std_dev;
+  RT_FLOAT runtime_total;
+  RT_FLOAT runtime_transport_sweep;
+  RT_FLOAT k_eff;
+  RT_FLOAT k_eff_std_dev;
 } SimulationResult;
 
 // io.c
@@ -123,26 +131,26 @@ ReadOnlyData load_2D_C5G7_XS(Parameters P);
 void plot_3D_vtk(Parameters P, float * scalar_flux_accumulator, int * material_id);
 void print_user_inputs(Parameters P);
 int print_results(Parameters P, SimulationResult SR);
-void print_status_data(int iter, double k_eff, double percent_missed, int is_active_region, double k_eff_total_accumulator, double k_eff_sum_of_squares_accumulator, int n_active_iterations);
+void print_status_data(int iter, RT_FLOAT k_eff, RT_FLOAT percent_missed, int is_active_region, RT_FLOAT k_eff_total_accumulator, RT_FLOAT k_eff_sum_of_squares_accumulator, int n_active_iterations);
 void center_print(const char *s, int width);
 void border_print(void);
 void print_ray_tracing_buffer(Parameters P, SimulationData SD);
-void print_ray(double x, double y, double x_dir, double y_dir, int cell_id);
+void print_ray(RT_FLOAT x, RT_FLOAT y, RT_FLOAT x_dir, RT_FLOAT y_dir, int cell_id);
 
 // simulation.c
 SimulationResult run_simulation(Parameters P, SimulationData SD);
 void transport_sweep(Parameters P, SimulationData SD);
-void update_isotropic_sources(Parameters P, SimulationData SD, double k_eff);
+void update_isotropic_sources(Parameters P, SimulationData SD, RT_FLOAT k_eff);
 void normalize_scalar_flux(Parameters P, SimulationData SD);
 void add_source_to_scalar_flux(Parameters P, SimulationData SD);
 void compute_cell_fission_rates(Parameters P, SimulationData SD, float * scalar_flux);
-double reduce_sum_float(float * a, int size);
+RT_FLOAT reduce_sum_float(float * a, int size);
 int reduce_sum_int(int * a, int size);
-double compute_k_eff(Parameters P, SimulationData SD, double old_k_eff);
-double check_hit_rate(int * hit_count, int n_cells);
+RT_FLOAT compute_k_eff(Parameters P, SimulationData SD, RT_FLOAT old_k_eff);
+RT_FLOAT check_hit_rate(int * hit_count, int n_cells);
 
 // rand.c
-double LCG_random_double(uint64_t * seed);
+RT_FLOAT LCG_random_double(uint64_t * seed);
 uint64_t fast_forward_LCG(uint64_t seed, uint64_t n);
 
 // init.c
@@ -152,18 +160,18 @@ void initialize_fluxes(Parameters P, SimulationData SD);
 size_t estimate_memory_usage(Parameters P);
 
 // utils.c
-double get_time(void);
+RT_FLOAT get_time(void);
 void ptr_swap(float ** a, float ** b);
-void compute_statistics(double sum, double sum_of_squares, int n, double * sample_mean, double * std_dev_of_sample_mean);
-int validate_results(int validation_problem_id, double k_eff);
+void compute_statistics(RT_FLOAT sum, RT_FLOAT sum_of_squares, int n, RT_FLOAT * sample_mean, RT_FLOAT * std_dev_of_sample_mean);
+int validate_results(int validation_problem_id, RT_FLOAT k_eff);
 
 // ray_trace_kernel.c
 void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t ray_id);
-CellLookup find_cell_id(Parameters P, double x, double y);
-TraceResult cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir);
+TraceResult cartesian_ray_trace(RT_FLOAT x, RT_FLOAT y, RT_FLOAT cell_width, int x_idx, int y_idx, RT_FLOAT x_dir, RT_FLOAT y_dir, int last_surface);
+CellLookup find_cell_id(Parameters P, RT_FLOAT x, RT_FLOAT y, int last_surface, int idx_x, int idx_y);
 
 // Other kernel files
-void update_isotropic_sources_kernel(Parameters P, SimulationData SD, int cell, int energy_group_in, double inverse_k_eff);
+void update_isotropic_sources_kernel(Parameters P, SimulationData SD, int cell, int energy_group_in, RT_FLOAT inverse_k_eff);
 void flux_attenuation_kernel(Parameters P, SimulationData SD, uint64_t ray_id, int energy_group);
 void normalize_scalar_flux_kernel(Parameters P, float * new_scalar_flux, int cell, int energy_group);
 void add_source_to_scalar_flux_kernel(Parameters P, SimulationData SD, int cell, int energy_group);

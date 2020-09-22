@@ -5,11 +5,11 @@ size_t estimate_memory_usage(Parameters P)
   size_t sz = 0;
   // Ray Data
   sz += P.n_rays * P.n_energy_groups * sizeof(float);
-  sz += (P.n_rays * sizeof(double)) * 4;
+  sz += (P.n_rays * sizeof(RT_FLOAT)) * 4;
   sz += P.n_rays * sizeof(int);
   // Intersection Data
   sz += (P.n_rays * P.max_intersections_per_ray * sizeof(int))*3;
-  sz += P.n_rays * P.max_intersections_per_ray * sizeof(double);
+  sz += P.n_rays * P.max_intersections_per_ray * sizeof(RT_FLOAT);
   // Cell Data
   sz += (P.n_cells * P.n_energy_groups * sizeof(float))*4;
   sz += P.n_cells * sizeof(float);
@@ -28,14 +28,15 @@ RayData initialize_ray_data(Parameters P)
   size_t sz = P.n_rays * P.n_energy_groups * sizeof(float);
   rayData.angular_flux = (float *) malloc(sz);
 
-  sz = P.n_rays * sizeof(double);
-  rayData.location_x  = (double *) malloc(sz);
-  rayData.location_y  = (double *) malloc(sz);
-  rayData.direction_x = (double *) malloc(sz);
-  rayData.direction_y = (double *) malloc(sz);
+  sz = P.n_rays * sizeof(RT_FLOAT);
+  rayData.location_x  = (RT_FLOAT *) malloc(sz);
+  rayData.location_y  = (RT_FLOAT *) malloc(sz);
+  rayData.direction_x = (RT_FLOAT *) malloc(sz);
+  rayData.direction_y = (RT_FLOAT *) malloc(sz);
   
   sz = P.n_rays * sizeof(int);
   rayData.cell_id  = (int *) malloc(sz);
+  rayData.last_surface  = (int *) malloc(sz);
 
   return rayData;
 }
@@ -49,8 +50,8 @@ IntersectionData initialize_intersection_data(Parameters P)
   intersectionData.cell_ids            = (int *) malloc(sz);
   intersectionData.did_vacuum_reflects = (int *) malloc(sz);
 
-  sz        = P.n_rays * P.max_intersections_per_ray * sizeof(double);
-  intersectionData.distances = (double *) malloc(sz);
+  sz        = P.n_rays * P.max_intersections_per_ray * sizeof(RT_FLOAT);
+  intersectionData.distances = (RT_FLOAT *) malloc(sz);
 
   return intersectionData;
 }
@@ -99,7 +100,7 @@ SimulationData initialize_simulation(Parameters P)
 }
 
 #define PRNG_SAMPLES_PER_RAY 10
-void initialize_ray_kernel(uint64_t base_seed, int ray_id, double length_per_dimension, int n_cells_per_dimension, double inverse_cell_width, RayData RD)
+void initialize_ray_kernel(uint64_t base_seed, int ray_id, RT_FLOAT length_per_dimension, int n_cells_per_dimension, RT_FLOAT inverse_cell_width, RayData RD)
 {
     uint64_t offset = ray_id * PRNG_SAMPLES_PER_RAY;
     uint64_t seed = fast_forward_LCG(base_seed, offset);
@@ -107,10 +108,10 @@ void initialize_ray_kernel(uint64_t base_seed, int ray_id, double length_per_dim
     RD.location_y[ray_id] = LCG_random_double(&seed) * length_per_dimension;
 
     // Sample azimuthal angle
-    double theta = LCG_random_double(&seed) * 2.0 * M_PI;
+    RT_FLOAT theta = LCG_random_double(&seed) * 2.0 * M_PI;
 
     // Sample polar angle
-    double z = -1.0 + 2.0 * LCG_random_double(&seed);
+    RT_FLOAT z = -1.0 + 2.0 * LCG_random_double(&seed);
 
     // If polar angle approaches unity (i.e., very steep), this can cause numerical instability.
     // To fix this, for polar angles ~1.0 we will just resample.
@@ -118,12 +119,12 @@ void initialize_ray_kernel(uint64_t base_seed, int ray_id, double length_per_dim
       z = -1.0 + 2.0 * LCG_random_double(&seed);
 
     // Spherical conversion
-    double zo = sqrt(1.0 - z*z);
-    double x = zo * cosf(theta);
-    double y = zo * sinf(theta);
+    RT_FLOAT zo = sqrt(1.0 - z*z);
+    RT_FLOAT x = zo * cosf(theta);
+    RT_FLOAT y = zo * sinf(theta);
 
     // Normalize Direction
-    double inverse = 1.0 / sqrt( x*x + y*y + z*z );
+    RT_FLOAT inverse = 1.0 / sqrt( x*x + y*y + z*z );
     x *= inverse;
     y *= inverse;
     z *= inverse;
@@ -164,4 +165,7 @@ void initialize_fluxes(Parameters P, SimulationData SD)
 
   // Set all starting angular fluxes to 0.0
   memset(SD.readWriteData.rayData.angular_flux, 0, P.n_rays * P.n_energy_groups * sizeof(float));
+  
+  // Set all previous surfaces to 0
+  memset(SD.readWriteData.rayData.last_surface, 0, P.n_rays * sizeof(int));
 }

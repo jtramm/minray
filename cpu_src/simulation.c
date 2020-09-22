@@ -5,16 +5,16 @@ SimulationResult run_simulation(Parameters P, SimulationData SD)
   center_print("SIMULATION", 79);
   border_print();
 
-  double k_eff = 1.0;
-  double k_eff_total_accumulator = 0.0;
-  double k_eff_sum_of_squares_accumulator = 0.0;
+  RT_FLOAT k_eff = 1.0;
+  RT_FLOAT k_eff_total_accumulator = 0.0;
+  RT_FLOAT k_eff_sum_of_squares_accumulator = 0.0;
 
   int is_active_region = 0;
 
   uint64_t n_total_geometric_intersections = 0;
 
-  double start_time_simulation = get_time();
-  double time_in_transport_sweep = 0.0;
+  RT_FLOAT start_time_simulation = get_time();
+  RT_FLOAT time_in_transport_sweep = 0.0;
 
   // Power Iteration Loop
   for( int iter = 0; iter < P.n_iterations; iter++ )
@@ -35,12 +35,12 @@ SimulationResult run_simulation(Parameters P, SimulationData SD)
     memset(SD.readWriteData.cellData.new_scalar_flux, 0, P.n_cells * P.n_energy_groups * sizeof(float));
 
     // Run the transport sweep
-    double start_time_transport = get_time();
+    RT_FLOAT start_time_transport = get_time();
     transport_sweep(P, SD);
     time_in_transport_sweep += get_time() - start_time_transport;
 
     // Check hit rate to ensure we are running enough rays
-    double percent_missed = check_hit_rate(SD.readWriteData.cellData.hit_count, P.n_cells);
+    RT_FLOAT percent_missed = check_hit_rate(SD.readWriteData.cellData.hit_count, P.n_cells);
 
     // Normalize the scalar flux tallies to the total distance travelled by all rays this iteration
     normalize_scalar_flux(P, SD);
@@ -64,7 +64,7 @@ SimulationResult run_simulation(Parameters P, SimulationData SD)
 
   } // End Power Iteration Loop
   
-  double runtime_total = get_time() - start_time_simulation;
+  RT_FLOAT runtime_total = get_time() - start_time_simulation;
   
   // Gather simulation results
   SimulationResult SR;
@@ -76,9 +76,9 @@ SimulationResult run_simulation(Parameters P, SimulationData SD)
   return SR;
 }
 
-void update_isotropic_sources(Parameters P, SimulationData SD, double k_eff)
+void update_isotropic_sources(Parameters P, SimulationData SD, RT_FLOAT k_eff)
 {
-  double inv_k_eff = 1.0/k_eff;
+  RT_FLOAT inv_k_eff = 1.0/k_eff;
 
   #pragma omp parallel for
   for( int cell = 0; cell < P.n_cells; cell++ )
@@ -117,22 +117,22 @@ void add_source_to_scalar_flux(Parameters P, SimulationData SD)
       add_source_to_scalar_flux_kernel(P, SD, cell, energy_group);
 }
 
-double compute_k_eff(Parameters P, SimulationData SD, double old_k_eff)
+RT_FLOAT compute_k_eff(Parameters P, SimulationData SD, RT_FLOAT old_k_eff)
 {
   // Compute old fission rates
   compute_cell_fission_rates(P, SD, SD.readWriteData.cellData.old_scalar_flux);
 
   // Reduce total old fission rate
-  double old_total_fission_rate = reduce_sum_float(SD.readWriteData.cellData.fission_rate, P.n_cells);
+  RT_FLOAT old_total_fission_rate = reduce_sum_float(SD.readWriteData.cellData.fission_rate, P.n_cells);
   
   // Compute new fission rates
   compute_cell_fission_rates(P, SD, SD.readWriteData.cellData.new_scalar_flux);
 
   // Reduce total new fission rate
-  double new_total_fission_rate = reduce_sum_float(SD.readWriteData.cellData.fission_rate, P.n_cells);
+  RT_FLOAT new_total_fission_rate = reduce_sum_float(SD.readWriteData.cellData.fission_rate, P.n_cells);
 
   // Update estimate of k-eff
-  double new_k_eff = old_k_eff * (new_total_fission_rate / old_total_fission_rate);
+  RT_FLOAT new_k_eff = old_k_eff * (new_total_fission_rate / old_total_fission_rate);
 
   return new_k_eff;
 }
@@ -145,9 +145,9 @@ void compute_cell_fission_rates(Parameters P, SimulationData SD, float * scalar_
 }
 
 // May need to be a pairwise reduction
-double reduce_sum_float(float * a, int size)
+RT_FLOAT reduce_sum_float(float * a, int size)
 {
-  double sum = 0.0;
+  RT_FLOAT sum = 0.0;
 
   #pragma omp parallel for reduction(+:sum)
   for( int i = 0; i < size; i++ )
@@ -168,7 +168,7 @@ int reduce_sum_int(int * a, int size)
 }
 
 
-double check_hit_rate(int * hit_count, int n_cells)
+RT_FLOAT check_hit_rate(int * hit_count, int n_cells)
 {
   // Determine how many FSRs were hit
   int n_cells_hit = reduce_sum_int(hit_count, n_cells);
@@ -177,7 +177,7 @@ double check_hit_rate(int * hit_count, int n_cells)
   memset(hit_count, 0, n_cells * sizeof(int));
 
   // Compute percentage of cells missed
-  double percent_missed = (1.0 - (double) n_cells_hit/n_cells) * 100.0;
+  RT_FLOAT percent_missed = (1.0 - (RT_FLOAT) n_cells_hit/n_cells) * 100.0;
 
   return percent_missed;
 }

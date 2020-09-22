@@ -18,7 +18,7 @@ void flux_attenuation_kernel(Parameters P, SimulationData SD, uint64_t ray_id, i
 
   int n_intersections       = SD.readWriteData.intersectionData.n_intersections[ray_id];
   int * cell_ids            = SD.readWriteData.intersectionData.cell_ids            + ray_id * P.max_intersections_per_ray;
-  double * distances        = SD.readWriteData.intersectionData.distances           + ray_id * P.max_intersections_per_ray;
+  RT_FLOAT * distances        = SD.readWriteData.intersectionData.distances           + ray_id * P.max_intersections_per_ray;
   int * did_vacuum_reflects = SD.readWriteData.intersectionData.did_vacuum_reflects + ray_id * P.max_intersections_per_ray;
 
   // Loop over all of this ray's intersections

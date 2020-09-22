@@ -8,7 +8,7 @@ void add_source_to_scalar_flux_kernel(Parameters P, SimulationData SD, int cell,
     return;
 
   int material_id = SD.readOnlyData.material_id[cell];
-  double Sigma_t   = SD.readOnlyData.Sigma_t[material_id * P.n_energy_groups + energy_group];
+  RT_FLOAT Sigma_t   = SD.readOnlyData.Sigma_t[material_id * P.n_energy_groups + energy_group];
 
   float * new_scalar_flux         = SD.readWriteData.cellData.new_scalar_flux;
   float * isotropic_source        = SD.readWriteData.cellData.isotropic_source; 

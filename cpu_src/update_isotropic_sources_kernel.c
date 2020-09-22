@@ -1,6 +1,6 @@
 #include "minray.h"
 
-void update_isotropic_sources_kernel(Parameters P, SimulationData SD, int cell, int energy_group_in, double inverse_k_eff)
+void update_isotropic_sources_kernel(Parameters P, SimulationData SD, int cell, int energy_group_in, RT_FLOAT inverse_k_eff)
 {
   // Cull threads if oversubscribed
   if( cell >= P.n_cells )
