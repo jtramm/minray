@@ -182,8 +182,8 @@ float reduce_fission_rates(OpenCLInfo *CL, SimulationData SD, int n_cells)
 
   set_kernel_arguments(&CL->kernels.reduce_float_kernel, argc, arg_sz, args);
 
-  size_t local_item_size = 64;
-  size_t global_item_size = ceil(n_cells/64.0) * 64.0;
+  size_t local_item_size = 256;
+  size_t global_item_size = ceil(n_cells/(double) local_item_size) * local_item_size;
   cl_int ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.reduce_float_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
   check(ret);
 
@@ -215,8 +215,8 @@ int reduce_intersections(OpenCLInfo *CL, SimulationData SD, int n_rays)
 
   set_kernel_arguments(&CL->kernels.reduce_int_kernel, argc, arg_sz, args);
 
-  size_t local_item_size = 64;
-  size_t global_item_size = ceil(n_rays/64.0) * 64.0;
+  size_t local_item_size = 256;
+  size_t global_item_size = ceil(n_rays/(double) local_item_size) * local_item_size;
   cl_int ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.reduce_int_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
   check(ret);
 
@@ -248,8 +248,8 @@ int reduce_hit_count(OpenCLInfo *CL, SimulationData SD, int n_cells)
 
   set_kernel_arguments(&CL->kernels.reduce_int_kernel, argc, arg_sz, args);
 
-  size_t local_item_size = 64;
-  size_t global_item_size = ceil(n_cells/64.0) * 64.0;
+  size_t local_item_size = 256;
+  size_t global_item_size = ceil(n_cells/(double) local_item_size) * local_item_size;
   cl_int ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.reduce_int_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
   check(ret);
 

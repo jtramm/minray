@@ -17,7 +17,7 @@ Key Features:
 
 The CPU version of minray is written in C with no dependencies.
 
-The OpenCL version of minray requires an OpenCL capable compiler. By default, minray requires support for OpenCL 2.0, however this is just to more easily execute a reduction kernel. If support for OpenCL 1.0 or 1.2 is desired, the integer and floating point reduction kernels simply need to be rewritten so as to avoid the use of the `work_group_reduce_add()` OpenCL 2.0 function.
+The OpenCL version of minray requires an OpenCL capable compiler.
 
 Use the included makefile each the desired source directory to install. Several options are available as toggles at the top of the makefile.
 
