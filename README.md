@@ -2,7 +2,7 @@
 
 ## Overview
 
-A minimal implementation of the random ray method for neutral particle transport. This purpose of this code is to serve as an open source performance benchmark for random ray, while still being able to perform the real neutronics and produce solutions.
+A minimal implementation of the random ray method for neutral particle transport. This purpose of this code is to serve as an open source performance benchmark for random ray that primarily targets FPGAs.
 
 Key Features:
   - Much simpler than the full application (ARRC) -- allowing it to act as a reference implementation
