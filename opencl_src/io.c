@@ -84,6 +84,7 @@ void print_user_inputs(Parameters P)
   printf("Number of Active Iterations       = %d\n",    P.n_active_iterations);
   printf("Pseudorandom Seed                 = %lu\n",   P.seed);
   printf("Maximum Intersections per Ray     = %d\n",    P.max_intersections_per_ray);
+
   size_t bytes = estimate_memory_usage(P);
   double MB = (double) bytes / 1024.0 /1024.0;
   printf("Estimated Memory Usage            = %.2lf [MB]\n", MB);
@@ -99,6 +100,17 @@ void print_user_inputs(Parameters P)
   #ifdef OPENMP
   printf("Number of Threads                 = %d\n", omp_get_max_threads());
   #endif
+  
+  if( P.platform_id == -1 )
+    printf("OpenCL Platform ID                = Default\n");
+  else
+    printf("OpenCL Platform ID                = %d\n", P.platform_id);
+
+  if( P.device_id == -1 )
+    printf("OpenCL Device ID                  = Default\n");
+  else
+    printf("OpenCL Device ID                  = %d\n", P.device_id);
+
 }
 
 int print_results(Parameters P, SimulationResult SR)
@@ -165,6 +177,8 @@ void print_CLI_error(void)
   printf("    -m <problem size multiplier> Multiplioer to increase problem size/resolution\n");
   printf("    -p                           Enables plotting\n");
   printf("    -v <small, medium, large>    Executes a specific validation probem to test for correctness\n");
+  printf("    -P <platform id>             Manually specify the OpenCL platform id to run on\n");
+  printf("    -D <device id>               Manually specify the OpenCL device id to run on\n");
 
   printf("See readme for full description of default run values\n");
   exit(1);
@@ -185,6 +199,8 @@ Parameters read_CLI(int argc, char * argv[])
   P.n_energy_groups = 7;
   P.plotting_enabled = 0;
   P.validation_problem_id = NONE;
+  P.platform_id = -1;
+  P.device_id = -1;
 
   P.boundary_conditions[1][1] = NONE;
   P.boundary_conditions[1][2] = REFLECTIVE; // x+
@@ -252,6 +268,22 @@ Parameters read_CLI(int argc, char * argv[])
     {
       if( ++i < argc )
         P.n_active_iterations = atoi(argv[i]);
+      else
+        print_CLI_error();
+    }
+    // Platform selection (-P)
+    else if( strcmp(arg, "-P") == 0 )
+    {
+      if( ++i < argc )
+        P.platform_id = atoi(argv[i]);
+      else
+        print_CLI_error();
+    }
+    // Device selection (-D)
+    else if( strcmp(arg, "-D") == 0 )
+    {
+      if( ++i < argc )
+        P.device_id = atoi(argv[i]);
       else
         print_CLI_error();
     }

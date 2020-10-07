@@ -16,7 +16,7 @@ int main(int argc, char * argv[])
   initialize_fluxes(P, SD);
   
   // Initialize OpenCL Device
-  OpenCLInfo CL = initialize_device();
+  OpenCLInfo CL = initialize_device(P.platform_id, P.device_id);
 
   // Allocate and move data to device
   initialize_device_data(&SD, &CL);

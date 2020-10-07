@@ -7,7 +7,8 @@
 #include<time.h>
 #include "parameters.h"
 
-#define CL_TARGET_OPENCL_VERSION 200
+//#define CL_TARGET_OPENCL_VERSION 200
+#define CL_TARGET_OPENCL_VERSION 120
 #include <CL/cl.h>
 #define MAX_SOURCE_SIZE (0x100000)
 
@@ -186,7 +187,7 @@ void check(cl_int error);
 void printCompilerError( cl_program program, cl_device_id device );
 void print_single_info( cl_platform_id platform, cl_device_id device);
 void print_opencl_info(void);
-OpenCLInfo initialize_device(void);
+OpenCLInfo initialize_device(int user_platform_id, int user_device_id);
 cl_mem copy_array_to_device(OpenCLInfo * CL, cl_mem_flags mem_flags, void * array, size_t sz);
 cl_kernel compile_kernel(OpenCLInfo * CL, char * kernel_name);
 void set_kernel_arguments(cl_kernel * kernel, int argc, size_t * arg_sz, void ** args);

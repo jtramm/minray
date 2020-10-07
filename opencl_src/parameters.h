@@ -33,4 +33,6 @@ typedef struct{
   int plotting_enabled;
   double cell_volume;
   int validation_problem_id;
+  int platform_id;
+  int device_id;
 } Parameters;

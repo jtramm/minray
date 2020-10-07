@@ -153,9 +153,11 @@ void print_opencl_info(void)
   cl_uint maxComputeUnits;
   // get all platforms
   clGetPlatformIDs(0, NULL, &platformCount);
+  printf("Number of platforms detected = %d\n", platformCount);
   platforms = (cl_platform_id*) malloc(sizeof(cl_platform_id) * platformCount);
   clGetPlatformIDs(platformCount, platforms, NULL);
   for (i = 0; i < platformCount; i++) {
+    printf("Platorm %d:\n", i);
     // get all devices
     clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ALL, 0, NULL, &deviceCount);
     devices = (cl_device_id*) malloc(sizeof(cl_device_id) * deviceCount);
@@ -166,42 +168,48 @@ void print_opencl_info(void)
       clGetDeviceInfo(devices[j], CL_DEVICE_NAME, 0, NULL, &valueSize);
       value = (char*) malloc(valueSize);
       clGetDeviceInfo(devices[j], CL_DEVICE_NAME, valueSize, value, NULL);
-      printf("%d. Device: %s\n", j+1, value);
+      printf("\tDevice %d: %s\n", j+1, value);
       free(value);
       // print hardware device version
       clGetDeviceInfo(devices[j], CL_DEVICE_VERSION, 0, NULL, &valueSize);
       value = (char*) malloc(valueSize);
       clGetDeviceInfo(devices[j], CL_DEVICE_VERSION, valueSize, value, NULL);
-      printf(" %d.%d Hardware version: %s\n", j+1, 1, value);
+      printf("\t\t%d.%d Hardware version: %s\n", j+1, 1, value);
       free(value);
       // print software driver version
       clGetDeviceInfo(devices[j], CL_DRIVER_VERSION, 0, NULL, &valueSize);
       value = (char*) malloc(valueSize);
       clGetDeviceInfo(devices[j], CL_DRIVER_VERSION, valueSize, value, NULL);
-      printf(" %d.%d Software version: %s\n", j+1, 2, value);
+      printf("\t\t%d.%d Software version: %s\n", j+1, 2, value);
       free(value);
       // print c version supported by compiler for device
       clGetDeviceInfo(devices[j], CL_DEVICE_OPENCL_C_VERSION, 0, NULL, &valueSize);
       value = (char*) malloc(valueSize);
       clGetDeviceInfo(devices[j], CL_DEVICE_OPENCL_C_VERSION, valueSize, value, NULL);
-      printf(" %d.%d OpenCL C version: %s\n", j+1, 3, value);
+      printf("\t\t%d.%d OpenCL C version: %s\n", j+1, 3, value);
       free(value);
       // print parallel compute units
       clGetDeviceInfo(devices[j], CL_DEVICE_MAX_COMPUTE_UNITS,
           sizeof(maxComputeUnits), &maxComputeUnits, NULL);
-      printf(" %d.%d Parallel compute units: %d\n", j+1, 4, maxComputeUnits);
+      printf("\t\t%d.%d Parallel compute units: %d\n", j+1, 4, maxComputeUnits);
     }
     free(devices);
   }
   free(platforms);  
 }
 
-OpenCLInfo initialize_device(void)
+OpenCLInfo initialize_device(int user_platform_id, int user_device_id)
 {
+  center_print("AVAILABLE OPENCL PLATFORMS & DEVICES", 79);
+  border_print();
+  print_opencl_info();
+  border_print();
+
   center_print("DEVICE INITIALIZATION", 79);
   border_print();
 
   // Get platform and device information
+  /*
   cl_platform_id platform_id = NULL;
   cl_device_id device_id = NULL;   
   cl_uint ret_num_devices;
@@ -209,23 +217,50 @@ OpenCLInfo initialize_device(void)
   cl_int ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
   check(ret);
   ret = clGetDeviceIDs( platform_id, CL_DEVICE_TYPE_DEFAULT, 1, &device_id, &ret_num_devices);
-  //ret = clGetDeviceIDs( platform_id, CL_DEVICE_TYPE_CPU, 1, &device_id, &ret_num_devices);
-  //ret = clGetDeviceIDs( platform_id, CL_DEVICE_TYPE_GPU, 1, &device_id, &ret_num_devices);
+  check(ret);
+  */
+
+  int platform_idx = 0;
+  if( user_platform_id != -1 )
+    platform_idx = user_platform_id;
+
+  // Get # of Platforms
+  cl_uint ret_num_platforms;
+  cl_int ret = clGetPlatformIDs(0, NULL, &ret_num_platforms);
   check(ret);
 
+  // Allocate space for platform information
+  cl_platform_id * platform_ids = (cl_platform_id *) malloc(ret_num_platforms * sizeof(cl_platform_id));
+
+  // Fill in data on Platforms
+  ret = clGetPlatformIDs(ret_num_platforms, platform_ids, NULL);
+
+  cl_platform_id target_platform_id = platform_ids[platform_idx];   // '1' is the target platform index. needs to be changed accordingly.
+  
+  int device_idx = CL_DEVICE_TYPE_DEFAULT;
+  if( user_device_id != -1 )
+    device_idx = user_device_id;
+  
+  cl_uint ret_num_devices;
+  cl_device_id device_id = NULL;   
+  ret = clGetDeviceIDs( target_platform_id, device_idx, 1, &device_id, &ret_num_devices);
+
   // Print info about where we are running
-  print_single_info(platform_id, device_id);
+  printf("Selected Device (platform id = %d, device id = %d)\n", platform_idx, device_idx);
+  print_single_info(target_platform_id, device_id);
+  printf("Note: platform ID can be specified with the \"-P\" flag and device id with the \"-D\" flag\n");
 
   // Create an OpenCL context
   cl_context context = clCreateContext( NULL, 1, &device_id, NULL, NULL, &ret);
   check(ret);
 
   // Create a command queue
-  cl_command_queue command_queue = clCreateCommandQueueWithProperties(context, device_id, 0, &ret);
+  //cl_command_queue command_queue = clCreateCommandQueueWithProperties(context, device_id, 0, &ret);
+  cl_command_queue command_queue = clCreateCommandQueue(context, device_id, 0, &ret);
   check(ret);
 
   OpenCLInfo CL;
-  CL.platform_id = platform_id;
+  CL.platform_id = target_platform_id;
   CL.device_id = device_id;
   CL.context = context;
   CL.command_queue = command_queue;
@@ -255,7 +290,7 @@ void set_kernel_arguments(cl_kernel * kernel, int argc, size_t * arg_sz, void **
   for( int i = 0; i < argc; i++ )
   {
     ret = clSetKernelArg(*kernel, i, arg_sz[i], args[i]);
-	  check(ret);
+    check(ret);
   }
 }
 
@@ -263,38 +298,38 @@ cl_kernel compile_kernel(OpenCLInfo * CL, char * kernel_name)
 {
   printf("Compiling %s...\n", kernel_name);
 
-	// Load the kernel source code into the array source_str
-	FILE *fp;
-	char *source_str;
-	size_t source_size;
+  // Load the kernel source code into the array source_str
+  FILE *fp;
+  char *source_str;
+  size_t source_size;
   char kernel_fname[256];
   strcpy(kernel_fname, kernel_name);
   strcat(kernel_fname, ".cl");
 
-	fp = fopen(kernel_fname, "r");
-	if (!fp) {
-		fprintf(stderr, "Failed to load kernel.\n");
-		exit(1);
-	}
-	source_str = (char*) malloc(MAX_SOURCE_SIZE);
-	source_size = fread( source_str, 1, MAX_SOURCE_SIZE, fp);
+  fp = fopen(kernel_fname, "r");
+  if (!fp) {
+    fprintf(stderr, "Failed to load kernel.\n");
+    exit(1);
+  }
+  source_str = (char*) malloc(MAX_SOURCE_SIZE);
+  source_size = fread( source_str, 1, MAX_SOURCE_SIZE, fp);
   assert(source_size > 0 );
-	fclose( fp );
+  fclose( fp );
 
   // Create a program from the kernel source
   cl_int ret;
-	cl_program program = clCreateProgramWithSource(CL->context, 1, (const char **)&source_str, (const size_t *)&source_size, &ret);
-	check(ret);
+  cl_program program = clCreateProgramWithSource(CL->context, 1, (const char **)&source_str, (const size_t *)&source_size, &ret);
+  check(ret);
 
   // Build the program
-	ret = clBuildProgram(program, 1, &CL->device_id, "-cl-std=CL2.0", NULL, NULL);
-	check(ret);
+  ret = clBuildProgram(program, 1, &CL->device_id, NULL, NULL, NULL);
+  check(ret);
 
-	printCompilerError( program, CL->device_id );
+  printCompilerError( program, CL->device_id );
 
-	// Create the OpenCL kernel
-	cl_kernel kernel = clCreateKernel(program, kernel_name, &ret);
-	check(ret);
+  // Create the OpenCL kernel
+  cl_kernel kernel = clCreateKernel(program, kernel_name, &ret);
+  check(ret);
 
   return kernel;
 } 
