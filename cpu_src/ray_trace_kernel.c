@@ -117,7 +117,7 @@ CellLookup find_cell_id(Parameters P, double x, double y)
   int boundary_condition = P.boundary_conditions[boundary_x][boundary_y];
 
   int cell_id = cartesian_cell_idx_y * P.n_cells_per_dimension + cartesian_cell_idx_x; 
-  
+
   CellLookup lookup;
   lookup.cell_id = cell_id;
   lookup.cartesian_cell_idx_x = cartesian_cell_idx_x;

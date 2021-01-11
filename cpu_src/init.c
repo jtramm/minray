@@ -71,6 +71,12 @@ CellData initialize_cell_data(Parameters P)
   sz = P.n_cells * sizeof(int);
   CD.hit_count = (int *) malloc(sz);
 
+  sz = P.n_cells * sizeof(NeighborList);
+  CD.neighborList = (NeighborList *) malloc(sz);
+
+  for( int i = 0; i < P.n_cells; i++ )
+    nl_init(CD.neighborList + i);
+
   return CD;
 }
 

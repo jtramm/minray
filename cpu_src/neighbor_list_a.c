@@ -1,5 +1,6 @@
 #include<omp.h>
 #include<assert.h>
+#include"neighbor_list_a.h"
 
 void nl_push_back(NeighborList * neighborList, int new_elem)
 {
@@ -39,7 +40,7 @@ void nl_push_back(NeighborList * neighborList, int new_elem)
 
 int nl_get_length(NeighborList * neighborList)
 {
-  int64_t length;
+  int length;
 
   // Atomically read the length of the list
   #pragma omp atomic read
