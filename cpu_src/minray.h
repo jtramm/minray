@@ -9,7 +9,7 @@
 #include<omp.h>
 #endif
 
-#include"neighbor_list_a.h"
+#include"neighbor_list_b.h"
 
 #define VERSION "0"
 

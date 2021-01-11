@@ -27,11 +27,13 @@ rand.c \
 init.c \
 io.c \
 utils.c \
-neighbor_list_a.c
+neighbor_list_a.c \
+neighbor_list_b.c
 
 header = \
 minray.h \
-neighbor_list_a.h
+neighbor_list_a.h \
+neighbor_list_b.h
 
 obj = $(source:.c=.o)
 
