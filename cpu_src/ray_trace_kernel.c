@@ -107,7 +107,18 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
   SD.readWriteData.intersectionData.n_intersections[ray_id] = intersection_id;
 }
 
-CellLookup find_cell_id_general(Parameters P, double x, double y)
+int is_point_inside_CSG_cell(Parameters P, double x, double y, int cell_id)
+{
+  int cartesian_cell_idx_x = floor(x * P.inverse_cell_width);
+  int cartesian_cell_idx_y = floor(y * P.inverse_cell_width);
+  int true_cell_id = cartesian_cell_idx_y * P.n_cells_per_dimension + cartesian_cell_idx_x; 
+  if( cell_id == true_cell_id )
+    return 1;
+  else
+    return 0;
+}
+
+CellLookup find_cell_id_general_fast(Parameters P, double x, double y)
 {
   int cartesian_cell_idx_x = floor(x * P.inverse_cell_width);
   int cartesian_cell_idx_y = floor(y * P.inverse_cell_width);
@@ -127,16 +138,30 @@ CellLookup find_cell_id_general(Parameters P, double x, double y)
   return lookup;
 }
 
-int is_point_inside_CSG_cell(Parameters P, double x, double y, int cell_id)
+CellLookup find_cell_id_general(Parameters P, double x, double y)
 {
-  int cartesian_cell_idx_x = floor(x * P.inverse_cell_width);
-  int cartesian_cell_idx_y = floor(y * P.inverse_cell_width);
-  int true_cell_id = cartesian_cell_idx_y * P.n_cells_per_dimension + cartesian_cell_idx_x; 
-  if( cell_id == true_cell_id )
-    return 1;
-  else
-    return 0;
+  int boundary_x = floor(x * P.inverse_length_per_dimension) + 1;
+  int boundary_y = floor(y * P.inverse_length_per_dimension) + 1;
+  int boundary_condition = P.boundary_conditions[boundary_x][boundary_y];
+
+  int cell_id = -1;
+  for( int i = 0; i < P.n_cells; i++ )
+  {
+    if( is_point_inside_CSG_cell(P, x, y, i) )
+    {
+      cell_id = i;
+      break;
+    }
+  }
+
+  CellLookup lookup;
+  lookup.cell_id = cell_id;
+  lookup.cartesian_cell_idx_x = cell_id % P.n_cells_per_dimension;
+  lookup.cartesian_cell_idx_y = cell_id / P.n_cells_per_dimension;
+  lookup.boundary_condition = boundary_condition;
+  return lookup;
 }
+
 
 CellLookup find_cell_id_using_neighbor_list(Parameters P, NeighborList * neighborList, double x, double y)
 {
