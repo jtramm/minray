@@ -152,7 +152,6 @@ CellLookup find_cell_id_using_neighbor_list(Parameters P, NeighborList * neighbo
     return lookup;
   }
 
-
   NeighborListIterator iterator;
   nl_init_iterator(neighborList, &iterator);
 
@@ -162,7 +161,6 @@ CellLookup find_cell_id_using_neighbor_list(Parameters P, NeighborList * neighbo
   while(!iterator.is_finished)
   {
     int neighbor_id = nl_read_next(neighborList, &iterator);
-    //printf("neighbor_id = %d\n", neighbor_id);
     assert(neighbor_id >= 0 && neighbor_id < P.n_cells);
 
     if( is_point_inside_CSG_cell(P, x, y, neighbor_id) )
@@ -176,11 +174,9 @@ CellLookup find_cell_id_using_neighbor_list(Parameters P, NeighborList * neighbo
   if( cell_id == -1 )
   {
     CellLookup lookup = find_cell_id_general(P, x, y);
-    //printf("pushing back %d\n", lookup.cell_id);
     nl_push_back(neighborList, lookup.cell_id);
     return lookup;
   }
- 
 
   CellLookup lookup;
   lookup.cell_id = cell_id;
