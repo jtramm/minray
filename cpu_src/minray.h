@@ -9,6 +9,8 @@
 #include<omp.h>
 #endif
 
+#include"neighbor_list_a.h"
+
 #define VERSION "0"
 
 #define NONE 0
@@ -96,6 +98,7 @@ typedef struct{
   float * scalar_flux_accumulator;
   int   * hit_count;
   float * fission_rate;
+  NeighborList * neighborList;
 } CellData;
 
 typedef struct{

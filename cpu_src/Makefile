@@ -26,7 +26,12 @@ compute_cell_fission_rates_kernel.c \
 rand.c \
 init.c \
 io.c \
-utils.c
+utils.c \
+neighbor_list_a.c
+
+header = \
+minray.h \
+neighbor_list_a.h
 
 obj = $(source:.c=.o)
 
@@ -71,17 +76,17 @@ endif
 # Targets to Build
 #===============================================================================
 
-$(program): $(obj) minray.h Makefile
+$(program): $(obj) $(header) Makefile
 	$(CC) $(CFLAGS) $(obj) -o $@ $(LDFLAGS)
 
-%.o: %.c minray.h Makefile
+%.o: %.c $(header) Makefile
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	rm -rf $(program) $(obj)
 
 edit:
-	vim -p $(source) minray.h
+	vim -p $(source) $(header)
 
 run:
 	./$(program)
