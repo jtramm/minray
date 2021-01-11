@@ -14,6 +14,7 @@ size_t estimate_memory_usage(Parameters P)
   sz += (P.n_cells * P.n_energy_groups * sizeof(float))*4;
   sz += P.n_cells * sizeof(float);
   sz += P.n_cells * sizeof(int);
+  sz += P.n_cells * sizeof(NeighborList);
   // XS Data
   sz += P.n_materials * P.n_energy_groups * sizeof(float)*4;
   sz += P.n_materials * P.n_energy_groups * P.n_energy_groups * sizeof(float);
