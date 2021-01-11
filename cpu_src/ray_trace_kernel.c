@@ -49,7 +49,8 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
     
     // Look up the "neighbor" cell id of the test point.
     // This function also gives us some info on if we hit a boundary, and what type it was.
-    CellLookup lookup = find_cell_id(P, x_across_surface, y_across_surface);
+    //CellLookup lookup = find_cell_id(P, x_across_surface, y_across_surface);
+    CellLookup lookup = find_cell_id_using_neighbor_list(P, &SD.readWriteData.cellData.neighborList[cell_id], x_across_surface, y_across_surface);
     
     // A sanity check
     assert(lookup.cell_id != cell_id || is_terminal);
@@ -106,7 +107,7 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
   SD.readWriteData.intersectionData.n_intersections[ray_id] = intersection_id;
 }
 
-CellLookup find_cell_id(Parameters P, double x, double y)
+CellLookup find_cell_id_general(Parameters P, double x, double y)
 {
   int cartesian_cell_idx_x = floor(x * P.inverse_cell_width);
   int cartesian_cell_idx_y = floor(y * P.inverse_cell_width);
@@ -122,6 +123,69 @@ CellLookup find_cell_id(Parameters P, double x, double y)
   lookup.cell_id = cell_id;
   lookup.cartesian_cell_idx_x = cartesian_cell_idx_x;
   lookup.cartesian_cell_idx_y = cartesian_cell_idx_y;
+  lookup.boundary_condition = boundary_condition;
+  return lookup;
+}
+
+int is_point_inside_CSG_cell(Parameters P, double x, double y, int cell_id)
+{
+  int cartesian_cell_idx_x = floor(x * P.inverse_cell_width);
+  int cartesian_cell_idx_y = floor(y * P.inverse_cell_width);
+  int true_cell_id = cartesian_cell_idx_y * P.n_cells_per_dimension + cartesian_cell_idx_x; 
+  if( cell_id == true_cell_id )
+    return 1;
+  else
+    return 0;
+}
+
+CellLookup find_cell_id_using_neighbor_list(Parameters P, NeighborList * neighborList, double x, double y)
+{
+  // Determine boundary information
+  int boundary_x = floor(x * P.inverse_length_per_dimension) + 1;
+  int boundary_y = floor(y * P.inverse_length_per_dimension) + 1;
+  int boundary_condition = P.boundary_conditions[boundary_x][boundary_y];
+  if( boundary_condition != NONE )
+  {
+    CellLookup lookup;
+    lookup.cell_id = -1;
+    lookup.boundary_condition = boundary_condition;
+    return lookup;
+  }
+
+
+  NeighborListIterator iterator;
+  nl_init_iterator(neighborList, &iterator);
+
+  int cell_id = -1;
+
+  // Test (x,y) location against all CSG cells in the neighbor list
+  while(!iterator.is_finished)
+  {
+    int neighbor_id = nl_read_next(neighborList, &iterator);
+    //printf("neighbor_id = %d\n", neighbor_id);
+    assert(neighbor_id >= 0 && neighbor_id < P.n_cells);
+
+    if( is_point_inside_CSG_cell(P, x, y, neighbor_id) )
+    {
+      cell_id = neighbor_id;
+      break;
+    }
+  }
+
+  // If (x,y) location is not found in neighbor list, perform general search and add result to neighbor list
+  if( cell_id == -1 )
+  {
+    CellLookup lookup = find_cell_id_general(P, x, y);
+    //printf("pushing back %d\n", lookup.cell_id);
+    nl_push_back(neighborList, lookup.cell_id);
+    return lookup;
+  }
+ 
+
+  CellLookup lookup;
+  lookup.cell_id = cell_id;
+  lookup.cartesian_cell_idx_x = cell_id % P.n_cells_per_dimension;
+  lookup.cartesian_cell_idx_y = cell_id / P.n_cells_per_dimension;
   lookup.boundary_condition = boundary_condition;
   return lookup;
 }
