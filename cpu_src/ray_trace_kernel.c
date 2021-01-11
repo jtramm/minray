@@ -199,6 +199,7 @@ CellLookup find_cell_id_using_neighbor_list(Parameters P, NeighborList * neighbo
   if( cell_id == -1 )
   {
     CellLookup lookup = find_cell_id_general(P, x, y);
+    //CellLookup lookup = find_cell_id_general_fast(P, x, y);
     nl_push_back(neighborList, lookup.cell_id);
     return lookup;
   }
