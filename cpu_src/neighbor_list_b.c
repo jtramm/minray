@@ -9,7 +9,10 @@ void nl_push_back(NeighborList * neighborList, int new_elem)
     // This line checks to see if the new_elem is already in the list
     int retrieved_id;
 
-    //retrieved_id = atomicCAS(&neighbor_id[i], -1, home_id);
+    // CUDA
+    // retrieved_id = atomicCAS(&neighborList->list[i], -1, new_elem);
+
+    // OpenMP 5.1
     #pragma omp atomic compare capture
     {
       retrieved_id = neighborList->list[i];
@@ -22,7 +25,7 @@ void nl_push_back(NeighborList * neighborList, int new_elem)
     if( retrieved_id == -1 || retrieved_id == new_elem)
       return;
 
-    // Case 3: The element was already initialized to a different cell_id, so it will return some other value != -1 and != cell_id
+    // Case 3: The element was already initialized to a different cell_id, so it will return some other value != -1 and != new_elem
     // As we have not found
   }
 

@@ -9,7 +9,17 @@
 #include<omp.h>
 #endif
 
+#ifdef ALGORITHM_A
+#include"neighbor_list_a.h"
+#endif
+
+#ifdef ALGORITHM_B
 #include"neighbor_list_b.h"
+#endif
+
+#ifdef ALGORITHM_C
+#include"neighbor_list_c.h"
+#endif
 
 #define VERSION "0"
 

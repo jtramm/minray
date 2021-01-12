@@ -7,6 +7,17 @@ OPTIMIZE    = yes
 DEBUG       = no
 OPENMP      = yes
 PROFILE     = no
+ALGORITHM   = c
+
+#===============================================================================
+# Sets Basic Flags
+#===============================================================================
+
+# Standard Flags
+CFLAGS := -std=gnu99 -Wall
+
+# Linker Flags
+LDFLAGS = -lm
 
 #===============================================================================
 # Program name & source code list
@@ -26,26 +37,32 @@ compute_cell_fission_rates_kernel.c \
 rand.c \
 init.c \
 io.c \
-utils.c \
-neighbor_list_a.c \
-neighbor_list_b.c
+utils.c 
 
 header = \
-minray.h \
-neighbor_list_a.h \
-neighbor_list_b.h
+minray.h 
+
+ifeq ($(ALGORITHM),a)
+  source += neighbor_list_a.c
+	header += neighbor_list_a.h
+	CFLAGS += -DALGORITHM_A
+endif
+ifeq ($(ALGORITHM),b)
+  source += neighbor_list_b.c
+	header += neighbor_list_b.h
+	CFLAGS += -DALGORITHM_B
+endif
+ifeq ($(ALGORITHM),c)
+  source += neighbor_list_c.c
+	header += neighbor_list_c.h
+	CFLAGS += -DALGORITHM_C
+endif
 
 obj = $(source:.c=.o)
 
 #===============================================================================
-# Sets Flags
+# Misc Flags
 #===============================================================================
-
-# Standard Flags
-CFLAGS := -std=gnu99 -Wall
-
-# Linker Flags
-LDFLAGS = -lm
 
 # Regular gcc Compiler
 ifeq ($(COMPILER),gnu)
@@ -54,7 +71,8 @@ endif
 
 # Optimization Flags
 ifeq ($(OPTIMIZE),yes)
-  CFLAGS += -O3 -flto
+  CFLAGS += -O3
+  #CFLAGS += -O3 -flto
 endif
 
 # Debug Flags
