@@ -186,6 +186,9 @@ CellLookup find_cell_id_using_neighbor_list(Parameters P, NeighborList * neighbo
   while(!iterator.is_finished)
   {
     int neighbor_id = nl_read_next(neighborList, &iterator);
+
+    // TODO: Some algorithms can in theory provide undefined valies for neighbor_id, in which case
+    // we just want to fail the CSG check rather than error out the program.
     assert(neighbor_id >= 0 && neighbor_id < P.n_cells);
 
     if( is_point_inside_CSG_cell(P, x, y, neighbor_id) )
