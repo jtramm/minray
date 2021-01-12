@@ -29,6 +29,10 @@
 #include"neighbor_list_e.h"
 #endif
 
+#ifdef ALGORITHM_F
+#include"neighbor_list_f.h"
+#endif
+
 #define VERSION "0"
 
 #define NONE 0
