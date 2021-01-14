@@ -56,10 +56,6 @@ void nl_init_iterator(NeighborList * neighborList, NeighborListIterator * neighb
 {
   neighborListIterator->idx = 0;
   neighborListIterator->length = nl_get_length(neighborList);
-  if( neighborListIterator->length > 0 )
-    neighborListIterator->is_finished = 0;
-  else
-    neighborListIterator->is_finished = 1;
 }
 
 void nl_init(NeighborList * neighborList)
@@ -72,8 +68,8 @@ int nl_read_next(NeighborList * neighborList, NeighborListIterator * neighborLis
 {
   int idx = neighborListIterator->idx++;
 
-  if( idx == neighborListIterator->length - 1 )
-    neighborListIterator->is_finished = 1;
-
-  return neighborList->list[idx];
+  if( idx >= neighborListIterator->length )
+    return -1;
+  else
+    return neighborList->list[idx];
 }

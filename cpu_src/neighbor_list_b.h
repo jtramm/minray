@@ -9,8 +9,6 @@ typedef struct{
 
 typedef struct{
   int idx;
-  int is_finished;
-  int next_element;
 } NeighborListIterator;
 
 void nl_init(         NeighborList * neighborList);

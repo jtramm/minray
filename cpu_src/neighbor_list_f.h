@@ -11,8 +11,6 @@ typedef struct{
 
 typedef struct{
   int idx;
-  int length;
-  int is_finished;
 } NeighborListIterator;
 
 void nl_init(         NeighborList * neighborList);

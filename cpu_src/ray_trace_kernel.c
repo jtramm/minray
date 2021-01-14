@@ -49,9 +49,9 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
     
     // Look up the "neighbor" cell id of the test point.
     // This function also gives us some info on if we hit a boundary, and what type it was.
-    CellLookup lookup = find_cell_id_general(P, x_across_surface, y_across_surface);
+    //CellLookup lookup = find_cell_id_general(P, x_across_surface, y_across_surface);
     //CellLookup lookup = find_cell_id_general_fast(P, x_across_surface, y_across_surface);
-    //CellLookup lookup = find_cell_id_using_neighbor_list(P, &SD.readWriteData.cellData.neighborList[cell_id], x_across_surface, y_across_surface);
+    CellLookup lookup = find_cell_id_using_neighbor_list(P, &SD.readWriteData.cellData.neighborList[cell_id], x_across_surface, y_across_surface);
     
     // A sanity check
     assert(lookup.cell_id != cell_id || is_terminal);
@@ -182,12 +182,11 @@ CellLookup find_cell_id_using_neighbor_list(Parameters P, NeighborList * neighbo
   nl_init_iterator(neighborList, &iterator);
 
   int cell_id = -1;
+  int neighbor_id;
 
   // Test (x,y) location against all CSG cells in the neighbor list
-  while(!iterator.is_finished)
+  while( (neighbor_id = nl_read_next(neighborList, &iterator)) != -1 )
   {
-    int neighbor_id = nl_read_next(neighborList, &iterator);
-
     // TODO: Some algorithms can in theory provide undefined valies for neighbor_id, in which case
     // we just want to fail the CSG check rather than error out the program.
     assert(neighbor_id >= 0 && neighbor_id < P.n_cells);

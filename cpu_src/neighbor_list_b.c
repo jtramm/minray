@@ -36,17 +36,6 @@ void nl_push_back(NeighborList * neighborList, int new_elem)
 void nl_init_iterator(NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
   neighborListIterator->idx = 0;
-
-  int first_element;
-  #pragma omp atomic read
-  first_element = neighborList->list[0];
-
-  if( first_element == -1 )
-    neighborListIterator->is_finished = 1;
-  else
-    neighborListIterator->is_finished = 0;
-
-  neighborListIterator->next_element = first_element;
 }
 
 void nl_init(NeighborList * neighborList)
@@ -58,21 +47,14 @@ void nl_init(NeighborList * neighborList)
 int nl_read_next(NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
   int idx = neighborListIterator->idx++;
-  int neighbor_id = neighborListIterator->next_element;
 
-  if( idx == NEIGHBOR_SIZE - 1 )
-    neighborListIterator->is_finished = 1; 
+  if( idx >= NEIGHBOR_SIZE )
+    return -1;
   else
   {
     int next_element;
     #pragma omp atomic read
-    next_element = neighborList->list[idx+1];
-
-    if( next_element == -1 )
-      neighborListIterator->is_finished = 1; 
-    else
-      neighborListIterator->next_element = next_element;
+    next_element = neighborList->list[idx];
+    return next_element;
   }
-
-  return neighbor_id;
 }

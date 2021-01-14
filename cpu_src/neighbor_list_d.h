@@ -13,7 +13,6 @@ typedef struct{
 
 typedef struct{
   Node * next;
-  int is_finished;
 } NeighborListIterator;
 
 void nl_init(         NeighborList * neighborList);

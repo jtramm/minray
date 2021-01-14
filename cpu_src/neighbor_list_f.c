@@ -48,27 +48,9 @@ void nl_push_back(NeighborList * neighborList, int new_elem)
   omp_unset_lock(&neighborList->mutex);
 }
 
-int nl_get_length(NeighborList * neighborList)
-{
-  int length;
-
-  // NOTE: This read can occur at the same time another thread writes to this variable
-  length = neighborList->length;
-
-  // Ensure we are not reading off the end of the list
-  assert(length <= NEIGHBOR_SIZE);
-
-  return length;
-}
-
 void nl_init_iterator(NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
   neighborListIterator->idx = 0;
-  neighborListIterator->length = nl_get_length(neighborList);
-  if( neighborListIterator->length > 0 )
-    neighborListIterator->is_finished = 0;
-  else
-    neighborListIterator->is_finished = 1;
 }
 
 void nl_init(NeighborList * neighborList)
@@ -81,8 +63,9 @@ int nl_read_next(NeighborList * neighborList, NeighborListIterator * neighborLis
 {
   int idx = neighborListIterator->idx++;
 
-  if( idx == neighborListIterator->length - 1 )
-    neighborListIterator->is_finished = 1;
-
-  return neighborList->list[idx];
+  // NOTE: The read of the "length" variable can occur at the same time another thread in nl_push_back is writing to it
+  if( idx < neighborList->length && idx < NEIGHBOR_SIZE )
+    return neighborList->list[idx];
+  else
+    return -1;
 }

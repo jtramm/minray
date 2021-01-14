@@ -63,10 +63,6 @@ void nl_push_back(NeighborList * neighborList, int new_elem)
 void nl_init_iterator(NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
   neighborListIterator->next = neighborList->head;
-  if( neighborListIterator->next == NULL )
-    neighborListIterator->is_finished = 1;
-  else
-    neighborListIterator->is_finished = 0;
 }
 
 void nl_init(NeighborList * neighborList)
@@ -78,12 +74,11 @@ void nl_init(NeighborList * neighborList)
 int nl_read_next(NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
   Node * current = neighborListIterator->next;
-  int element = current->element;
+
+  if( current == NULL )
+    return -1;
 
   neighborListIterator->next = current->next;
 
-  if( neighborListIterator->next == NULL )
-    neighborListIterator->is_finished = 1;
-
-  return element;
+  return current->element;
 }

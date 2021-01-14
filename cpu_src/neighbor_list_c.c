@@ -49,19 +49,6 @@ void nl_push_back(NeighborList * neighborList, int new_elem)
 void nl_init_iterator(NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
   neighborListIterator->idx = 0;
-
-  // Lock the object
-  omp_set_lock(&neighborList->mutex);
-
-  int length = neighborList->length;
-
-  // unlock the object
-  omp_unset_lock(&neighborList->mutex);
-
-  if( length > 0 )
-    neighborListIterator->is_finished = 0;
-  else
-    neighborListIterator->is_finished = 1;
 }
 
 void nl_init(NeighborList * neighborList)
@@ -79,14 +66,13 @@ int nl_read_next(NeighborList * neighborList, NeighborListIterator * neighborLis
 
   int idx = neighborListIterator->idx++;
 
-  if( idx == neighborList->length - 1 )
-    neighborListIterator->is_finished = 1;
-  
-  int element = neighborList->list[idx];
+  int element = -1;
+
+  if( idx < neighborList->length )
+    element = neighborList->list[idx];
   
   // unlock the object
   omp_unset_lock(&neighborList->mutex);
 
   return element;
-
 }
