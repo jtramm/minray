@@ -7,7 +7,7 @@ OPTIMIZE    = yes
 DEBUG       = no
 OPENMP      = yes
 PROFILE     = no
-ALGORITHM   = h
+ALGORITHM   = a
 
 #===============================================================================
 # Sets Basic Flags
@@ -96,8 +96,7 @@ endif
 
 # Optimization Flags
 ifeq ($(OPTIMIZE),yes)
-  CFLAGS += -O3
-  #CFLAGS += -O3 -flto
+  CFLAGS += -O3 -flto
 endif
 
 # Debug Flags

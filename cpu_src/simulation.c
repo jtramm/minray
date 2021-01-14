@@ -16,9 +16,15 @@ SimulationResult run_simulation(Parameters P, SimulationData SD)
   double start_time_simulation = get_time();
   double time_in_transport_sweep = 0.0;
 
+  double first_iteration_time = start_time_simulation;
+  double hundredth_iteration_time = 0;
+
   // Power Iteration Loop
   for( int iter = 0; iter < P.n_iterations; iter++ )
   {
+    if( iter == 99 )
+      hundredth_iteration_time = get_time();
+
     // Reset scalar flux and k-eff accumulators if we have finished our inactive iterations
     if( iter >= P.n_inactive_iterations && !is_active_region )
     {
@@ -62,6 +68,10 @@ SimulationResult run_simulation(Parameters P, SimulationData SD)
     // Output some status data on the results of the power iteration
     print_status_data(iter, k_eff, percent_missed, is_active_region, k_eff_total_accumulator, k_eff_sum_of_squares_accumulator, iter - P.n_inactive_iterations + 1);
 
+    if(iter == 0)
+      first_iteration_time = get_time() - first_iteration_time;
+    if(iter == 99)
+      hundredth_iteration_time = get_time() - hundredth_iteration_time;
   } // End Power Iteration Loop
   
   double runtime_total = get_time() - start_time_simulation;
@@ -72,6 +82,8 @@ SimulationResult run_simulation(Parameters P, SimulationData SD)
   SR.n_geometric_intersections = n_total_geometric_intersections;
   SR.runtime_total = runtime_total;
   SR.runtime_transport_sweep = time_in_transport_sweep;
+  SR.runtime_first_iteration = first_iteration_time;
+  SR.runtime_hundredth_iteration = hundredth_iteration_time;
 
   return SR;
 }

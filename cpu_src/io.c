@@ -117,6 +117,8 @@ int print_results(Parameters P, SimulationResult SR)
   double time_per_integration = SR.runtime_total * 1.0e9 / ( SR.n_geometric_intersections * P.n_energy_groups);
   printf("Time per Integration (TPI)        = %.3lf [ns]\n", time_per_integration);
   printf("Est. Total Time Req. to Converge  = %.3le [s]\n", (SR.runtime_total / P.n_iterations) * 2000.0);
+  printf("First iteration runtime           = %.3le [s]\n", SR.runtime_first_iteration);
+  printf("100th iteration runtime           = %.3le [s]\n", SR.runtime_hundredth_iteration);
   int is_valid_result = validate_results(P.validation_problem_id, SR.k_eff);
   border_print();
   return is_valid_result;
