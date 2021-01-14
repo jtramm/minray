@@ -201,11 +201,11 @@ CellLookup find_cell_id_using_neighbor_list(Parameters P, NeighborList * neighbo
     }
   }
 
-  // If (x,y) location is not found in neighbor list, perform general search and add result to neighbor list
+  // If (x,y) location is not found in neighbor list, then 
+  // perform general search and add result to neighbor list
   if( cell_id == -1 )
   {
     CellLookup lookup = find_cell_id_general(P, x, y);
-    //CellLookup lookup = find_cell_id_general_fast(P, x, y);
     nl_push_back(neighborList, lookup.cell_id);
     return lookup;
   }

@@ -13,12 +13,17 @@ void nl_push_back(NeighborList * neighborList, int new_elem)
     // retrieved_id = atomicCAS(&neighborList->list[i], -1, new_elem);
 
     // OpenMP 5.1
+    /*
     #pragma omp atomic compare capture
     {
       retrieved_id = neighborList->list[i];
       if (neighborList->list[i] == -1)
         neighborList->list[i] = new_elem;
     }
+    */
+
+    // Compiler non-portable builtin atomic CAS
+    retrieved_id = __sync_val_compare_and_swap(&neighborList->list[i], -1, new_elem);
 
     // Case 1: The element was not initialized yet, so the previous line had the effect of setting it to new_elem and returning -1.
     // Case 2: The element was already initialized to the current new_elem, so the atomicCAS call will return new_elem

@@ -7,7 +7,7 @@ OPTIMIZE    = yes
 DEBUG       = no
 OPENMP      = yes
 PROFILE     = no
-ALGORITHM   = a
+ALGORITHM   = b
 
 #===============================================================================
 # Sets Basic Flags
