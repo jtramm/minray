@@ -108,6 +108,12 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
   SD.readWriteData.intersectionData.n_intersections[ray_id] = intersection_id;
 }
 
+// Note: In a general, arbitrary CSG application this function would be much more
+// complex and could consist of testing the (x,y) coordinate against the equation
+// for each surface of the cell to determine if it meets the logical CSG construct
+// for that cell. However, as minray is limited to Cartesian geometry, we will simply
+// cheat by determining the correct cell ID via modulus and then compare the presented
+// test cell_id against the known true one.
 int is_point_inside_CSG_cell(Parameters P, double x, double y, int cell_id)
 {
   int cartesian_cell_idx_x = floor(x * P.inverse_cell_width);
@@ -184,13 +190,10 @@ CellLookup find_cell_id_using_neighbor_list(Parameters P, NeighborList * neighbo
   int cell_id = -1;
   int neighbor_id;
 
-  // Test (x,y) location against all CSG cells in the neighbor list
+  // Iterate through all cell ID's stored in neighbor list and
+  // test (x,y) location against each cell ID in list
   while( (neighbor_id = nl_read_next(neighborList, &iterator)) != -1 )
   {
-    // TODO: Some algorithms can in theory provide undefined valies for neighbor_id, in which case
-    // we just want to fail the CSG check rather than error out the program.
-    assert(neighbor_id >= 0 && neighbor_id < P.n_cells);
-
     if( is_point_inside_CSG_cell(P, x, y, neighbor_id) )
     {
       cell_id = neighbor_id;
