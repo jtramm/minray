@@ -5,6 +5,11 @@
 #include<string.h>
 #include<assert.h>
 #include<time.h>
+
+#ifdef ALGORITHM_B
+#include"neighbor_list_b.h"
+#endif
+
 #include "parameters.h"
 
 //#define CL_TARGET_OPENCL_VERSION 200
@@ -103,18 +108,21 @@ typedef struct{
   float * scalar_flux_accumulator;
   int   * hit_count;
   float * fission_rate;
+  NeighborList * neighborList;
   cl_mem d_isotropic_source;
   cl_mem d_new_scalar_flux;
   cl_mem d_old_scalar_flux;
   cl_mem d_scalar_flux_accumulator;
   cl_mem d_hit_count;
   cl_mem d_fission_rate;
+  cl_mem d_neighborList;
   size_t sz_isotropic_source;
   size_t sz_new_scalar_flux;
   size_t sz_old_scalar_flux;
   size_t sz_scalar_flux_accumulator;
   size_t sz_hit_count;
   size_t sz_fission_rate;
+  size_t sz_neighborList;
 } CellData;
 
 typedef struct{

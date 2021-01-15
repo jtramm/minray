@@ -6,12 +6,19 @@ COMPILER    = gnu
 OPTIMIZE    = yes
 DEBUG       = no
 PROFILE     = no
+ALGORITHM   = b
 
 #===============================================================================
 # Program name & source code list
 #===============================================================================
 
 program = minray
+
+# Standard Flags
+CFLAGS := -std=gnu99 -Wall
+
+# Linker Flags
+LDFLAGS = -lm -lOpenCL
 
 source = \
 main.c \
@@ -22,17 +29,23 @@ io.c \
 utils.c \
 cl_utils.c
 
+header = \
+minray.h \
+parameters.h \
+atomic_float.h
+
 obj = $(source:.c=.o)
+
+ifeq ($(ALGORITHM),b)
+  source += neighbor_list_host_b.c
+	header += neighbor_list_b.h
+	CFLAGS += -DALGORITHM_B
+endif
 
 #===============================================================================
 # Sets Flags
 #===============================================================================
 
-# Standard Flags
-CFLAGS := -std=gnu99 -Wall
-
-# Linker Flags
-LDFLAGS = -lm -lOpenCL
 
 # Regular gcc Compiler
 ifeq ($(COMPILER),gnu)
@@ -65,17 +78,17 @@ endif
 # Targets to Build
 #===============================================================================
 
-$(program): $(obj) minray.h parameters.h atomic_float.h Makefile
+$(program): $(obj) $(header) Makefile
 	$(CC) $(CFLAGS) $(obj) -o $@ $(LDFLAGS)
 
-%.o: %.c minray.h parameters.h atomic_float.h Makefile
+%.o: %.c $(header) Makefile
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	rm -rf $(program) $(obj)
 
 edit:
-	vim -p $(source) *.cl minray.h parameters.h atomic_float.h
+	vim -p $(source) *.cl $(header)
 
 run:
 	./$(program)

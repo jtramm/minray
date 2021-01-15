@@ -85,6 +85,14 @@ CellData initialize_cell_data(Parameters P)
   sz = P.n_cells * sizeof(int);
   CD.hit_count = (int *) malloc(sz);
   CD.sz_hit_count = sz;
+  
+  sz = P.n_cells * sizeof(NeighborList);
+  CD.neighborList = (NeighborList *) malloc(sz);
+
+  for( int i = 0; i < P.n_cells; i++ )
+    nl_init(CD.neighborList + i);
+
+  CD.sz_neighborList = sz;
 
   return CD;
 }
@@ -212,6 +220,7 @@ void initialize_device_data(SimulationData * SD, OpenCLInfo * CL)
   SD->readWriteData.cellData.d_scalar_flux_accumulator = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.scalar_flux_accumulator, SD->readWriteData.cellData.sz_scalar_flux_accumulator);
   SD->readWriteData.cellData.d_hit_count               = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.hit_count,               SD->readWriteData.cellData.sz_hit_count);
   SD->readWriteData.cellData.d_fission_rate            = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.fission_rate,            SD->readWriteData.cellData.sz_fission_rate);
+  SD->readWriteData.cellData.d_neighborList            = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.neighborList,            SD->readWriteData.cellData.sz_neighborList);
 }
 
 void initialize_kernels(OpenCLInfo * CL)
@@ -226,7 +235,7 @@ void initialize_kernels(OpenCLInfo * CL)
   CL->kernels.reduce_float_kernel               = compile_kernel(CL, "reduce_float_kernel");
 }
 
-#define NUM_ARGS 24
+#define NUM_ARGS 25
 void load_kernel_arguments(Parameters * P, SimulationData * SD, OpenCLInfo * CL)
 {
   printf("Loading static kernel arguments...\n");
@@ -273,6 +282,7 @@ void load_kernel_arguments(Parameters * P, SimulationData * SD, OpenCLInfo * CL)
   args[21] = (void *) &SD->readWriteData.cellData.d_scalar_flux_accumulator;
   args[22] = (void *) &SD->readWriteData.cellData.d_hit_count;
   args[23] = (void *) &SD->readWriteData.cellData.d_fission_rate;
+  args[24] = (void *) &SD->readWriteData.cellData.d_neighborList;
 
   set_kernel_arguments(&CL->kernels.normalize_scalar_flux_kernel     , argc, arg_sz, args);
   set_kernel_arguments(&CL->kernels.ray_trace_kernel                 , argc, arg_sz, args); 

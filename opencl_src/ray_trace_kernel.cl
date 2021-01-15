@@ -1,4 +1,6 @@
 #include "parameters.h"
+#include "neighbor_list_b.h"
+#include "neighbor_list_device_b.cl"
 
 typedef struct{
   double distance_to_surface;
@@ -15,6 +17,7 @@ typedef struct{
 
 CellLookup find_cell_id(Parameters P, double x, double y);
 TraceResult cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir);
+CellLookup find_cell_id_using_neighbor_list(Parameters P, __global NeighborList * neighborList, double x, double y);
 
 __kernel void ray_trace_kernel(ARGUMENTS)
 {
@@ -68,7 +71,8 @@ __kernel void ray_trace_kernel(ARGUMENTS)
 
     // Look up the "neighbor" cell id of the test point.
     // This function also gives us some info on if we hit a boundary, and what type it was.
-    CellLookup lookup = find_cell_id(P, x_across_surface, y_across_surface);
+    //CellLookup lookup = find_cell_id(P, x_across_surface, y_across_surface);
+    CellLookup lookup = find_cell_id_using_neighbor_list(P, &neighborList[ray_cell_id], x_across_surface, y_across_surface);
 
     // A sanity check
     //assert(lookup.cell_id != cell_id || is_terminal);
@@ -126,7 +130,24 @@ __kernel void ray_trace_kernel(ARGUMENTS)
   n_intersections[ray_id] = intersection_id;
 }
 
-CellLookup find_cell_id(Parameters P, double x, double y)
+// Note: In a general, arbitrary CSG application this function would be much more
+// complex and could consist of testing the (x,y) coordinate against the equation
+// for each surface of the cell to determine if it meets the logical CSG construct
+// for that cell. However, as minray is limited to Cartesian geometry, we will simply
+// cheat by determining the correct cell ID via modulus and then compare the presented
+// test cell_id against the known true one.
+int is_point_inside_CSG_cell(Parameters P, double x, double y, int cell_id)
+{
+  int cartesian_cell_idx_x = floor(x * P.inverse_cell_width);
+  int cartesian_cell_idx_y = floor(y * P.inverse_cell_width);
+  int true_cell_id = cartesian_cell_idx_y * P.n_cells_per_dimension + cartesian_cell_idx_x; 
+  if( cell_id == true_cell_id )
+    return 1;
+  else
+    return 0;
+}
+
+CellLookup find_cell_id_general_fast(Parameters P, double x, double y)
 {
   int cartesian_cell_idx_x = floor(x * P.inverse_cell_width);
   int cartesian_cell_idx_y = floor(y * P.inverse_cell_width);
@@ -142,6 +163,79 @@ CellLookup find_cell_id(Parameters P, double x, double y)
   lookup.cell_id = cell_id;
   lookup.cartesian_cell_idx_x = cartesian_cell_idx_x;
   lookup.cartesian_cell_idx_y = cartesian_cell_idx_y;
+  lookup.boundary_condition = boundary_condition;
+  return lookup;
+}
+
+CellLookup find_cell_id_general(Parameters P, double x, double y)
+{
+  int boundary_x = floor(x * P.inverse_length_per_dimension) + 1;
+  int boundary_y = floor(y * P.inverse_length_per_dimension) + 1;
+  int boundary_condition = P.boundary_conditions[boundary_x][boundary_y];
+
+  int cell_id = -1;
+  for( int i = 0; i < P.n_cells; i++ )
+  {
+    if( is_point_inside_CSG_cell(P, x, y, i) )
+    {
+      cell_id = i;
+      break;
+    }
+  }
+
+  CellLookup lookup;
+  lookup.cell_id = cell_id;
+  lookup.cartesian_cell_idx_x = cell_id % P.n_cells_per_dimension;
+  lookup.cartesian_cell_idx_y = cell_id / P.n_cells_per_dimension;
+  lookup.boundary_condition = boundary_condition;
+  return lookup;
+}
+
+
+CellLookup find_cell_id_using_neighbor_list(Parameters P, __global NeighborList * neighborList, double x, double y)
+{
+  // Determine boundary information
+  int boundary_x = floor(x * P.inverse_length_per_dimension) + 1;
+  int boundary_y = floor(y * P.inverse_length_per_dimension) + 1;
+  int boundary_condition = P.boundary_conditions[boundary_x][boundary_y];
+  if( boundary_condition != NONE )
+  {
+    CellLookup lookup;
+    lookup.cell_id = -1;
+    lookup.boundary_condition = boundary_condition;
+    return lookup;
+  }
+
+  NeighborListIterator iterator;
+  nl_init_iterator(neighborList, &iterator);
+
+  int cell_id = -1;
+  int neighbor_id;
+
+  // Iterate through all cell ID's stored in neighbor list and
+  // test (x,y) location against each cell ID in list
+  while( (neighbor_id = nl_read_next(neighborList, &iterator)) != -1 )
+  {
+    if( is_point_inside_CSG_cell(P, x, y, neighbor_id) )
+    {
+      cell_id = neighbor_id;
+      break;
+    }
+  }
+
+  // If (x,y) location is not found in neighbor list, then 
+  // perform general search and add result to neighbor list
+  if( cell_id == -1 )
+  {
+    CellLookup lookup = find_cell_id_general(P, x, y);
+    nl_push_back(neighborList, lookup.cell_id);
+    return lookup;
+  }
+
+  CellLookup lookup;
+  lookup.cell_id = cell_id;
+  lookup.cartesian_cell_idx_x = cell_id % P.n_cells_per_dimension;
+  lookup.cartesian_cell_idx_y = cell_id / P.n_cells_per_dimension;
   lookup.boundary_condition = boundary_condition;
   return lookup;
 }
