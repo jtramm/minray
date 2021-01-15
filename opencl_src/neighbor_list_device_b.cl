@@ -54,8 +54,13 @@ int nl_read_next(__global NeighborList * neighborList, NeighborListIterator * ne
     int next_element;
     //#pragma omp atomic read
     //next_element = neighborList->list[idx];
-    // In OpenCL, as far as I can tell there is no atomic read function, so instead we just use an atomic add of 0?
+
+    // In OpenCL 1.2, as far as I can tell there is no atomic read function, so instead we just use an atomic add of 0.
     next_element = atomic_add(&neighborList->list[idx],0);
+
+    // In OpenCL 2.0, we can do an atomic load
+    //next_element = atomic_load(&neighborList->list[idx],0);
+
     return next_element;
   }
 }
