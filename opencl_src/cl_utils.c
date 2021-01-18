@@ -322,7 +322,8 @@ cl_kernel compile_kernel(OpenCLInfo * CL, char * kernel_name)
   check(ret);
 
   // Build the program
-  ret = clBuildProgram(program, 1, &CL->device_id, NULL, NULL, NULL);
+  //ret = clBuildProgram(program, 1, &CL->device_id, NULL, NULL, NULL);
+  ret = clBuildProgram(program, 1, &CL->device_id, ALGORITHM, NULL, NULL);
   check(ret);
 
   printCompilerError( program, CL->device_id );

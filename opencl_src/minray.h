@@ -10,6 +10,10 @@
 #include"neighbor_list_b.h"
 #endif
 
+#ifdef ALGORITHM_H
+#include"neighbor_list_h.h"
+#endif
+
 #include "parameters.h"
 
 //#define CL_TARGET_OPENCL_VERSION 200

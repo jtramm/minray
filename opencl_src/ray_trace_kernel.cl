@@ -1,6 +1,14 @@
 #include "parameters.h"
+
+#ifdef ALGORITHM_B
 #include "neighbor_list_b.h"
 #include "neighbor_list_device_b.cl"
+#endif
+
+#ifdef ALGORITHM_H
+#include "neighbor_list_h.h"
+#include "neighbor_list_device_h.cl"
+#endif
 
 typedef struct{
   double distance_to_surface;

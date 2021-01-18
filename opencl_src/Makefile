@@ -42,6 +42,12 @@ ifeq ($(ALGORITHM),b)
 	CFLAGS += -DALGORITHM_B
 endif
 
+ifeq ($(ALGORITHM),h)
+  source += neighbor_list_host_h.c
+	header += neighbor_list_h.h
+	CFLAGS += -DALGORITHM_H
+endif
+
 #===============================================================================
 # Sets Flags
 #===============================================================================
