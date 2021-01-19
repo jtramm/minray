@@ -7,7 +7,7 @@ OPTIMIZE    = yes
 DEBUG       = no
 OPENMP      = yes
 PROFILE     = no
-ALGORITHM   = a
+ALGORITHM   = i
 
 #===============================================================================
 # Sets Basic Flags
@@ -81,6 +81,11 @@ ifeq ($(ALGORITHM),h)
   source += neighbor_list_h.c
 	header += neighbor_list_h.h
 	CFLAGS += -DALGORITHM_H
+endif
+ifeq ($(ALGORITHM),i)
+  source += neighbor_list_i.c
+	header += neighbor_list_i.h
+	CFLAGS += -DALGORITHM_I
 endif
 
 obj = $(source:.c=.o)
