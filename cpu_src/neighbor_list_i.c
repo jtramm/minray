@@ -10,57 +10,48 @@ void nl_push_back(NeighborList * neighborList, int new_elem)
   new_node->element = new_elem;
   new_node->next = NULL;
 
-  // Attempt to push back the new node to the list.
-  //Node * current_node = atomicCAS(neighborList->head, NULL, new_node);
+  // We begin with the head node pointer
+  Node ** previous_node = &neighborList->head; 
   Node * current_node;
-  __sync_synchronize();
-  current_node = __sync_val_compare_and_swap(&neighborList->head, NULL, new_node);
-  __sync_synchronize();
 
-  // Result 1: current_node is NULL, meaning that no elements were present in the list, so our append succeeded and we are all done.
-  if( current_node == NULL )
-    return;
-
-  // Result 2: current_node is not NULL, so the append failed. If the element is the same as what we want to append, we just need to free the memory we've alloced and then are done
-  if( current_node->element == new_elem )
-  {
-    free(new_node);
-    return;
-  }
-
-  // Result 3: current_node is not NULL, so the append failed. If the element is not what we wanted to append, we need to continue on to the next node
-  // if( current_node->element != new_elem ) // (implicit)
-
+  // Loop to traverse the linked list
   while(1)
   {
+    // Attempt to append the node to the previous one via an atomic compare-and-swap (CAS) operation
+    // If using OpenMP 5.1, we could just use the included atomic CAS operation, but for now we settle with a builtin.
     __sync_synchronize();
-    current_node = __sync_val_compare_and_swap(&current_node->next, NULL, new_node);
+    current_node = __sync_val_compare_and_swap(previous_node, NULL, new_node);
     __sync_synchronize();
 
-    // Result 1: current_node is NULL, meaning that no elements were present in the list, so our append succeeded and we are all done.
+    // Result 1: current_node is NULL, meaning that we have reached the end of the list. As such, the CAS resulted in the append working and we are done.
     if( current_node == NULL )
       break;
 
-    // Result 2: current_node is not NULL, so the append failed. If the element is the same as what we want to append, we just need to free the memory we've alloced and then are done
+    // Result 2: current_node is not NULL, so we are not at the end of the list, and the CAS failed to append.
+    // If the element of the node the CAS found is the same as what we want to append, we have found a duplicate item so should not try to append.
+    // To finish our work, we just need to free the memory we've alloced and then return.
     if( current_node->element == new_elem )
     {
       free(new_node);
       return;
     }
-    // Result 3: current_node is not NULL, so the append failed. If the element is not what we wanted to append, we need to continue on to the next node
+
+    // Result 3: Similar to result (2), the current_node is not NULL, so we are not at the end of the list and the CAS failed to append.
+    // As the element of the node the CAS found is NOT the same as what we want to append, we need to continue on to the next node and try again.
+    previous_node = &current_node->next;
   }
 
 }
 
 void nl_init_iterator(NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
+  #pragma omp atomic read seq_cst
   neighborListIterator->next = neighborList->head;
 }
 
 void nl_init(NeighborList * neighborList)
 {
   neighborList->head = NULL;
-  omp_init_lock(&neighborList->mutex);
 }
 
 int nl_read_next(NeighborList * neighborList, NeighborListIterator * neighborListIterator)
