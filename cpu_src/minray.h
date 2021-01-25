@@ -45,6 +45,10 @@
 #include"neighbor_list_i.h"
 #endif
 
+#ifdef ALGORITHM_J
+#include"neighbor_list_j.h"
+#endif
+
 #define VERSION "0"
 
 #define NONE 0
@@ -139,6 +143,7 @@ typedef struct{
   CellData cellData;
   RayData rayData;
   IntersectionData intersectionData;
+  NodePool nodePool;
 } ReadWriteData;
 
 typedef struct{

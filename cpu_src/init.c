@@ -95,6 +95,7 @@ SimulationData initialize_simulation(Parameters P)
   RWD.intersectionData = initialize_intersection_data(P);
   RWD.rayData          = initialize_ray_data(P);
   RWD.cellData         = initialize_cell_data(P);
+  RWD.nodePool         = nl_init_nodePool(P.n_cells);
 
   SimulationData SD;
   SD.readOnlyData  = ROD;
