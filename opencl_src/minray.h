@@ -168,7 +168,7 @@ ReadOnlyData load_2D_C5G7_XS(Parameters P);
 void plot_3D_vtk(Parameters P, float * scalar_flux_accumulator, int * material_id);
 void print_user_inputs(Parameters P);
 int print_results(Parameters P, SimulationResult SR);
-void print_status_data(int iter, double k_eff, double percent_missed, int is_active_region, double k_eff_total_accumulator, double k_eff_sum_of_squares_accumulator, int n_active_iterations);
+void print_status_data(int iter, double k_eff, double percent_missed, int is_active_region, double k_eff_total_accumulator, double k_eff_sum_of_squares_accumulator, int n_active_iterations, double iter_time);
 void center_print(const char *s, int width);
 void border_print(void);
 void print_ray_tracing_buffer(Parameters P, SimulationData SD);

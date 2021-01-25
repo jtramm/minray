@@ -134,7 +134,7 @@ int print_results(Parameters P, SimulationResult SR)
   return is_valid_result;
 }
 
-void print_status_data(int iter, double k_eff, double percent_missed, int is_active_region, double k_eff_total_accumulator, double k_eff_sum_of_squares_accumulator, int n_active_iterations)
+void print_status_data(int iter, double k_eff, double percent_missed, int is_active_region, double k_eff_total_accumulator, double k_eff_sum_of_squares_accumulator, int n_active_iterations, double iter_time)
 {
   char color[64] = "";
   char color_reset[64] = "";
@@ -161,7 +161,7 @@ void print_status_data(int iter, double k_eff, double percent_missed, int is_act
     sprintf(active_info, "Inactive");
 
   // Print status data
-  printf("Iter %5d   k = %.5lf   %sMiss Rate = %.2le%s   %s\n", iter, k_eff, color, percent_missed / 100.0, color_reset, active_info);
+  printf("Iter %5d   k = %.5lf   %sMiss Rate = %.2le%s   Time = %.2le   %s\n", iter, k_eff, color, percent_missed / 100.0, color_reset, iter_time, active_info);
 }
 
 // print error to screen, inform program options

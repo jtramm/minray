@@ -22,6 +22,7 @@ SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD
   // Power Iteration Loop
   for( int iter = 0; iter < P.n_iterations; iter++ )
   {
+    double iter_start = get_time();
     // Reset scalar flux and k-eff accumulators when entering the active portion of simulation
     if( iter >= P.n_inactive_iterations && !is_active_region )
     {
@@ -61,8 +62,10 @@ SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD
     // Compute the total number of intersections performed this iteration
     n_total_geometric_intersections += reduce_intersections(CL, SD, P.n_rays);
 
+    double iter_time = get_time() - iter_start;
+
     // Output some status data on the results of the power iteration
-    print_status_data(iter, k_eff, percent_missed, is_active_region, k_eff_total_accumulator, k_eff_sum_of_squares_accumulator, iter - P.n_inactive_iterations + 1);
+    print_status_data(iter, k_eff, percent_missed, is_active_region, k_eff_total_accumulator, k_eff_sum_of_squares_accumulator, iter - P.n_inactive_iterations + 1, iter_time);
 
   } // End Power Iteration Loop
 
