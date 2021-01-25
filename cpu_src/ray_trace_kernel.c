@@ -185,7 +185,7 @@ CellLookup find_cell_id_using_neighbor_list(Parameters P, NodePool * nodePool, N
   }
 
   NeighborListIterator iterator;
-  nl_init_iterator(neighborList, &iterator);
+  nl_init_iterator(nodePool, neighborList, &iterator);
 
   int cell_id = -1;
   int neighbor_id;

@@ -22,8 +22,8 @@ typedef struct{
   int next_idx;
 } NeighborListIterator;
 
-void nl_init(         NeighborList * neighborList);
-void nl_init_iterator(NeighborList * neighborList, NeighborListIterator * neighborListIterator);
+void nl_init(         NodePool * nodePool, NeighborList * neighborList);
+void nl_init_iterator(NodePool * nodePool, NeighborList * neighborList, NeighborListIterator * neighborListIterator);
 int  nl_read_next(    NodePool * nodePool, NeighborList * neighborList, NeighborListIterator * neighborListIterator);
 void nl_push_back(    NodePool * nodePool, NeighborList * neighborList, int new_elem);
 NodePool nl_init_nodePool(int n_cells);

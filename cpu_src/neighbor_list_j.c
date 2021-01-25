@@ -6,17 +6,15 @@
 void nl_push_back(NodePool * nodePool, NeighborList * neighborList, int new_elem)
 {
   // Pull a fresh node index from the node pool
-  int new_node_idx;
-  int * i = nodePool->idx;
-  #pragma omp atomic capture
-  new_node_idx = (*i)++;
+  #pragma omp atomic seq_cst
+  int new_node_idx = (*nodePool->idx)++;
 
   assert(new_node_idx < nodePool->size);
   
   // Initialize the new node for appending
   Node * new_node = nodePool->nodes + new_node_idx;
   new_node->element = new_elem;
-  new_node->next_idx = -1;
+  new_node->next = -1;
 
   // We begin with the head node pointer
   int * previous_node_idx = &neighborList->head_idx; 
@@ -49,18 +47,18 @@ void nl_push_back(NodePool * nodePool, NeighborList * neighborList, int new_elem
 
     // Result 3: Similar to result (2), the current_node is not NULL, so we are not at the end of the list and the CAS failed to append.
     // As the element of the node the CAS found is NOT the same as what we want to append, we need to continue on to the next node and try again.
-    previous_node_idx = &current_node->next_idx;
+    previous_node_idx = &current_node->next;
   }
 
 }
 
-void nl_init_iterator(NeighborList * neighborList, NeighborListIterator * neighborListIterator)
+void nl_init_iterator(NodePool * nodePool, NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
   #pragma omp atomic read seq_cst
   neighborListIterator->next_idx = neighborList->head_idx;
 }
 
-void nl_init(NeighborList * neighborList)
+void nl_init(Node * nodePool, NeighborList * neighborList)
 {
   neighborList->head_idx = -1;
 }

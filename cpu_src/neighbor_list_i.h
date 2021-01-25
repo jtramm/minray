@@ -8,6 +8,7 @@ typedef struct node_{
 
 typedef struct{
   Node * head;
+  omp_lock_t mutex;
 } NeighborList;
 
 typedef struct{
