@@ -111,6 +111,7 @@ SimulationData initialize_simulation(Parameters P)
   RWD.intersectionData = initialize_intersection_data(P);
   RWD.rayData          = initialize_ray_data(P);
   RWD.cellData         = initialize_cell_data(P);
+  RWD.nodePool         = nl_init_nodePool(P.n_cells);
 
   SimulationData SD;
   SD.readOnlyData  = ROD;
@@ -221,6 +222,10 @@ void initialize_device_data(SimulationData * SD, OpenCLInfo * CL)
   SD->readWriteData.cellData.d_hit_count               = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.hit_count,               SD->readWriteData.cellData.sz_hit_count);
   SD->readWriteData.cellData.d_fission_rate            = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.fission_rate,            SD->readWriteData.cellData.sz_fission_rate);
   SD->readWriteData.cellData.d_neighborList            = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.neighborList,            SD->readWriteData.cellData.sz_neighborList);
+
+  // Copy node pool data
+  SD->readWriteData.nodePool.d_nodes            = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.nodePool.nodes,            SD->readWriteData.nodePool.sz_nodes);
+  SD->readWriteData.nodePool.d_idx            = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.nodePool.idx,            SD->readWriteData.nodePool.sz_idx);
 }
 
 void initialize_kernels(OpenCLInfo * CL)

@@ -355,6 +355,7 @@ Parameters read_CLI(int argc, char * argv[])
   P.inverse_length_per_dimension = 1.0 / P.length_per_dimension;
   P.n_iterations = P.n_inactive_iterations + P.n_active_iterations;
   P.cell_volume = 1.0 / P.n_cells;
+  P.n_nodes = P.n_cells * AVG_NEIGHBORS_PER_CELL;
 
   return P;
 }

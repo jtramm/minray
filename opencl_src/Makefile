@@ -6,7 +6,7 @@ COMPILER    = gnu
 OPTIMIZE    = yes
 DEBUG       = no
 PROFILE     = no
-ALGORITHM   = b
+ALGORITHM   = j
 
 #===============================================================================
 # Program name & source code list
@@ -46,6 +46,12 @@ ifeq ($(ALGORITHM),h)
   source += neighbor_list_host_h.c
 	header += neighbor_list_h.h
 	CFLAGS += -DALGORITHM_H
+endif
+
+ifeq ($(ALGORITHM),j)
+  source += neighbor_list_host_j.c
+	header += neighbor_list_j.h
+	CFLAGS += -DALGORITHM_J
 endif
 
 #===============================================================================

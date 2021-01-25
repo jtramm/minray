@@ -10,6 +10,11 @@
 #include "neighbor_list_device_h.cl"
 #endif
 
+#ifdef ALGORITHM_J
+#include "neighbor_list_j.h"
+#include "neighbor_list_device_j.cl"
+#endif
+
 typedef struct{
   double distance_to_surface;
   double surface_normal_x;
@@ -80,7 +85,7 @@ __kernel void ray_trace_kernel(ARGUMENTS)
     // Look up the "neighbor" cell id of the test point.
     // This function also gives us some info on if we hit a boundary, and what type it was.
     //CellLookup lookup = find_cell_id(P, x_across_surface, y_across_surface);
-    CellLookup lookup = find_cell_id_using_neighbor_list(P, &neighborList[ray_cell_id], x_across_surface, y_across_surface);
+    CellLookup lookup = find_cell_id_using_neighbor_list(P, nodePool_nodes, nodePool_idx, &neighborList[ray_cell_id], x_across_surface, y_across_surface);
 
     // A sanity check
     //assert(lookup.cell_id != cell_id || is_terminal);
@@ -200,7 +205,7 @@ CellLookup find_cell_id_general(Parameters P, double x, double y)
 }
 
 
-CellLookup find_cell_id_using_neighbor_list(Parameters P, __global NeighborList * neighborList, double x, double y)
+CellLookup find_cell_id_using_neighbor_list(Parameters P, __global Node * nodePool_nodes, __global int * nodePool_idx, __global NeighborList * neighborList, double x, double y)
 {
   // Determine boundary information
   int boundary_x = floor(x * P.inverse_length_per_dimension) + 1;
@@ -222,7 +227,7 @@ CellLookup find_cell_id_using_neighbor_list(Parameters P, __global NeighborList 
 
   // Iterate through all cell ID's stored in neighbor list and
   // test (x,y) location against each cell ID in list
-  while( (neighbor_id = nl_read_next(neighborList, &iterator)) != -1 )
+  while( (neighbor_id = nl_read_next(nodePool_nodes, nodePool_idx, neighborList, &iterator)) != -1 )
   {
     if( is_point_inside_CSG_cell(P, x, y, neighbor_id) )
     {
@@ -236,7 +241,7 @@ CellLookup find_cell_id_using_neighbor_list(Parameters P, __global NeighborList 
   if( cell_id == -1 )
   {
     CellLookup lookup = find_cell_id_general(P, x, y);
-    nl_push_back(neighborList, lookup.cell_id);
+    nl_push_back(nodePool_nodes, nodePool_idx, P.n_nodes, neighborList, lookup.cell_id);
     return lookup;
   }
 

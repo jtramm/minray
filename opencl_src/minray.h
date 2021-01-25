@@ -14,6 +14,10 @@
 #include"neighbor_list_h.h"
 #endif
 
+#ifdef ALGORITHM_J
+#include"neighbor_list_j.h"
+#endif
+
 #include "parameters.h"
 
 //#define CL_TARGET_OPENCL_VERSION 200
@@ -133,6 +137,7 @@ typedef struct{
   CellData cellData;
   RayData rayData;
   IntersectionData intersectionData;
+  NodePool nodePool;
 } ReadWriteData;
 
 typedef struct{
