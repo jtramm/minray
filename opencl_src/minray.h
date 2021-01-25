@@ -6,6 +6,11 @@
 #include<assert.h>
 #include<time.h>
 
+//#define CL_TARGET_OPENCL_VERSION 200
+#define CL_TARGET_OPENCL_VERSION 120
+#include <CL/cl.h>
+#define MAX_SOURCE_SIZE (0x100000)
+
 #ifdef ALGORITHM_B
 #include"neighbor_list_b.h"
 #endif
@@ -20,17 +25,21 @@
 
 #include "parameters.h"
 
-//#define CL_TARGET_OPENCL_VERSION 200
-#define CL_TARGET_OPENCL_VERSION 120
-#include <CL/cl.h>
-#define MAX_SOURCE_SIZE (0x100000)
-
 #define VERSION "0"
 
 #define SMALL 1
 #define MEDIUM 2
 #define LARGE 3
 
+typedef struct{
+  Node * nodes;
+  int * idx;
+  cl_mem d_nodes;
+  size_t sz_nodes;
+  cl_mem d_idx;
+  size_t sz_idx;
+} NodePool;
+NodePool nl_init_nodePool(int n_cells);
 
 typedef struct{
   cl_kernel ray_trace_kernel;

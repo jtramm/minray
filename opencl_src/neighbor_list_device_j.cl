@@ -4,15 +4,16 @@ void nl_push_back(__global Node * nodePool_nodes, __global int * nodePool_idx, i
   // Pull a fresh node index from the node pool
   int new_node_idx = atomic_inc(nodePool_idx);
 
-  assert(new_node_idx < nodePool_size);
+  // sanity check (can't assert in OpenCL)
+  // assert(new_node_idx < nodePool_size);
   
   // Initialize the new node for appending
-  Node * new_node = nodePool_nodes + new_node_idx;
+  __global Node * new_node = nodePool_nodes + new_node_idx;
   new_node->element = new_elem;
   new_node->next_idx = -1;
 
   // We begin with the head node pointer
-  int * previous_node_idx = &neighborList->head_idx; 
+  __global int * previous_node_idx = &neighborList->head_idx; 
   int current_node_idx;
 
   // Loop to traverse the linked list
@@ -28,7 +29,7 @@ void nl_push_back(__global Node * nodePool_nodes, __global int * nodePool_idx, i
     // Result 2: current_node is not NULL, so we are not at the end of the list, and the CAS failed to append.
     // If the element of the node the CAS found is the same as what we want to append, we have found a duplicate item so should not try to append.
     // To finish our work, we just need to free the memory we've alloced and then return.
-    Node * current_node = nodePool_nodes + current_node_idx;
+    __global Node * current_node = nodePool_nodes + current_node_idx;
     if( current_node->element == new_elem )
     {
       // Note: The current NodePool design allows only for atomic allocation from it, but does not allow for nodes to be given back to it
@@ -51,7 +52,7 @@ void nl_init_iterator(__global NeighborList * neighborList, NeighborListIterator
 
 int nl_read_next(__global Node * nodePool_nodes, __global NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
-  Node * current = nodePool_nodes + neighborListIterator->next_idx;
+  __global Node * current = nodePool_nodes + neighborListIterator->next_idx;
 
   if( neighborListIterator->next_idx == -1 )
     return -1;

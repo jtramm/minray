@@ -240,7 +240,7 @@ void initialize_kernels(OpenCLInfo * CL)
   CL->kernels.reduce_float_kernel               = compile_kernel(CL, "reduce_float_kernel");
 }
 
-#define NUM_ARGS 25
+#define NUM_ARGS 27
 void load_kernel_arguments(Parameters * P, SimulationData * SD, OpenCLInfo * CL)
 {
   printf("Loading static kernel arguments...\n");
@@ -288,6 +288,8 @@ void load_kernel_arguments(Parameters * P, SimulationData * SD, OpenCLInfo * CL)
   args[22] = (void *) &SD->readWriteData.cellData.d_hit_count;
   args[23] = (void *) &SD->readWriteData.cellData.d_fission_rate;
   args[24] = (void *) &SD->readWriteData.cellData.d_neighborList;
+  args[25] = (void *) &SD->readWriteData.nodePool.d_nodes;
+  args[26] = (void *) &SD->readWriteData.nodePool.d_idx;
 
   set_kernel_arguments(&CL->kernels.normalize_scalar_flux_kernel     , argc, arg_sz, args);
   set_kernel_arguments(&CL->kernels.ray_trace_kernel                 , argc, arg_sz, args); 

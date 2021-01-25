@@ -8,18 +8,9 @@ typedef struct node_{
   int next_idx;
 } Node;
 
-typedef struct{
-  Node * nodes;
-  int * idx;
-  cl_mem d_nodes;
-  size_t sz_nodes;
-  cl_mem d_idx;
-  size_t sz_idx;
-} NodePool;
 
 typedef struct{
-  int element;
-  int next_idx;
+  int head_idx;
 } NeighborList;
 
 typedef struct{
@@ -27,6 +18,5 @@ typedef struct{
 } NeighborListIterator;
 
 void nl_init(         NeighborList * neighborList);
-NodePool nl_init_nodePool(int n_cells);
 
 #endif // OPENMC_NEIGHBOR_LIST_J_H

@@ -1,4 +1,7 @@
+#define CL_TARGET_OPENCL_VERSION 120
+#include <CL/cl.h>
 #include"neighbor_list_j.h"
+#include"minray.h"
 
 void nl_init(NeighborList * neighborList)
 {
@@ -14,7 +17,6 @@ NodePool nl_init_nodePool(int n_cells)
   NodePool nodePool;
   nodePool.nodes = nodes;
   nodePool.idx = idx;
-  nodePool.size = n_cells * AVG_NEIGHBORS_PER_CELL;
 
   nodePool.sz_nodes = n_cells * AVG_NEIGHBORS_PER_CELL * sizeof(Node);
   nodePool.sz_idx = sizeof(int);
