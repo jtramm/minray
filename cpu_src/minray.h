@@ -206,7 +206,7 @@ int validate_results(int validation_problem_id, double k_eff);
 void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t ray_id);
 CellLookup find_cell_id(Parameters P, double x, double y);
 TraceResult cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir);
-CellLookup find_cell_id_using_neighbor_list(Parameters P, NeighborList * neighborList, double x, double y);
+CellLookup find_cell_id_using_neighbor_list(Parameters P, NodePool * nodePool, NeighborList * neighborList, double x, double y);
 CellLookup find_cell_id_general_fast(Parameters P, double x, double y);
 CellLookup find_cell_id_general(Parameters P, double x, double y);
 
