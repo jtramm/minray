@@ -1,4 +1,5 @@
 #include "minray.h"
+#include<sys/time.h>
 
 double get_time(void)
 {
