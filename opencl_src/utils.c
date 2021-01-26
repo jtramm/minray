@@ -1,4 +1,5 @@
 #include "minray.h"
+#include <sys/time.h>
 
 double get_time(void)
 {
@@ -6,10 +7,14 @@ double get_time(void)
   return omp_get_wtime();
   #endif
 
-  time_t time;
-  time = clock();
+  struct timeval start;
+  gettimeofday(&start, NULL);
+ 
+  double time_us = start.tv_sec * 1000000 + start.tv_usec;
+  double time = time_us * 1e-6;
 
-  return (double) time / (double) CLOCKS_PER_SEC;
+  return time;
+
 }
 
 void ptr_swap(float ** a, float ** b)
