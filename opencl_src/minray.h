@@ -23,6 +23,10 @@
 #include"neighbor_list_j.h"
 #endif
 
+#ifdef ALGORITHM_K
+#include"neighbor_list_k.h"
+#endif
+
 #include "parameters.h"
 
 #define VERSION "0"
@@ -30,16 +34,6 @@
 #define SMALL 1
 #define MEDIUM 2
 #define LARGE 3
-
-typedef struct{
-  Node * nodes;
-  int * idx;
-  cl_mem d_nodes;
-  size_t sz_nodes;
-  cl_mem d_idx;
-  size_t sz_idx;
-} NodePool;
-NodePool nl_init_nodePool(int n_cells);
 
 typedef struct{
   cl_kernel ray_trace_kernel;
@@ -146,7 +140,12 @@ typedef struct{
   CellData cellData;
   RayData rayData;
   IntersectionData intersectionData;
-  NodePool nodePool;
+  int *     vectorPool;
+  cl_mem    d_vectorPool;
+  size_t sz_vectorPool; 
+  int *     vectorPool_idx;
+  cl_mem    d_vectorPool_idx;
+  size_t sz_vectorPool_idx; 
 } ReadWriteData;
 
 typedef struct{

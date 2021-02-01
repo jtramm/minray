@@ -15,6 +15,11 @@
 #include "neighbor_list_device_j.cl"
 #endif
 
+#ifdef ALGORITHM_K
+#include "neighbor_list_k.h"
+#include "neighbor_list_device_k.cl"
+#endif
+
 typedef struct{
   double distance_to_surface;
   double surface_normal_x;
