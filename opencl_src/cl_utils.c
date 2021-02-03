@@ -200,6 +200,8 @@ void print_opencl_info(void)
 
 OpenCLInfo initialize_device(int user_platform_id, int user_device_id)
 {
+  setenv("CUDA_CACHE_DISABLE", "1", 1);
+
   center_print("AVAILABLE OPENCL PLATFORMS & DEVICES", 79);
   border_print();
   print_opencl_info();
@@ -323,7 +325,8 @@ cl_kernel compile_kernel(OpenCLInfo * CL, char * kernel_name)
 
   // Build the program
   //ret = clBuildProgram(program, 1, &CL->device_id, NULL, NULL, NULL);
-  ret = clBuildProgram(program, 1, &CL->device_id, ALGORITHM, NULL, NULL);
+  //ret = clBuildProgram(program, 1, &CL->device_id, ALG_STRING, NULL, NULL);
+  ret = clBuildProgram(program, 1, &CL->device_id, NULL, NULL, NULL);
   check(ret);
 
   printCompilerError( program, CL->device_id );

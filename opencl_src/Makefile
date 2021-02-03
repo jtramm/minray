@@ -36,24 +36,6 @@ atomic_float.h
 
 obj = $(source:.c=.o)
 
-ifeq ($(ALGORITHM),b)
-  source += neighbor_list_host_b.c
-	header += neighbor_list_b.h
-	CFLAGS += -DALGORITHM_B
-endif
-
-ifeq ($(ALGORITHM),h)
-  source += neighbor_list_host_h.c
-	header += neighbor_list_h.h
-	CFLAGS += -DALGORITHM_H
-endif
-
-ifeq ($(ALGORITHM),j)
-  source += neighbor_list_host_j.c
-	header += neighbor_list_j.h
-	CFLAGS += -DALGORITHM_J
-endif
-
 ifeq ($(ALGORITHM),k)
   source += neighbor_list_host_k.c
 	header += neighbor_list_k.h

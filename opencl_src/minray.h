@@ -9,8 +9,9 @@
 //#define CL_TARGET_OPENCL_VERSION 200
 #define CL_TARGET_OPENCL_VERSION 120
 #include <CL/cl.h>
-#define MAX_SOURCE_SIZE (0x100000)
+#define MAX_SOURCE_SIZE (0x200000)
 
+/*
 #ifdef ALGORITHM_B
 #include"neighbor_list_b.h"
 #endif
@@ -22,6 +23,7 @@
 #ifdef ALGORITHM_J
 #include"neighbor_list_j.h"
 #endif
+*/
 
 #ifdef ALGORITHM_K
 #include"neighbor_list_k.h"

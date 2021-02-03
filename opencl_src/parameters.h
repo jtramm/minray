@@ -3,25 +3,9 @@
 #define VACUUM 1
 #define REFLECTIVE 2
 
-#ifdef ALGORITHM_B
-#include"neighbor_list_b.h"
-#define ALGORITHM "-DALGORITHM_B"
-#endif
 
-#ifdef ALGORITHM_H
-#include"neighbor_list_h.h"
-#define ALGORITHM "-DALGORITHM_H"
-#endif
-
-#ifdef ALGORITHM_J
-#include"neighbor_list_j.h"
-#define ALGORITHM "-DALGORITHM_J"
-#endif
-
-#ifdef ALGORITHM_K
 #include"neighbor_list_k.h"
-#define ALGORITHM "-DALGORITHM_K"
-#endif
+#define ALG_STRING "-DALGORITHM_K"
 
 #define ARGUMENTS double utility_variable, Parameters P, __global int * material_id, __global  float * nu_Sigma_f, __global  float * Sigma_f, __global  float * Sigma_t, __global  float * Sigma_s, __global  float * Chi, __global  float  * angular_flux, __global  double * location_x, __global  double * location_y, __global  double * direction_x, __global  double * direction_y, __global  int    * cell_id, __global  int    * n_intersections, __global  int    * cell_ids, __global  double * distances, __global  int    * did_vacuum_reflects, __global  float * isotropic_source, __global  float * new_scalar_flux, __global  float * old_scalar_flux, __global  float * scalar_flux_accumulator, __global  int   * hit_count, __global  float * fission_rate, __global NeighborList * neighborList, __global int * vectorPool, __global int * vectorPool_idx
 

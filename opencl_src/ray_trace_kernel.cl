@@ -1,24 +1,5 @@
 #include "parameters.h"
-
-#ifdef ALGORITHM_B
-#include "neighbor_list_b.h"
-#include "neighbor_list_device_b.cl"
-#endif
-
-#ifdef ALGORITHM_H
-#include "neighbor_list_h.h"
-#include "neighbor_list_device_h.cl"
-#endif
-
-#ifdef ALGORITHM_J
-#include "neighbor_list_j.h"
-#include "neighbor_list_device_j.cl"
-#endif
-
-#ifdef ALGORITHM_K
-#include "neighbor_list_k.h"
 #include "neighbor_list_device_k.cl"
-#endif
 
 typedef struct{
   double distance_to_surface;
@@ -247,7 +228,8 @@ CellLookup find_cell_id_using_neighbor_list(Parameters P, __global int * vectorP
   if( cell_id == -1 )
   {
     CellLookup lookup = find_cell_id_general(P, x, y);
-    nl_push_back(vectorPool, vectorPool_idx, P.n_nodes, neighborList, lookup.cell_id);
+    if( lookup.cell_id >= 0 && lookup.cell_id < P.n_cells)
+      nl_push_back(vectorPool, vectorPool_idx, P.n_nodes, neighborList, lookup.cell_id);
     return lookup;
   }
 

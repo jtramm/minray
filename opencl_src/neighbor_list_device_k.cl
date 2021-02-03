@@ -1,7 +1,8 @@
 
 void nl_push_back(__global int * vectorPool, __global int * vectorPool_idx, int vectorPool_size, __global NeighborList * neighborList, int new_elem)
 {
-  // Let's first read through the list to make sure it's not there already
+//printf("attempting push back of new_elem = %d\n", new_elem);
+  // Begin reading through the list
   for( int level = 0; level < LEVELS; level++ )
   {
     // Check if this level exists
@@ -22,15 +23,21 @@ void nl_push_back(__global int * vectorPool, __global int * vectorPool_idx, int 
       // Store new index to list ptr
       atomic_cmpxchg(&neighborList->ptrs[level],-2, starting_index);
 
+  //  printf("push back of %d (w/  alloc) success\n", new_elem);
+
       return;
     }
 
     // Case 2 - we read a -2. This means someone else is in the process of appending and allocating, so we should just give up.
     if( ptr == -2 )
+{
+//printf("push back of %d failed due to lockout\n", new_elem);
       return;
+}
     
     // Case 3 - we read a valid index. Thus, we should begin scanning through.
-    for( int i = 0; i < pown(2.0f, level); i++ )
+    int space = (int) pown(2.0f, level);  
+    for( int i = 0; i < space; i++ )
     {
       // Check to make sure we are not reading off the end of the global array. If so, just stop
       if( ptr + i >= vectorPool_size )
@@ -41,11 +48,17 @@ void nl_push_back(__global int * vectorPool, __global int * vectorPool_idx, int 
 
       // Case A - we read a -1. This means we have successfully inserted the element, so we return
       if( elem == -1 )
+      {
+//printf("push back of %d (w/o alloc) success\n", new_elem);
         return;
+      }
 
       // Case B - we read a valid value >= 0. This means there is something already there, so we check to see if its a duplicate. If so, we return
       if( elem == new_elem )
+{
+//printf("push back of %d failed due to duplicate found\n", new_elem);
         return;
+}
 
       // Case C - it is different item, so we simply continue on
     }
@@ -71,7 +84,8 @@ int nl_read_next(__global int * vectorPool, int vectorPool_size, __global Neighb
 
   // Determine which level and index the iterator corresponds to
   int level = (int) log2((float)(idx+1)); 
-  int index = idx - (int) pown(2.0f, level-1);
+  int index = idx - (int) pown(2.0f, level) + 1;
+//printf("idx = %d -- level = %d -- level_idx = %d\n", idx, level, index);
 
   // Atomically read the starting index for this level
   int level_starting_index = atomic_add(&neighborList->ptrs[level], 0);
@@ -84,7 +98,7 @@ int nl_read_next(__global int * vectorPool, int vectorPool_size, __global Neighb
   int reading_index = level_starting_index + index;
 
   // Ensure we are not reading off the end of that array for some reason
-  if( reading_index > vectorPool_size )
+  if( reading_index >= vectorPool_size )
     return -1;
 
   // Atomically read from the global vector pool
