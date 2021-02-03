@@ -12,7 +12,7 @@ void nl_push_back(__global int * vectorPool, __global int * vectorPool_idx, int 
     if( ptr == -1 )
     {
       // Push back
-      int space = (int) pown(2.0f, level);
+      int space = (int) pown(2.0f, level + FIRST_LEVEL);
       int starting_index = atomic_add(vectorPool_idx, space);
       
       // Set all nodes to -1 (this is done at initialization so we're good)
@@ -36,7 +36,7 @@ void nl_push_back(__global int * vectorPool, __global int * vectorPool_idx, int 
 }
     
     // Case 3 - we read a valid index. Thus, we should begin scanning through.
-    int space = (int) pown(2.0f, level);  
+    int space = (int) pown(2.0f, level + FIRST_LEVEL);  
     for( int i = 0; i < space; i++ )
     {
       // Check to make sure we are not reading off the end of the global array. If so, just stop
@@ -74,17 +74,29 @@ void nl_push_back(__global int * vectorPool, __global int * vectorPool_idx, int 
 
 void nl_init_iterator(__global NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
-  neighborListIterator->idx = 0;
+  neighborListIterator->level = 0;
+  neighborListIterator->level_idx = 0;
 }
 
 int nl_read_next(__global int * vectorPool, int vectorPool_size, __global NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
   // Get the index we want from our iterator
-  int idx = neighborListIterator->idx++;
+  int level = neighborListIterator->level;
+  int idx = neighborListIterator->level_idx++;
+
+  // Check to see if we are reading off the end of the array
+  int space = pown(2.0f, level + FIRST_LEVEL);
+  if( idx >= space )
+  {
+    level++;
+    neighborListIterator->level++;
+    idx = 0;
+    neighborListIterator->level_idx = 1;
+  }
 
   // Determine which level and index the iterator corresponds to
-  int level = (int) log2((float)(idx+1)); 
-  int index = idx - (int) pown(2.0f, level) + 1;
+  //int level = (int) log2((float)(idx+1)); 
+  //int index = idx - (int) pown(2.0f, level) + 1;
 //printf("idx = %d -- level = %d -- level_idx = %d\n", idx, level, index);
 
   // Atomically read the starting index for this level
@@ -95,7 +107,7 @@ int nl_read_next(__global int * vectorPool, int vectorPool_size, __global Neighb
     return -1;
 
   // Determine what the global index to read from the global vector pool is
-  int reading_index = level_starting_index + index;
+  int reading_index = level_starting_index + idx;
 
   // Ensure we are not reading off the end of that array for some reason
   if( reading_index >= vectorPool_size )

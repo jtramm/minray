@@ -3,13 +3,15 @@
 
 #define AVG_NEIGHBORS_PER_CELL 11
 #define LEVELS 8
+#define FIRST_LEVEL 3
 
 typedef struct{
   int ptrs[LEVELS];
 } NeighborList;
 
 typedef struct{
-  int idx;
+  int level;
+  int level_idx;
 } NeighborListIterator;
 
 void nl_init(         NeighborList * neighborList);
