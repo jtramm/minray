@@ -35,7 +35,7 @@ typedef struct{
 
 CellLookup find_cell_id(Parameters P, double x, double y);
 TraceResult cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir);
-CellLookup find_cell_id_using_neighbor_list(Parameters P, __global int * vectorPool, __global int * vectorPool_idx, __global NeighborList * neighborList, double x, double y)
+CellLookup find_cell_id_using_neighbor_list(Parameters P, __global int * vectorPool, __global int * vectorPool_idx, __global NeighborList * neighborList, double x, double y);
 
 __kernel void ray_trace_kernel(ARGUMENTS)
 {
@@ -90,7 +90,8 @@ __kernel void ray_trace_kernel(ARGUMENTS)
     // Look up the "neighbor" cell id of the test point.
     // This function also gives us some info on if we hit a boundary, and what type it was.
     //CellLookup lookup = find_cell_id(P, x_across_surface, y_across_surface);
-    CellLookup lookup = find_cell_id_using_neighbor_list(P, nodePool_nodes, nodePool_idx, &neighborList[ray_cell_id], x_across_surface, y_across_surface);
+    //CellLookup lookup = find_cell_id_using_neighbor_list(P, nodePool_nodes, nodePool_idx, &neighborList[ray_cell_id], x_across_surface, y_across_surface);
+    CellLookup lookup = find_cell_id_using_neighbor_list(P, vectorPool, vectorPool_idx, &neighborList[ray_cell_id], x_across_surface, y_across_surface);
 
     // A sanity check
     //assert(lookup.cell_id != cell_id || is_terminal);
@@ -246,7 +247,7 @@ CellLookup find_cell_id_using_neighbor_list(Parameters P, __global int * vectorP
   if( cell_id == -1 )
   {
     CellLookup lookup = find_cell_id_general(P, x, y);
-    nl_push_back(vectorPool, vectorPool_idx, neighborList, lookup.cell_id);
+    nl_push_back(vectorPool, vectorPool_idx, P.n_nodes, neighborList, lookup.cell_id);
     return lookup;
   }
 
