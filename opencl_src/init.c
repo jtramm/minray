@@ -231,6 +231,7 @@ void initialize_device_data(SimulationData * SD, OpenCLInfo * CL)
 
   // Copy vector pool data
   SD->readWriteData.d_vectorPool          = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.vectorPool,            SD->readWriteData.sz_vectorPool);
+  SD->readWriteData.d_vectorPool_idx      = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.vectorPool_idx,        SD->readWriteData.sz_vectorPool_idx);
 }
 
 void initialize_kernels(OpenCLInfo * CL)
