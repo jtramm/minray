@@ -6,8 +6,5 @@
 void nl_init(NeighborList * neighborList)
 {
   for( int i = 0; i < LEVELS; i++ )
-    neighborList->ptrs[i] = NULL;
-
-  neighborList->capacity = 0;
-  neighborList->size = 0;
+    neighborList->ptrs[i] = -1;
 }

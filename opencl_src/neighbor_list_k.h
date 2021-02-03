@@ -5,9 +5,7 @@
 #define LEVELS 8
 
 typedef struct{
-  int * ptrs[8];
-  int capacity;
-  int size;
+  int ptrs[LEVELS];
 } NeighborList;
 
 typedef struct{

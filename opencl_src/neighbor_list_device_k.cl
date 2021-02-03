@@ -5,106 +5,85 @@ void nl_push_back(__global int * vectorPool, __global int * vectorPool_idx, int 
   for( int level = 0; level < LEVELS; level++ )
   {
     // Check if this level exists
-    int * ptr = atomic_add(&neighborList->ptrs[level],0);
+    int ptr = atomic_cmpxchg(&neighborList->ptrs[level],-1, -2);
     
-    if( ptr == NULL )
+    // Case 1 - we read a -1, meaning that this level has not been allocated yet. If this is true, then we we have set the pointer to -2, so we should go ahead and append
+    if( ptr == -1 )
     {
-      // attempt to push back
+      // Push back
+      int space = pow(2, level);
+      int starting_index = atomic_add(vectorPool_idx, space);
+      
+      // Set all nodes to -1 (this is done at initialization so we're good)
+      
+      // Write new element (no other thread can see this so we're protected)
+      vectorPool[starting_index] = new_elem;
+
+      // Store new index to list ptr
+      atomic_cmpxchg(&neighborList->ptrs[level],-2, starting_index);
+
+      return;
     }
 
-  // NOTE: LAST NOTE FOR FRIDAY;
-  // I think the scheme will just barely work, but I need to switch to integer indices being stored in ptrs rather than unsigned pointers themselves.
-// This is because to avoid duplicate allocations, I will need to change the integers from -1 to -2 first to get permission to allocate, then have the allocate set it to the actual value.
-// 
+    // Case 2 - we read a -2. This means someone else is in the process of appending and allocating, so we should just give up.
+    if( ptr == -2 )
+      return;
     
-    
-    
-    
+    // Case 3 - we read a valid index. Thus, we should begin scanning through.
+    for( int i = 0; i < pow(2, level); i++ )
+    {
+      int elem = atomic_cmpxchg(&vectorPool[ptr + i],-1, new_elem);
 
+      // Case A - we read a -1. This means we have successfully inserted the element, so we return
+      if( elem == -1 )
+        return;
+
+      // Case B - we read a valid value >= 0. This means there is something already there, so we check to see if its a duplicate. If so, we return
+      if( elem == new_elem )
+        return;
+
+      // Case C - it is different item, so we simply continue on
+    }
+
+    // If we reached this point, then we have a valid pointer, and we scanned all its indices at this level and did not find an opening OR a duplicate, so move onto the next level.
   }
+}
 
-  for( int idx = 0; idx < size; idx++ )
-  {
+/*
     int level = (int) log2(idx+1); 
     int index = idx - (int) pow(2, level-1);
-
-    // this operation needs to be atomic in theory, but I'm not sure you can operate on a ptr in openCL 1.2 atomically. hmmmph.
-    // Actually, NO, it's ok! The thread that pushes back will first set ptr to -2, then make allocation, then set pointer to correct value, then set capacity to correct value, then set size to correct value. So, we will not be trying to read from a pointer that is being written to concurrently ever.
-    int * ptr = neighborList->ptrs[level];
-
-    // We want to perform an atomic read, but do an add to stay within OpenCL 1.2
-    int value = atomic_add(&ptr[index],0);
-
-    if( value == new_elem )
-      return;
-  }
-
-
-  // If we have made it here, we will assume our item is not in the list.
-
-  // TODO:
-  // Major problem. How to guarantee there are no duplicates?
-
-  // If we FIRST increase the size, this is bad as reads can end up trying to read from the unallocated pointers. Fixable if we do an atomic read there and check for null.
-  // If we FIRST increase the size, then we can indeed scan through and guarantee that there are no duplicates. However, this means that capacity, pointers, and the value itself are all not yet written,
-  //   - So, we would have to add conditional logic in a bunch of places to check
-
-  // What if we make the size based on -1 content instead of a size variable itself?
-  // Then, we just CAS on each element for -1'ness. When we get to the end of a level, we then set the next pointer to -2 and do our thing. Do our thing.
-
-  // I.e., 1) CAS on -2
-  // if we are success, we allocate, set all to -1, and then set the pointer to the new allocation.
-  // If we are a fail, then just fail to append. This is ok.
-  // 
-  // One downside to this idea is that if we try to append to a full list, it will get super slow, but who cares about that I guess.
-
-  // Attempt to append the node to the previous one via an atomic compare-and-swap (CAS) operation
-  current_node_idx =  atomic_cmpxchg(previous_node_idx, -1, new_node_idx);
-
-
-
-}
+    */
 
 void nl_init_iterator(__global NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
-  // We want to perform an atomic read, but do an add to stay within OpenCL 1.2
-  neighborListIterator->next_idx = atomic_add(&neighborList->head_idx, 0);
+  neighborListIterator->idx = 0;
 }
 
-int nl_read_next(__global NeighborList * neighborList, NeighborListIterator * neighborListIterator)
+int nl_read_next(__global int * vectorPool, int vectorPool_size, __global NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
-  /*
-     typedef struct{
-     int * ptrs[8];
-     int capacity;
-     int size;
-     } NeighborList;
-   */
-
-  int size;
-  size = atomic_add(&neighborList->size, 0);
-
+  // Get the index we want from our iterator
   int idx = neighborListIterator->idx++;
 
-  if( idx >= size )
-    return -1;
-
+  // Determine which level and index the iterator corresponds to
   int level = (int) log2(idx+1); 
   int index = idx - (int) pow(2, level-1);
 
-  // this operation needs to be atomic in theory, but I'm not sure you can operate on a ptr in openCL 1.2 atomically. hmmmph.
-  // Actually, NO, it's ok! The thread that pushes back will first set ptr to -2, then make allocation, then set pointer to correct value, then set capacity to correct value, then set size to correct value. So, we will not be trying to read from a pointer that is being written to concurrently ever.
-  int * ptr = neighborList->ptrs[level];
+  // Atomically read the starting index for this level
+  int level_starting_index = atomic_add(&neighborList->ptrs[level], 0);
 
-  // We want to perform an atomic read, but do an add to stay within OpenCL 1.2
-  int value = atomic_add(&ptr[index],0);
+  // Ensure this level's starting index is actually allocated
+  if( level_starting_index < 0 )
+    return -1;
 
-  return value;
+  // Determine what the global index to read from the global vector pool is
+  int reading_index = level_starting_index + index;
+
+  // Ensure we are not reading off the end of that array for some reason
+  if( reading_index > vectorPool_size )
+    return -1;
+
+  // Atomically read from the global vector pool
+  int element = atomic_add(&vectorPool[reading_index], 0);
+
+  return element;
 }
-
-// I guess the fundamental problem here is that we can have multiple threads inserting at once. As the 
-
-// Maybe do an atomicCAS on the pointer itself first, and set it to -2. Then, make the allocation knowing that you're the only one that can.
-
-
-// What about the case where a regular (non-alocating) push back occurs. The push_back moves the size back by 1 atomically, so no other thread will be writing there. However, before it writes, another thread could read, which would be bad. I could make the reads atomic, so they are either -1 or the real value, which would be acceptable.

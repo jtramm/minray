@@ -113,6 +113,8 @@ SimulationData initialize_simulation(Parameters P)
   RWD.cellData         = initialize_cell_data(P);
   RWD.sz_vectorPool    = P.n_cells * sizeof(int) * AVG_NEIGHBORS_PER_CELL; 
   RWD.vectorPool       = (int *) malloc(RWD.sz_vectorPool);
+  for( int i = 0; i < P.n_cells * AVG_NEIGHBORS_PER_CELL; i++ )
+    RWD.vectorPool[i] = -1;
   RWD.sz_vectorPool_idx = sizeof(int);
   RWD.vectorPool_idx    = (int *) malloc(RWD.sz_vectorPool_idx);
   *RWD.vectorPool_idx = 0;

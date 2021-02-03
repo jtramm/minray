@@ -35,7 +35,7 @@ typedef struct{
 
 CellLookup find_cell_id(Parameters P, double x, double y);
 TraceResult cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir);
-CellLookup find_cell_id_using_neighbor_list(Parameters P, __global Node * nodePool_nodes, __global int * nodePool_idx, __global NeighborList * neighborList, double x, double y);
+CellLookup find_cell_id_using_neighbor_list(Parameters P, __global int * vectorPool, __global int * vectorPool_idx, __global NeighborList * neighborList, double x, double y)
 
 __kernel void ray_trace_kernel(ARGUMENTS)
 {
@@ -210,7 +210,7 @@ CellLookup find_cell_id_general(Parameters P, double x, double y)
 }
 
 
-CellLookup find_cell_id_using_neighbor_list(Parameters P, __global Node * nodePool_nodes, __global int * nodePool_idx, __global NeighborList * neighborList, double x, double y)
+CellLookup find_cell_id_using_neighbor_list(Parameters P, __global int * vectorPool, __global int * vectorPool_idx, __global NeighborList * neighborList, double x, double y)
 {
   // Determine boundary information
   int boundary_x = floor(x * P.inverse_length_per_dimension) + 1;
@@ -232,7 +232,7 @@ CellLookup find_cell_id_using_neighbor_list(Parameters P, __global Node * nodePo
 
   // Iterate through all cell ID's stored in neighbor list and
   // test (x,y) location against each cell ID in list
-  while( (neighbor_id = nl_read_next(nodePool_nodes, neighborList, &iterator)) != -1 )
+  while( (neighbor_id = nl_read_next(vectorPool, P.n_nodes, neighborList, &iterator)) != -1 )
   {
     if( is_point_inside_CSG_cell(P, x, y, neighbor_id) )
     {
@@ -246,7 +246,7 @@ CellLookup find_cell_id_using_neighbor_list(Parameters P, __global Node * nodePo
   if( cell_id == -1 )
   {
     CellLookup lookup = find_cell_id_general(P, x, y);
-    nl_push_back(nodePool_nodes, nodePool_idx, P.n_nodes, neighborList, lookup.cell_id);
+    nl_push_back(vectorPool, vectorPool_idx, neighborList, lookup.cell_id);
     return lookup;
   }
 
