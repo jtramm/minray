@@ -110,6 +110,7 @@ void print_user_inputs(Parameters P)
     printf("OpenCL Device ID                  = Default\n");
   else
     printf("OpenCL Device ID                  = %d\n", P.device_id);
+  printf("Neighbor List Algorithm           = %s\n", ALG_STRING);
 
 }
 
