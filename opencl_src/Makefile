@@ -6,7 +6,7 @@ COMPILER    = gnu
 OPTIMIZE    = yes
 DEBUG       = no
 PROFILE     = no
-ALGORITHM   = k
+ALGORITHM   = j
 
 #===============================================================================
 # Program name & source code list
@@ -35,6 +35,12 @@ parameters.h \
 atomic_float.h
 
 obj = $(source:.c=.o)
+
+ifeq ($(ALGORITHM),j)
+  source += neighbor_list_host_j.c
+	header += neighbor_list_j.h
+	CFLAGS += -DALGORITHM_J
+endif
 
 ifeq ($(ALGORITHM),k)
   source += neighbor_list_host_k.c

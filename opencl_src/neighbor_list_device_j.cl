@@ -1,14 +1,14 @@
 
-void nl_push_back(__global Node * nodePool_nodes, __global int * nodePool_idx, int nodePool_size, __global NeighborList * neighborList, int new_elem)
+void nl_push_back(__global NeighborListNode * pool, __global int * pool_idx, int pool_size, __global NeighborList * neighborList, int new_elem)
 {
   // Pull a fresh node index from the node pool
-  int new_node_idx = atomic_inc(nodePool_idx);
+  int new_node_idx = atomic_inc(pool_idx);
 
   // sanity check (can't assert in OpenCL)
   // assert(new_node_idx < nodePool_size);
   
   // Initialize the new node for appending
-  __global Node * new_node = nodePool_nodes + new_node_idx;
+  __global NeighborListNode * new_node = pool + new_node_idx;
   new_node->element = new_elem;
   new_node->next_idx = -1;
 
@@ -29,7 +29,7 @@ void nl_push_back(__global Node * nodePool_nodes, __global int * nodePool_idx, i
     // Result 2: current_node is not NULL, so we are not at the end of the list, and the CAS failed to append.
     // If the element of the node the CAS found is the same as what we want to append, we have found a duplicate item so should not try to append.
     // To finish our work, we just need to free the memory we've alloced and then return.
-    __global Node * current_node = nodePool_nodes + current_node_idx;
+    __global NeighborListNode * current_node = pool + current_node_idx;
     if( current_node->element == new_elem )
     {
       // Note: The current NodePool design allows only for atomic allocation from it, but does not allow for nodes to be given back to it
@@ -50,9 +50,9 @@ void nl_init_iterator(__global NeighborList * neighborList, NeighborListIterator
   neighborListIterator->next_idx = atomic_add(&neighborList->head_idx, 0);
 }
 
-int nl_read_next(__global Node * nodePool_nodes, __global NeighborList * neighborList, NeighborListIterator * neighborListIterator)
+int nl_read_next(__global NeighborListNode * pool, int pool_size, __global NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
-  __global Node * current = nodePool_nodes + neighborListIterator->next_idx;
+  __global NeighborListNode * current = pool + neighborListIterator->next_idx;
 
   if( neighborListIterator->next_idx == -1 )
     return -1;

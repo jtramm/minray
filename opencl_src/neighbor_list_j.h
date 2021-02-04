@@ -3,11 +3,10 @@
 
 #define AVG_NEIGHBORS_PER_CELL 11
 
-typedef struct node_{
+typedef struct{
   int element;
   int next_idx;
-} Node;
-
+} NeighborListNode;
 
 typedef struct{
   int head_idx;

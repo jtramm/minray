@@ -8,17 +8,16 @@ void nl_init(NeighborList * neighborList)
   neighborList->head_idx = -1;
 }
 
-NodePool nl_init_nodePool(int n_cells)
+NeighborListPool nl_pool_init(int n_cells)
 {
-  Node * nodes = (Node *) malloc(n_cells * AVG_NEIGHBORS_PER_CELL * sizeof(Node));
-  int * idx = (int *) malloc(sizeof(int));
-  *idx = 0;
+  NeighborListPool NLP;
+  NLP.sz_pool    = n_cells * sizeof(NeighborListNode) * AVG_NEIGHBORS_PER_CELL; 
+  NLP.pool       = (NeighborListNode *) malloc(NLP.sz_pool);
+  for( int i = 0; i < n_cells * AVG_NEIGHBORS_PER_CELL; i++ )
+    NLP.pool[i].element = -1;
+  NLP.sz_idx = sizeof(int);
+  NLP.idx    = (int *) malloc(NLP.sz_idx);
+  *NLP.idx = 0;
 
-  NodePool nodePool;
-  nodePool.nodes = nodes;
-  nodePool.idx = idx;
-
-  nodePool.sz_nodes = n_cells * AVG_NEIGHBORS_PER_CELL * sizeof(Node);
-  nodePool.sz_idx = sizeof(int);
-  return nodePool;
+  return NLP;
 }
