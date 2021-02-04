@@ -6,6 +6,10 @@
 #define FIRST_LEVEL 3
 
 typedef struct{
+  int element;
+} NeighborListNode;
+
+typedef struct{
   int ptrs[LEVELS];
 } NeighborList;
 

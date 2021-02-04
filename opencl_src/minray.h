@@ -11,7 +11,6 @@
 #include <CL/cl.h>
 #define MAX_SOURCE_SIZE (0x200000)
 
-/*
 #ifdef ALGORITHM_B
 #include"neighbor_list_b.h"
 #endif
@@ -23,7 +22,6 @@
 #ifdef ALGORITHM_J
 #include"neighbor_list_j.h"
 #endif
-*/
 
 #ifdef ALGORITHM_K
 #include"neighbor_list_k.h"
@@ -139,15 +137,19 @@ typedef struct{
 } CellData;
 
 typedef struct{
+  NeighborListNode * pool;
+  cl_mem d_pool;
+  size_t sz_pool;
+  int *  idx;
+  cl_mem d_idx;
+  size_t sz_idx;
+} NeighborListPool;
+
+typedef struct{
   CellData cellData;
   RayData rayData;
   IntersectionData intersectionData;
-  int *     vectorPool;
-  cl_mem    d_vectorPool;
-  size_t sz_vectorPool; 
-  int *     vectorPool_idx;
-  cl_mem    d_vectorPool_idx;
-  size_t sz_vectorPool_idx; 
+  NeighborListPool neighborListPool;
 } ReadWriteData;
 
 typedef struct{

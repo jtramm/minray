@@ -1,5 +1,20 @@
 #include "parameters.h"
-#include "neighbor_list_device_k.cl"
+
+#ifdef ALGORITHM_B
+#include"neighbor_list_device_b.cl"
+#endif
+
+#ifdef ALGORITHM_H
+#include"neighbor_list_device_h.cl"
+#endif
+
+#ifdef ALGORITHM_J
+#include"neighbor_list_device_j.cl"
+#endif
+
+#ifdef ALGORITHM_K
+#include"neighbor_list_device_k.cl"
+#endif
 
 typedef struct{
   double distance_to_surface;
@@ -16,7 +31,7 @@ typedef struct{
 
 CellLookup find_cell_id(Parameters P, double x, double y);
 TraceResult cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir);
-CellLookup find_cell_id_using_neighbor_list(Parameters P, __global int * vectorPool, __global int * vectorPool_idx, __global NeighborList * neighborList, double x, double y);
+CellLookup find_cell_id_using_neighbor_list(Parameters P, __global NeighborListNode * pool, __global int * pool_idx, __global NeighborList * neighborList, double x, double y);
 
 __kernel void ray_trace_kernel(ARGUMENTS)
 {
@@ -72,7 +87,7 @@ __kernel void ray_trace_kernel(ARGUMENTS)
     // This function also gives us some info on if we hit a boundary, and what type it was.
     //CellLookup lookup = find_cell_id(P, x_across_surface, y_across_surface);
     //CellLookup lookup = find_cell_id_using_neighbor_list(P, nodePool_nodes, nodePool_idx, &neighborList[ray_cell_id], x_across_surface, y_across_surface);
-    CellLookup lookup = find_cell_id_using_neighbor_list(P, vectorPool, vectorPool_idx, &neighborList[ray_cell_id], x_across_surface, y_across_surface);
+    CellLookup lookup = find_cell_id_using_neighbor_list(P, pool, pool_idx, &neighborList[ray_cell_id], x_across_surface, y_across_surface);
 
     // A sanity check
     //assert(lookup.cell_id != cell_id || is_terminal);
@@ -192,7 +207,7 @@ CellLookup find_cell_id_general(Parameters P, double x, double y)
 }
 
 
-CellLookup find_cell_id_using_neighbor_list(Parameters P, __global int * vectorPool, __global int * vectorPool_idx, __global NeighborList * neighborList, double x, double y)
+CellLookup find_cell_id_using_neighbor_list(Parameters P, __global NeighborListNode * pool, __global int * pool_idx, __global NeighborList * neighborList, double x, double y)
 {
   // Determine boundary information
   int boundary_x = floor(x * P.inverse_length_per_dimension) + 1;
@@ -214,7 +229,7 @@ CellLookup find_cell_id_using_neighbor_list(Parameters P, __global int * vectorP
 
   // Iterate through all cell ID's stored in neighbor list and
   // test (x,y) location against each cell ID in list
-  while( (neighbor_id = nl_read_next(vectorPool, P.n_nodes, neighborList, &iterator)) != -1 )
+  while( (neighbor_id = nl_read_next(pool, P.n_nodes, neighborList, &iterator)) != -1 )
   {
     if( is_point_inside_CSG_cell(P, x, y, neighbor_id) )
     {
@@ -229,7 +244,7 @@ CellLookup find_cell_id_using_neighbor_list(Parameters P, __global int * vectorP
   {
     CellLookup lookup = find_cell_id_general(P, x, y);
     if( lookup.cell_id >= 0 && lookup.cell_id < P.n_cells)
-      nl_push_back(vectorPool, vectorPool_idx, P.n_nodes, neighborList, lookup.cell_id);
+      nl_push_back(pool, pool_idx, P.n_nodes, neighborList, lookup.cell_id);
     return lookup;
   }
 

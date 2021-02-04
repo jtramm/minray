@@ -1,5 +1,7 @@
 #include "minray.h"
 
+NeighborListPool nl_pool_init(int n_cells);
+
 size_t estimate_memory_usage(Parameters P)
 {
   size_t sz = 0;
@@ -111,13 +113,8 @@ SimulationData initialize_simulation(Parameters P)
   RWD.intersectionData = initialize_intersection_data(P);
   RWD.rayData          = initialize_ray_data(P);
   RWD.cellData         = initialize_cell_data(P);
-  RWD.sz_vectorPool    = P.n_cells * sizeof(int) * AVG_NEIGHBORS_PER_CELL; 
-  RWD.vectorPool       = (int *) malloc(RWD.sz_vectorPool);
-  for( int i = 0; i < P.n_cells * AVG_NEIGHBORS_PER_CELL; i++ )
-    RWD.vectorPool[i] = -1;
-  RWD.sz_vectorPool_idx = sizeof(int);
-  RWD.vectorPool_idx    = (int *) malloc(RWD.sz_vectorPool_idx);
-  *RWD.vectorPool_idx = 0;
+
+  RWD.neighborListPool = nl_pool_init(P.n_cells);
 
   SimulationData SD;
   SD.readOnlyData  = ROD;
@@ -230,8 +227,8 @@ void initialize_device_data(SimulationData * SD, OpenCLInfo * CL)
   SD->readWriteData.cellData.d_neighborList            = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.cellData.neighborList,            SD->readWriteData.cellData.sz_neighborList);
 
   // Copy vector pool data
-  SD->readWriteData.d_vectorPool          = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.vectorPool,            SD->readWriteData.sz_vectorPool);
-  SD->readWriteData.d_vectorPool_idx      = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.vectorPool_idx,        SD->readWriteData.sz_vectorPool_idx);
+  SD->readWriteData.neighborListPool.d_pool          = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.neighborListPool.pool,            SD->readWriteData.neighborListPool.sz_pool);
+  SD->readWriteData.neighborListPool.d_idx           = copy_array_to_device(CL, mem_type, (void *) SD->readWriteData.neighborListPool.idx,             SD->readWriteData.neighborListPool.sz_idx);
 }
 
 void initialize_kernels(OpenCLInfo * CL)
@@ -294,8 +291,8 @@ void load_kernel_arguments(Parameters * P, SimulationData * SD, OpenCLInfo * CL)
   args[22] = (void *) &SD->readWriteData.cellData.d_hit_count;
   args[23] = (void *) &SD->readWriteData.cellData.d_fission_rate;
   args[24] = (void *) &SD->readWriteData.cellData.d_neighborList;
-  args[25] = (void *) &SD->readWriteData.d_vectorPool;
-  args[26] = (void *) &SD->readWriteData.d_vectorPool_idx;
+  args[25] = (void *) &SD->readWriteData.neighborListPool.d_pool;
+  args[26] = (void *) &SD->readWriteData.neighborListPool.d_idx;
 
   set_kernel_arguments(&CL->kernels.normalize_scalar_flux_kernel     , argc, arg_sz, args);
   set_kernel_arguments(&CL->kernels.ray_trace_kernel                 , argc, arg_sz, args); 

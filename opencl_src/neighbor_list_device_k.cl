@@ -1,5 +1,5 @@
 
-void nl_push_back(__global int * vectorPool, __global int * vectorPool_idx, int vectorPool_size, __global NeighborList * neighborList, int new_elem)
+void nl_push_back(__global NeighborListNode * pool, __global int * pool_idx, int pool_size, __global NeighborList * neighborList, int new_elem)
 {
 //printf("attempting push back of new_elem = %d\n", new_elem);
   // Begin reading through the list
@@ -13,12 +13,12 @@ void nl_push_back(__global int * vectorPool, __global int * vectorPool_idx, int 
     {
       // Push back
       int space = (int) pown(2.0f, level + FIRST_LEVEL);
-      int starting_index = atomic_add(vectorPool_idx, space);
+      int starting_index = atomic_add(pool_idx, space);
       
       // Set all nodes to -1 (this is done at initialization so we're good)
       
       // Write new element (no other thread can see this so we're protected)
-      vectorPool[starting_index] = new_elem;
+      pool[starting_index].element = new_elem;
 
       // Store new index to list ptr
       atomic_cmpxchg(&neighborList->ptrs[level],-2, starting_index);
@@ -40,11 +40,11 @@ void nl_push_back(__global int * vectorPool, __global int * vectorPool_idx, int 
     for( int i = 0; i < space; i++ )
     {
       // Check to make sure we are not reading off the end of the global array. If so, just stop
-      if( ptr + i >= vectorPool_size )
+      if( ptr + i >= pool_size )
         return;
 
       // Use a CAS to try to append
-      int elem = atomic_cmpxchg(&vectorPool[ptr + i],-1, new_elem);
+      int elem = atomic_cmpxchg(&pool[ptr + i].element,-1, new_elem);
 
       // Case A - we read a -1. This means we have successfully inserted the element, so we return
       if( elem == -1 )
@@ -78,7 +78,7 @@ void nl_init_iterator(__global NeighborList * neighborList, NeighborListIterator
   neighborListIterator->level_idx = 0;
 }
 
-int nl_read_next(__global int * vectorPool, int vectorPool_size, __global NeighborList * neighborList, NeighborListIterator * neighborListIterator)
+int nl_read_next(__global NeighborListNode * pool, int pool_size, __global NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
   // Get the index we want from our iterator
   int level = neighborListIterator->level;
@@ -110,11 +110,11 @@ int nl_read_next(__global int * vectorPool, int vectorPool_size, __global Neighb
   int reading_index = level_starting_index + idx;
 
   // Ensure we are not reading off the end of that array for some reason
-  if( reading_index >= vectorPool_size )
+  if( reading_index >= pool_size )
     return -1;
 
   // Atomically read from the global vector pool
-  int element = atomic_add(&vectorPool[reading_index], 0);
+  int element = atomic_add(&pool[reading_index].element, 0);
 
   return element;
 }
