@@ -1,10 +1,12 @@
 #ifndef NEIGHBOR_LIST_B_H
 #define NEIGHBOR_LIST_B_H
 
-#define NEIGHBOR_SIZE 11
+#define AVG_NEIGHBORS_PER_CELL 11
+
+typedef struct _node NeighborListNode;
 
 typedef struct{
-  int list[NEIGHBOR_SIZE];
+  int list[AVG_NEIGHBORS_PER_CELL];
 } NeighborList;
 
 typedef struct{
