@@ -187,12 +187,17 @@ CellLookup find_cell_id_general(Parameters P, double x, double y)
   int boundary_condition = P.boundary_conditions[boundary_x][boundary_y];
 
   int cell_id = -1;
-  for( int i = 0; i < P.n_cells; i++ )
+
+  // We assume we can test quickly if we are outside the domain, which seems reasonable.
+  if( boundary_condition == 0 )
   {
-    if( is_point_inside_CSG_cell(P, x, y, i) )
+    for( int i = 0; i < P.n_cells; i++ )
     {
-      cell_id = i;
-      break;
+      if( is_point_inside_CSG_cell(P, x, y, i) )
+      {
+        cell_id = i;
+        break;
+      }
     }
   }
 
@@ -241,7 +246,12 @@ CellLookup find_cell_id_using_neighbor_list(Parameters P, __global Node * nodePo
   if( cell_id == -1 )
   {
     CellLookup lookup = find_cell_id_general(P, x, y);
-    nl_push_back(nodePool_nodes, nodePool_idx, P.n_nodes, neighborList, lookup.cell_id);
+    
+    // If -1 is found as the cell ID, this means we are outside the domain so a BC will be applied
+    // Otherwise, append the cell to the list.
+    if( lookup.cell_id != -1 )
+      nl_push_back(nodePool_nodes, nodePool_idx, P.n_nodes, neighborList, lookup.cell_id);
+
     return lookup;
   }
 
