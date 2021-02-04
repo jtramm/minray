@@ -1,7 +1,7 @@
 
-void nl_push_back(__global NeighborList * neighborList, int new_elem)
+void nl_push_back(__global NeighborListNode * pool, __global int * pool_idx, int pool_size, __global NeighborList * neighborList, int new_elem)
 {
-  for( int i = 0; i < NEIGHBOR_SIZE; i++)
+  for( int i = 0; i < AVG_NEIGHBORS_PER_CELL; i++)
   {
     // This line checks to see if the new_elem is already in the list
     int retrieved_id = neighborList->list[i];
@@ -31,11 +31,11 @@ void nl_init_iterator(__global NeighborList * neighborList, NeighborListIterator
   neighborListIterator->idx = 0;
 }
 
-int nl_read_next(__global NeighborList * neighborList, NeighborListIterator * neighborListIterator)
+int nl_read_next(__global NeighborListNode * pool, int pool_size, __global NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
   int idx = neighborListIterator->idx++;
 
-  if( idx >= NEIGHBOR_SIZE )
+  if( idx >= AVG_NEIGHBORS_PER_CELL )
     return -1;
   else
   {
