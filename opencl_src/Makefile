@@ -7,6 +7,7 @@ OPTIMIZE    = yes
 DEBUG       = no
 PROFILE     = no
 ALGORITHM   = b
+QUIET       = y
 
 #===============================================================================
 # Program name & source code list
@@ -90,6 +91,10 @@ endif
 # OpenMP Flags
 ifeq ($(OPENMP),yes)
   CFLAGS += -fopenmp -DOPENMP
+endif
+
+ifeq ($(QUIET),y)
+  CFLAGS += -DQUIET
 endif
 
 #===============================================================================

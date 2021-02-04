@@ -65,7 +65,9 @@ SimulationResult run_simulation(OpenCLInfo * CL, Parameters P, SimulationData SD
     double iter_time = get_time() - iter_start;
 
     // Output some status data on the results of the power iteration
+    #ifndef QUIET
     print_status_data(iter, k_eff, percent_missed, is_active_region, k_eff_total_accumulator, k_eff_sum_of_squares_accumulator, iter - P.n_inactive_iterations + 1, iter_time);
+    #endif
 
   } // End Power Iteration Loop
 
