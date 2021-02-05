@@ -1,4 +1,4 @@
-void nl_push_back(__global Node * nodePool_nodes, __global int * nodePool_idx, int nodePool_size, __global NeighborList * neighborList, int new_elem)
+void nl_push_back(__global NeighborListNode * pool, __global int * pool_idx, int nodePool_size, __global NeighborList * neighborList, int new_elem)
 {
 
   // We begin with the head node pointer
@@ -15,10 +15,10 @@ void nl_push_back(__global Node * nodePool_nodes, __global int * nodePool_idx, i
     if( current_node_idx == -1 )
     {
       // Pull a fresh node index from the node pool
-      int new_node_idx = atomic_inc(nodePool_idx);
+      int new_node_idx = atomic_inc(pool_idx);
 
       // Initialize the new node for appending
-      __global Node * new_node = nodePool_nodes + new_node_idx;
+      __global NeighborListNode * new_node = pool + new_node_idx;
       new_node->element = new_elem;
       new_node->next_idx = -1;
     
@@ -39,7 +39,7 @@ void nl_push_back(__global Node * nodePool_nodes, __global int * nodePool_idx, i
 
     // Result 3: current_node is a valid index, so we read the node that that index. We find it is storing an element that is the same as what we are trying to append.
     // As such, we just do nothing and return.
-    __global Node * current_node = nodePool_nodes + current_node_idx;
+    __global NeighborListNode * current_node = pool + current_node_idx;
     if( current_node->element == new_elem )
     {
       return;
@@ -57,9 +57,9 @@ void nl_init_iterator(__global NeighborList * neighborList, NeighborListIterator
   neighborListIterator->next_idx = atomic_add(&neighborList->head_idx, 0);
 }
 
-int nl_read_next(__global Node * nodePool_nodes, __global NeighborList * neighborList, NeighborListIterator * neighborListIterator)
+int nl_read_next(__global NeighborListNode * pool, int pool_size, __global NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
-  __global Node * current = nodePool_nodes + neighborListIterator->next_idx;
+  __global NeighborListNode * current = pool + neighborListIterator->next_idx;
 
   if( neighborListIterator->next_idx < 0 )
     return -1;
