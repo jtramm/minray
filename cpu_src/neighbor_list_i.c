@@ -2,7 +2,6 @@
 #include<assert.h>
 #include<stdlib.h>
 #include"neighbor_list_i.h"
-#include"atomic_wrapper.h"
 
 void nl_push_back(NeighborListPool neighborListPool, NeighborList * neighborList, int new_elem)
 {
@@ -18,7 +17,10 @@ void nl_push_back(NeighborListPool neighborListPool, NeighborList * neighborList
   // Loop to traverse the linked list
   while(1)
   {
-    current_node = atomic_CAS_wrapper(previous_node, NULL, new_node);
+    // Note: we are not using the atomic_wrapper.h function, as here we are operating on a (Node *) ptr instead of an int
+    __sync_synchronize();
+    current_node = __sync_val_compare_and_swap(previous_node, NULL, new_node);
+    __sync_synchronize();
 
     // Result 1: current_node is NULL, meaning that we have reached the end of the list. As such, the CAS resulted in the append working and we are done.
     if( current_node == NULL )
