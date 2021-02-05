@@ -2,6 +2,7 @@
 #include<assert.h>
 #include<stdlib.h>
 #include"neighbor_list_i.h"
+#include"atomic_wrapper.h"
 
 void nl_push_back(NeighborListPool neighborListPool, NeighborList * neighborList, int new_elem)
 {
@@ -17,11 +18,7 @@ void nl_push_back(NeighborListPool neighborListPool, NeighborList * neighborList
   // Loop to traverse the linked list
   while(1)
   {
-    // Attempt to append the node to the previous one via an atomic compare-and-swap (CAS) operation
-    // If using OpenMP 5.1, we could just use the included atomic CAS operation, but for now we settle with a builtin.
-    __sync_synchronize();
-    current_node = __sync_val_compare_and_swap(previous_node, NULL, new_node);
-    __sync_synchronize();
+    current_node = atomic_CAS_wrapper(previous_node, NULL, new_node);
 
     // Result 1: current_node is NULL, meaning that we have reached the end of the list. As such, the CAS resulted in the append working and we are done.
     if( current_node == NULL )

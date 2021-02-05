@@ -4,17 +4,7 @@
 #include"neighbor_list_k.h"
 #include<stdio.h>
 #include<math.h>
-
-int atomic_CAS_wrapper(int * ptr, int test, int replace)
-{
-  // Attempt to append the node to the previous one via an atomic compare-and-swap (CAS) operation
-  // If using OpenMP 5.1, we could just use the included atomic CAS operation, but for now we settle with a builtin.
-  int val;
-  __sync_synchronize();
-  val = __sync_val_compare_and_swap(ptr, test, replace);
-  __sync_synchronize();
-  return val;
-}
+#include"atomic_wrapper.h"
 
 void nl_push_back(NeighborListPool neighborListPool, NeighborList * neighborList, int new_elem)
 {
@@ -106,7 +96,7 @@ int nl_read_next(NeighborListPool neighborListPool, NeighborList * neighborList,
 
   // Atomically read the starting index for this level
   int level_starting_index;
-  #pragma omp atomic read
+  #pragma omp atomic read seq_cst
   level_starting_index = neighborList->ptrs[level];
 
   // Ensure this level's starting index is actually allocated

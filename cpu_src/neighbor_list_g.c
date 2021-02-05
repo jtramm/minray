@@ -11,7 +11,7 @@ void nl_push_back(NeighborListPool neighborListPool, NeighborList * neighborList
     int retrieved_id;
 
     // read value atomically
-    #pragma omp atomic read
+    #pragma omp atomic read seq_cst
     retrieved_id = neighborList->list[i];
 
     // Case 1: If the value is -1, we will then (attempt to) write to it
@@ -21,7 +21,7 @@ void nl_push_back(NeighborListPool neighborListPool, NeighborList * neighborList
     // a previous value.
     if(retrieved_id == -1)
     {
-      #pragma omp atomic write
+      #pragma omp atomic write seq_cst
       neighborList->list[i] = new_elem;
       return;
     }
@@ -71,7 +71,7 @@ int nl_read_next(NeighborListPool neighborListPool, NeighborList * neighborList,
   else
   {
     int next_element;
-    #pragma omp atomic read
+    #pragma omp atomic read seq_cst
     next_element = neighborList->list[idx];
 
     return next_element;

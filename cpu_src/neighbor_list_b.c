@@ -1,6 +1,7 @@
 #include<omp.h>
 #include<stdlib.h>
 #include<assert.h>
+#include"atomic_wrapper.h"
 #include"neighbor_list_b.h"
 
 void nl_push_back(NeighborListPool neighborListPool, NeighborList * neighborList, int new_elem)
@@ -24,7 +25,7 @@ void nl_push_back(NeighborListPool neighborListPool, NeighborList * neighborList
     */
 
     // Compiler non-portable builtin atomic CAS
-    retrieved_id = __sync_val_compare_and_swap(&neighborList->list[i], -1, new_elem);
+    retrieved_id = atomic_CAS_wrapper(&neighborList->list[i], -1, new_elem);
 
     // Case 1: The element was not initialized yet, so the previous line had the effect of setting it to new_elem and returning -1.
     // Case 2: The element was already initialized to the current new_elem, so the atomicCAS call will return new_elem
@@ -59,7 +60,7 @@ int nl_read_next(NeighborListPool neighborListPool, NeighborList * neighborList,
   else
   {
     int next_element;
-    #pragma omp atomic read
+    #pragma omp atomic read seq_cst
     next_element = neighborList->list[idx];
     return next_element;
   }

@@ -42,7 +42,8 @@ io.c \
 utils.c 
 
 header = \
-minray.h 
+minray.h \
+atomic_wrapper.h
 
 ifeq ($(NL_ALGORITHM),a)
   source += neighbor_list_a.c
