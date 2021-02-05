@@ -66,7 +66,9 @@ SimulationResult run_simulation(Parameters P, SimulationData SD)
     n_total_geometric_intersections += reduce_sum_int(SD.readWriteData.intersectionData.n_intersections, P.n_rays);
 
     // Output some status data on the results of the power iteration
+    #ifndef QUIET
     print_status_data(iter, k_eff, percent_missed, is_active_region, k_eff_total_accumulator, k_eff_sum_of_squares_accumulator, iter - P.n_inactive_iterations + 1);
+    #endif
 
     if(iter == 0)
       first_iteration_time = get_time() - first_iteration_time;

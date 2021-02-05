@@ -10,6 +10,7 @@ PROFILE        = no
 ifeq ($(NL_ALGORITHM),)
   NL_ALGORITHM = c
 endif
+QUIET          = yes
 
 #===============================================================================
 # Sets Basic Flags
@@ -137,6 +138,11 @@ endif
 # OpenMP Flags
 ifeq ($(OPENMP),yes)
   CFLAGS += -fopenmp -DOPENMP
+endif
+
+# Quiet the iteration status
+ifeq ($(QUIET),yes)
+  CFLAGS += -DQUIET
 endif
 
 #===============================================================================
