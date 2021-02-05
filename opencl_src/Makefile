@@ -63,6 +63,12 @@ ifeq ($(NL_ALGORITHM),k)
 	CFLAGS += -DALGORITHM_K
 endif
 
+ifeq ($(NL_ALGORITHM),l)
+  source += neighbor_list_host_k.c
+	header += neighbor_list_l.h
+	CFLAGS += -DALGORITHM_L
+endif
+
 #===============================================================================
 # Sets Flags
 #===============================================================================

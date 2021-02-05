@@ -16,6 +16,10 @@
 #include"neighbor_list_device_k.cl"
 #endif
 
+#ifdef ALGORITHM_L
+#include"neighbor_list_device_k.cl" // Alg L and K only differ by header
+#endif
+
 typedef struct{
   double distance_to_surface;
   double surface_normal_x;

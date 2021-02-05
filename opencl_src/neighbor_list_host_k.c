@@ -1,6 +1,11 @@
 #define CL_TARGET_OPENCL_VERSION 120
 #include <CL/cl.h>
+#ifdef ALGORITHM_K
 #include"neighbor_list_k.h"
+#endif
+#ifdef ALGORITHM_L
+#include"neighbor_list_l.h"
+#endif
 #include"minray.h"
 
 NeighborListPool nl_pool_init(int n_cells)

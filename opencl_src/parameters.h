@@ -23,6 +23,11 @@
 #define ALG_STRING "-DALGORITHM_K -I ."
 #endif
 
+#ifdef ALGORITHM_L
+#include"neighbor_list_l.h"
+#define ALG_STRING "-DALGORITHM_L -I ."
+#endif
+
 
 #define ARGUMENTS double utility_variable, Parameters P, __global int * material_id, __global  float * nu_Sigma_f, __global  float * Sigma_f, __global  float * Sigma_t, __global  float * Sigma_s, __global  float * Chi, __global  float  * angular_flux, __global  double * location_x, __global  double * location_y, __global  double * direction_x, __global  double * direction_y, __global  int    * cell_id, __global  int    * n_intersections, __global  int    * cell_ids, __global  double * distances, __global  int    * did_vacuum_reflects, __global  float * isotropic_source, __global  float * new_scalar_flux, __global  float * old_scalar_flux, __global  float * scalar_flux_accumulator, __global  int   * hit_count, __global  float * fission_rate, __global NeighborList * neighborList, __global NeighborListNode * pool, __global int * pool_idx
 
