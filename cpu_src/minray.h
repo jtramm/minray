@@ -61,7 +61,12 @@
 
 #ifdef ALGORITHM_K
 #include"neighbor_list_k.h"
+#ifdef LEVEL_0
 #define ALG_STRING "K"
+#endif
+#ifdef LEVEL_3
+#define ALG_STRING "L"
+#endif
 #endif
 
 #define VERSION "0"
