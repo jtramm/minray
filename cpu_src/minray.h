@@ -49,6 +49,10 @@
 #include"neighbor_list_j.h"
 #endif
 
+#ifdef ALGORITHM_K
+#include"neighbor_list_k.h"
+#endif
+
 #define VERSION "0"
 
 #define NONE 0
