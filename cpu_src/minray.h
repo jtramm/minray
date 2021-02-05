@@ -11,46 +11,57 @@
 
 #ifdef ALGORITHM_A
 #include"neighbor_list_a.h"
+#define ALG_STRING "A"
 #endif
 
 #ifdef ALGORITHM_B
 #include"neighbor_list_b.h"
+#define ALG_STRING "B"
 #endif
 
 #ifdef ALGORITHM_C
 #include"neighbor_list_c.h"
+#define ALG_STRING "C"
 #endif
 
 #ifdef ALGORITHM_D
 #include"neighbor_list_d.h"
+#define ALG_STRING "D"
 #endif
 
 #ifdef ALGORITHM_E
 #include"neighbor_list_e.h"
+#define ALG_STRING "E"
 #endif
 
 #ifdef ALGORITHM_F
 #include"neighbor_list_f.h"
+#define ALG_STRING "F"
 #endif
 
 #ifdef ALGORITHM_G
 #include"neighbor_list_g.h"
+#define ALG_STRING "G"
 #endif
 
 #ifdef ALGORITHM_H
 #include"neighbor_list_h.h"
+#define ALG_STRING "H"
 #endif
 
 #ifdef ALGORITHM_I
 #include"neighbor_list_i.h"
+#define ALG_STRING "I"
 #endif
 
 #ifdef ALGORITHM_J
 #include"neighbor_list_j.h"
+#define ALG_STRING "J"
 #endif
 
 #ifdef ALGORITHM_K
 #include"neighbor_list_k.h"
+#define ALG_STRING "K"
 #endif
 
 #define VERSION "0"

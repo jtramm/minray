@@ -12,7 +12,7 @@
 // conflict can occur over a pointer variable, subsequent use of that
 // pointer by the reading thread can result in a seg fault.
 
-void nl_push_back(NeighborList * neighborList, int new_elem)
+void nl_push_back(NeighborListPool neighborListPool, NeighborList * neighborList, int new_elem)
 {
   // Try setting the lock object
   int lock_success = omp_test_lock(&neighborList->mutex);
@@ -71,7 +71,7 @@ void nl_init(NeighborList * neighborList)
   omp_init_lock(&neighborList->mutex);
 }
 
-int nl_read_next(NeighborList * neighborList, NeighborListIterator * neighborListIterator)
+int nl_read_next(NeighborListPool neighborListPool, NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
   Node * current = neighborListIterator->next;
 
@@ -81,4 +81,12 @@ int nl_read_next(NeighborList * neighborList, NeighborListIterator * neighborLis
   neighborListIterator->next = current->next;
 
   return current->element;
+}
+NeighborListPool nl_init_pool(int n_cells)
+{
+  NeighborListPool NLP;
+  NLP.size = 0;
+  NLP.pool = NULL;
+  NLP.idx  = NULL;
+  return NLP;
 }

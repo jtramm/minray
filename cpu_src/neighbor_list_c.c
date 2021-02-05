@@ -3,7 +3,7 @@
 #include<stdlib.h>
 #include"neighbor_list_c.h"
 
-void nl_push_back(NeighborList * neighborList, int new_elem)
+void nl_push_back(NeighborListPool neighborListPool, NeighborList * neighborList, int new_elem)
 {
   // Lock the object
   omp_set_lock(&neighborList->mutex);
@@ -59,7 +59,7 @@ void nl_init(NeighborList * neighborList)
   omp_init_lock(&neighborList->mutex);
 }
 
-int nl_read_next(NeighborList * neighborList, NeighborListIterator * neighborListIterator)
+int nl_read_next(NeighborListPool neighborListPool, NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
   // Lock the object
   omp_set_lock(&neighborList->mutex);
@@ -75,4 +75,12 @@ int nl_read_next(NeighborList * neighborList, NeighborListIterator * neighborLis
   omp_unset_lock(&neighborList->mutex);
 
   return element;
+}
+NeighborListPool nl_init_pool(int n_cells)
+{
+  NeighborListPool NLP;
+  NLP.size = 0;
+  NLP.pool = NULL;
+  NLP.idx  = NULL;
+  return NLP;
 }

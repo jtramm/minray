@@ -2,7 +2,7 @@
 #include<assert.h>
 #include"neighbor_list_a.h"
 
-void nl_push_back(NeighborList * neighborList, int new_elem)
+void nl_push_back(NeighborListPool neighborListPool, NeighborList * neighborList, int new_elem)
 {
   // Lock the object
   omp_set_lock(&neighborList->mutex);
@@ -25,13 +25,13 @@ void nl_push_back(NeighborList * neighborList, int new_elem)
   int idx = neighborList->length;
 
   // Ensure we are not writing off the end of the list
-  assert(idx < NEIGHBOR_SIZE);
+  assert(idx < AVG_NEIGHBORS_PER_CELL);
 
   // Write element value to the array
   neighborList->list[idx] = new_elem;
 
   // Atomically increase length of list
-  #pragma omp atomic
+  #pragma omp atomic seq_cst
   (neighborList->length)++;
 
   // unlock the object
@@ -43,11 +43,11 @@ int nl_get_length(NeighborList * neighborList)
   int length;
 
   // Atomically read the length of the list
-  #pragma omp atomic read
+  #pragma omp atomic read seq_cst
   length = neighborList->length;
 
   // Ensure we are not reading off the end of the list
-  assert(length <= NEIGHBOR_SIZE);
+  assert(length <= AVG_NEIGHBORS_PER_CELL);
 
   return length;
 }
@@ -64,7 +64,7 @@ void nl_init(NeighborList * neighborList)
   omp_init_lock(&neighborList->mutex);
 }
 
-int nl_read_next(NeighborList * neighborList, NeighborListIterator * neighborListIterator)
+int nl_read_next(NeighborListPool neighborListPool, NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
   int idx = neighborListIterator->idx++;
 
@@ -72,4 +72,13 @@ int nl_read_next(NeighborList * neighborList, NeighborListIterator * neighborLis
     return -1;
   else
     return neighborList->list[idx];
+}
+
+NeighborListPool nl_init_pool(int n_cells)
+{
+  NeighborListPool NLP;
+  NLP.size = 0;
+  NLP.pool = NULL;
+  NLP.idx  = NULL;
+  return NLP;
 }

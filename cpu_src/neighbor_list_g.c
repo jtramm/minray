@@ -1,10 +1,11 @@
 #include<omp.h>
 #include<assert.h>
+#include<stdlib.h>
 #include"neighbor_list_g.h"
 
-void nl_push_back(NeighborList * neighborList, int new_elem)
+void nl_push_back(NeighborListPool neighborListPool, NeighborList * neighborList, int new_elem)
 {
-  for( int i = 0; i < NEIGHBOR_SIZE; i++)
+  for( int i = 0; i < AVG_NEIGHBORS_PER_CELL; i++)
   {
     // This line checks to see if the new_elem is already in the list
     int retrieved_id;
@@ -35,7 +36,7 @@ void nl_push_back(NeighborList * neighborList, int new_elem)
 
   }
 
-  // If we reach here without returning, this means the list is full and NEIGHBOR_SIZE should be increased.
+  // If we reach here without returning, this means the list is full and AVG_NEIGHBORS_PER_CELL should be increased.
   assert(0);
 }
 
@@ -57,15 +58,15 @@ void nl_init_iterator(NeighborList * neighborList, NeighborListIterator * neighb
 
 void nl_init(NeighborList * neighborList)
 {
-  for( int i = 0; i < NEIGHBOR_SIZE; i++ )
+  for( int i = 0; i < AVG_NEIGHBORS_PER_CELL; i++ )
     neighborList->list[i] = -1; 
 }
 
-int nl_read_next(NeighborList * neighborList, NeighborListIterator * neighborListIterator)
+int nl_read_next(NeighborListPool neighborListPool, NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
   int idx = neighborListIterator->idx++;
 
-  if( idx >= NEIGHBOR_SIZE )
+  if( idx >= AVG_NEIGHBORS_PER_CELL )
     return -1;
   else
   {
@@ -75,4 +76,12 @@ int nl_read_next(NeighborList * neighborList, NeighborListIterator * neighborLis
 
     return next_element;
   }
+}
+NeighborListPool nl_init_pool(int n_cells)
+{
+  NeighborListPool NLP;
+  NLP.size = 0;
+  NLP.pool = NULL;
+  NLP.idx  = NULL;
+  return NLP;
 }

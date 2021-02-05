@@ -99,6 +99,7 @@ void print_user_inputs(Parameters P)
   #ifdef OPENMP
   printf("Number of Threads                 = %d\n", omp_get_max_threads());
   #endif
+  printf("Neighbor List Algorithm           = %s\n", ALG_STRING);
 }
 
 int print_results(Parameters P, SimulationResult SR)

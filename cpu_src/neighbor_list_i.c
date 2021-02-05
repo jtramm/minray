@@ -3,7 +3,7 @@
 #include<stdlib.h>
 #include"neighbor_list_i.h"
 
-void nl_push_back(NeighborList * neighborList, int new_elem)
+void nl_push_back(NeighborListPool neighborListPool, NeighborList * neighborList, int new_elem)
 {
   // Allocate and initialize the new node for appending
   Node * new_node = (Node *) malloc(sizeof(Node));
@@ -54,7 +54,7 @@ void nl_init(NeighborList * neighborList)
   neighborList->head = NULL;
 }
 
-int nl_read_next(NeighborList * neighborList, NeighborListIterator * neighborListIterator)
+int nl_read_next(NeighborListPool neighborListPool, NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
   Node * current = neighborListIterator->next;
 
@@ -65,4 +65,13 @@ int nl_read_next(NeighborList * neighborList, NeighborListIterator * neighborLis
   neighborListIterator->next = current->next;
 
   return current->element;
+}
+
+NeighborListPool nl_init_pool(int n_cells)
+{
+  NeighborListPool NLP;
+  NLP.size = 0;
+  NLP.pool = NULL;
+  NLP.idx  = NULL;
+  return NLP;
 }

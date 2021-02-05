@@ -1,5 +1,6 @@
 #include<omp.h>
 #include<assert.h>
+#include<stdlib.h>
 #include"neighbor_list_f.h"
 
 // It is possible for this algorithm to have threads writing to and
@@ -13,7 +14,7 @@
 // no harm is done other than a wasted CSG check, so the algorithm would still produce
 // valid results.
 
-void nl_push_back(NeighborList * neighborList, int new_elem)
+void nl_push_back(NeighborListPool neighborListPool, NeighborList * neighborList, int new_elem)
 {
   // Lock the object
   omp_set_lock(&neighborList->mutex);
@@ -36,7 +37,7 @@ void nl_push_back(NeighborList * neighborList, int new_elem)
   int idx = neighborList->length;
 
   // Ensure we are not writing off the end of the list
-  assert(idx < NEIGHBOR_SIZE);
+  assert(idx < AVG_NEIGHBORS_PER_CELL);
 
   // Write element value to the array
   neighborList->list[idx] = new_elem;
@@ -59,13 +60,21 @@ void nl_init(NeighborList * neighborList)
   omp_init_lock(&neighborList->mutex);
 }
 
-int nl_read_next(NeighborList * neighborList, NeighborListIterator * neighborListIterator)
+int nl_read_next(NeighborListPool neighborListPool, NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
   int idx = neighborListIterator->idx++;
 
   // NOTE: The read of the "length" variable can occur at the same time another thread in nl_push_back is writing to it
-  if( idx < neighborList->length && idx < NEIGHBOR_SIZE )
+  if( idx < neighborList->length && idx < AVG_NEIGHBORS_PER_CELL )
     return neighborList->list[idx];
   else
     return -1;
+}
+NeighborListPool nl_init_pool(int n_cells)
+{
+  NeighborListPool NLP;
+  NLP.size = 0;
+  NLP.pool = NULL;
+  NLP.idx  = NULL;
+  return NLP;
 }
