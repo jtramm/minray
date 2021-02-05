@@ -1,5 +1,6 @@
 #include<omp.h>
 #include<assert.h>
+#include<stdlib.h>
 #include"neighbor_list_a.h"
 
 void nl_push_back(NeighborListPool neighborListPool, NeighborList * neighborList, int new_elem)

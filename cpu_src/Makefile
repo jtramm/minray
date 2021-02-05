@@ -2,12 +2,14 @@
 # User Options
 #===============================================================================
 
-COMPILER    = gnu
-OPTIMIZE    = yes
-DEBUG       = no
-OPENMP      = yes
-PROFILE     = no
-ALGORITHM   = l
+COMPILER       = gnu
+OPTIMIZE       = yes
+DEBUG          = no
+OPENMP         = yes
+PROFILE        = no
+ifeq ($(NL_ALGORITHM),)
+  NL_ALGORITHM = c
+endif
 
 #===============================================================================
 # Sets Basic Flags
@@ -42,62 +44,62 @@ utils.c
 header = \
 minray.h 
 
-ifeq ($(ALGORITHM),a)
+ifeq ($(NL_ALGORITHM),a)
   source += neighbor_list_a.c
 	header += neighbor_list_a.h
 	CFLAGS += -DALGORITHM_A
 endif
-ifeq ($(ALGORITHM),b)
+ifeq ($(NL_ALGORITHM),b)
   source += neighbor_list_b.c
 	header += neighbor_list_b.h
 	CFLAGS += -DALGORITHM_B
 endif
-ifeq ($(ALGORITHM),c)
+ifeq ($(NL_ALGORITHM),c)
   source += neighbor_list_c.c
 	header += neighbor_list_c.h
 	CFLAGS += -DALGORITHM_C
 endif
-ifeq ($(ALGORITHM),d)
+ifeq ($(NL_ALGORITHM),d)
   source += neighbor_list_d.c
 	header += neighbor_list_d.h
 	CFLAGS += -DALGORITHM_D
 endif
-ifeq ($(ALGORITHM),e)
+ifeq ($(NL_ALGORITHM),e)
   source += neighbor_list_e.c
 	header += neighbor_list_e.h
 	CFLAGS += -DALGORITHM_E
 endif
-ifeq ($(ALGORITHM),f)
+ifeq ($(NL_ALGORITHM),f)
   source += neighbor_list_f.c
 	header += neighbor_list_f.h
 	CFLAGS += -DALGORITHM_F
 endif
-ifeq ($(ALGORITHM),g)
+ifeq ($(NL_ALGORITHM),g)
   source += neighbor_list_g.c
 	header += neighbor_list_g.h
 	CFLAGS += -DALGORITHM_G
 endif
-ifeq ($(ALGORITHM),h)
+ifeq ($(NL_ALGORITHM),h)
   source += neighbor_list_h.c
 	header += neighbor_list_h.h
 	CFLAGS += -DALGORITHM_H
 endif
-ifeq ($(ALGORITHM),i)
+ifeq ($(NL_ALGORITHM),i)
   source += neighbor_list_i.c
 	header += neighbor_list_i.h
 	CFLAGS += -DALGORITHM_I
 endif
-ifeq ($(ALGORITHM),j)
+ifeq ($(NL_ALGORITHM),j)
   source += neighbor_list_j.c
 	header += neighbor_list_j.h
 	CFLAGS += -DALGORITHM_J
 endif
-ifeq ($(ALGORITHM),k)
+ifeq ($(NL_ALGORITHM),k)
   source += neighbor_list_k.c
 	header += neighbor_list_k.h
 	CFLAGS += -DALGORITHM_K -DLEVEL_0
 endif
-ifeq ($(ALGORITHM),l)
+ifeq ($(NL_ALGORITHM),l)
   source += neighbor_list_k.c
 	header += neighbor_list_k.h
 	CFLAGS += -DALGORITHM_K -DLEVEL_3
