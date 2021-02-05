@@ -3,6 +3,7 @@
 #include<stdlib.h>
 #include"neighbor_list_k.h"
 #include<stdio.h>
+#include<math.h>
 
 int atomic_CAS_wrapper(int * ptr, int test, int replace)
 {
@@ -27,10 +28,10 @@ void nl_push_back(NeighborListPool neighborListPool, NeighborList * neighborList
     if( ptr == -1 )
     {
       // Push back
-      int space = (int) pown(2.0f, level + FIRST_LEVEL);
+      int space = (int) pow(2.0f, level + FIRST_LEVEL);
       int starting_index;
       #pragma omp atomic capture seq_cst
-      starting_index = pool_idx += space;
+      starting_index = (*neighborListPool.idx) += space;
 
       // Set all nodes to -1 (this is done at initialization so we're good)
 
@@ -50,11 +51,11 @@ void nl_push_back(NeighborListPool neighborListPool, NeighborList * neighborList
     }
 
     // Case 3 - we read a valid index. Thus, we should begin scanning through.
-    int space = (int) pown(2.0f, level + FIRST_LEVEL);  
+    int space = (int) pow(2.0f, level + FIRST_LEVEL);  
     for( int i = 0; i < space; i++ )
     {
       // Check to make sure we are not reading off the end of the global array. If so, just stop
-      if( ptr + i >= pool_size )
+      if( ptr + i >= neighborListPool.size )
         return;
 
       // Use a CAS to try to append
@@ -81,7 +82,7 @@ void nl_push_back(NeighborListPool neighborListPool, NeighborList * neighborList
   }
 }
 
-void nl_init_iterator(__global NeighborList * neighborList, NeighborListIterator * neighborListIterator)
+void nl_init_iterator(NeighborList * neighborList, NeighborListIterator * neighborListIterator)
 {
   neighborListIterator->level = 0;
   neighborListIterator->level_idx = 0;
@@ -94,7 +95,7 @@ int nl_read_next(NeighborListPool neighborListPool, NeighborList * neighborList,
   int idx = neighborListIterator->level_idx++;
 
   // Check to see if we are reading off the end of the array
-  int space = pown(2.0f, level + FIRST_LEVEL);
+  int space = pow(2.0f, level + FIRST_LEVEL);
   if( idx >= space )
   {
     level++;
@@ -122,7 +123,7 @@ int nl_read_next(NeighborListPool neighborListPool, NeighborList * neighborList,
   // Atomically read from the global vector pool
   int element;
   #pragma omp atomic read seq_cst
-  element = pool[reading_index].element;
+  element = neighborListPool.pool[reading_index].element;
 
   return element;
 }
@@ -142,3 +143,8 @@ NeighborListPool nl_init_pool(int n_cells)
   return NLP;
 }
 
+void nl_init(NeighborList * neighborList)
+{
+  for( int i = 0; i < LEVELS; i++ )
+    neighborList->ptrs[i] = -1;
+}
