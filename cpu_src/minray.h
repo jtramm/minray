@@ -143,7 +143,7 @@ typedef struct{
   CellData cellData;
   RayData rayData;
   IntersectionData intersectionData;
-  NodePool nodePool;
+  NeighborListPool neighborListPool;
 } ReadWriteData;
 
 typedef struct{
@@ -206,7 +206,7 @@ int validate_results(int validation_problem_id, double k_eff);
 void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t ray_id);
 CellLookup find_cell_id(Parameters P, double x, double y);
 TraceResult cartesian_ray_trace(double x, double y, double cell_width, int x_idx, int y_idx, double x_dir, double y_dir);
-CellLookup find_cell_id_using_neighbor_list(Parameters P, NodePool * nodePool, NeighborList * neighborList, double x, double y);
+CellLookup find_cell_id_using_neighbor_list(Parameters P, NeighborListPool neighborListPool, NeighborList * neighborList, double x, double y);
 CellLookup find_cell_id_general_fast(Parameters P, double x, double y);
 CellLookup find_cell_id_general(Parameters P, double x, double y);
 
@@ -216,3 +216,10 @@ void flux_attenuation_kernel(Parameters P, SimulationData SD, uint64_t ray_id, i
 void normalize_scalar_flux_kernel(Parameters P, float * new_scalar_flux, int cell, int energy_group);
 void add_source_to_scalar_flux_kernel(Parameters P, SimulationData SD, int cell, int energy_group);
 void compute_cell_fission_rates_kernel(Parameters P, SimulationData SD, float * scalar_flux, int cell);
+
+// NeighborList prototypes
+void nl_init(         NeighborList * neighborList);
+void nl_init_iterator(NeighborList * neighborList, NeighborListIterator * neighborListIterator);
+int  nl_read_next(    NeighborListPool neighborListPool, NeighborList * neighborList, NeighborListIterator * neighborListIterator);
+void nl_push_back(    NeighborListPool neighborListPool, NeighborList * neighborList, int new_elem);
+NeighborListPool nl_init_pool(int n_cells);

@@ -51,7 +51,8 @@ void ray_trace_kernel(Parameters P, SimulationData SD, RayData rayData, uint64_t
     // This function also gives us some info on if we hit a boundary, and what type it was.
     //CellLookup lookup = find_cell_id_general(P, x_across_surface, y_across_surface);
     //CellLookup lookup = find_cell_id_general_fast(P, x_across_surface, y_across_surface);
-    CellLookup lookup = find_cell_id_using_neighbor_list(P, &SD.readWriteData.nodePool, &SD.readWriteData.cellData.neighborList[cell_id], x_across_surface, y_across_surface);
+    //CellLookup lookup = find_cell_id_using_neighbor_list(P, &SD.readWriteData.nodePool, &SD.readWriteData.cellData.neighborList[cell_id], x_across_surface, y_across_surface);
+    CellLookup lookup = find_cell_id_using_neighbor_list(P, SD.readWriteData.neighborListPool, &SD.readWriteData.cellData.neighborList[cell_id], x_across_surface, y_across_surface);
     
     // A sanity check
     assert(lookup.cell_id != cell_id || is_terminal);
@@ -173,7 +174,7 @@ CellLookup find_cell_id_general(Parameters P, double x, double y)
 }
 
 
-CellLookup find_cell_id_using_neighbor_list(Parameters P, NodePool * nodePool, NeighborList * neighborList, double x, double y)
+CellLookup find_cell_id_using_neighbor_list(Parameters P, NeighborListPool neighborListPool, NeighborList * neighborList, double x, double y)
 {
   // Determine boundary information
   int boundary_x = floor(x * P.inverse_length_per_dimension) + 1;
@@ -195,7 +196,7 @@ CellLookup find_cell_id_using_neighbor_list(Parameters P, NodePool * nodePool, N
 
   // Iterate through all cell ID's stored in neighbor list and
   // test (x,y) location against each cell ID in list
-  while( (neighbor_id = nl_read_next(nodePool, neighborList, &iterator)) != -1 )
+  while( (neighbor_id = nl_read_next(neighborListPool, neighborList, &iterator)) != -1 )
   {
     if( is_point_inside_CSG_cell(P, x, y, neighbor_id) )
     {
@@ -209,8 +210,8 @@ CellLookup find_cell_id_using_neighbor_list(Parameters P, NodePool * nodePool, N
   if( cell_id == -1 )
   {
     CellLookup lookup = find_cell_id_general(P, x, y);
-    if( cell_id >= 0 && cell_id < P.n_cells)
-      nl_push_back(nodePool, neighborList, lookup.cell_id);
+    if( lookup.cell_id >= 0 && lookup.cell_id < P.n_cells)
+      nl_push_back(neighborListPool, neighborList, lookup.cell_id);
     return lookup;
   }
 
