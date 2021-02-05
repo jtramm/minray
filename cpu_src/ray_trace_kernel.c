@@ -152,12 +152,15 @@ CellLookup find_cell_id_general(Parameters P, double x, double y)
   int boundary_condition = P.boundary_conditions[boundary_x][boundary_y];
 
   int cell_id = -1;
-  for( int i = 0; i < P.n_cells; i++ )
+  if( boundary_condition == NONE)
   {
-    if( is_point_inside_CSG_cell(P, x, y, i) )
+    for( int i = 0; i < P.n_cells; i++ )
     {
-      cell_id = i;
-      break;
+      if( is_point_inside_CSG_cell(P, x, y, i) )
+      {
+        cell_id = i;
+        break;
+      }
     }
   }
 
@@ -206,7 +209,8 @@ CellLookup find_cell_id_using_neighbor_list(Parameters P, NodePool * nodePool, N
   if( cell_id == -1 )
   {
     CellLookup lookup = find_cell_id_general(P, x, y);
-    nl_push_back(nodePool, neighborList, lookup.cell_id);
+    if( cell_id >= 0 && cell_id < P.n_cells)
+      nl_push_back(nodePool, neighborList, lookup.cell_id);
     return lookup;
   }
 
