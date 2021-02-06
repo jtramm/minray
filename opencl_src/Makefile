@@ -9,7 +9,7 @@ PROFILE     = no
 ifeq ($(NL_ALGORITHM),)
   NL_ALGORITHM    = b
 endif
-QUIET       = y
+QUIET       = n
 
 #===============================================================================
 # Program name & source code list

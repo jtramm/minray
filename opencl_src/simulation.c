@@ -108,7 +108,7 @@ void transport_sweep(OpenCLInfo * CL, Parameters P, SimulationData SD)
 
   // Launch Ray Tracing kernel
   global_item_size = P.n_rays;
-  local_item_size = 8; 
+  local_item_size = 32; 
   ret = clEnqueueNDRangeKernel(CL->command_queue, CL->kernels.ray_trace_kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
   check(ret);
 
