@@ -1,4 +1,5 @@
 # minray
+[![DOI](https://zenodo.org/badge/288820755.svg)](https://zenodo.org/badge/latestdoi/288820755)
 
 ## Overview
 
